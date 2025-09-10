@@ -20,9 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Copy the Makefile
-COPY Makefile .
-
 # Add src directory to Python path
 ENV PYTHONPATH=/app/src:/app
 
