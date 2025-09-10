@@ -47,7 +47,7 @@ exec make run\n\
 ' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Default command
- CMD ["/app/entrypoint.sh"]
+CMD ["/app/entrypoint.sh"]
 
 # Alternative commands for different stages:
 # Development mode with hot reload - Fixed to use src.main
