@@ -192,6 +192,30 @@ The original shell script is still available:
 ./test/run_gw_test.sh -t  # Test
 ```
 
+As a reminder, to run the original script you need to do the following (paths may need to be fixed):
+```bash
+# Build the geneweb project
+ocaml ./configure.ml
+make clean
+make distrib
+
+# Setup the tree
+cd distribution && ./gwsetup.sh
+./gw/gwd -hd gw -bd bases -p 2316
+
+# Extract the missing images
+cd geneweb/test && unzip -o galichet_src_images.zip -d geneweb/distribution/bases/src/
+
+# Convert the .gw file to a geneweb database using gwc
+./distribution/gw/gwc -o distribution/bases/galichet test/galichet.gw
+
+# Move the Galichet file to the right spot
+mv galichet.gwb galichet.gwf galichet.lck distribution/bases/
+
+# Run the original script
+./test/run_gw_test.sh -h
+```
+
 ## Utilities
 
 All utility functions are now integrated into the main test runner:
