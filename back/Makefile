@@ -1,15 +1,15 @@
 # Makefile for Python project
 
 # Variables
-PYTHON = python3
-MAIN = src/main.py
+ASGI_SERVER = uvicorn
+MAIN = src.main
 
 # Default target
 all: run
 
 # Run the main Python script
 run:
-	$(PYTHON) $(MAIN)
+	$(ASGI_SERVER) $(MAIN):app --reload
 
 # Re-run (same as run for Python projects)
 re: clean run
