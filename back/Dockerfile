@@ -23,6 +23,9 @@ COPY . .
 # Copy the Makefile
 COPY Makefile .
 
+# Add src directory to Python path
+ENV PYTHONPATH=/app/src:/app
+
 # Expose port for FastAPI
 EXPOSE 8000
 
@@ -35,7 +38,7 @@ echo "Running Black formatter check..."\n\
 python -m black --check . || echo "Black formatting issues found"\n\
 \n\
 echo "Running Pylint..."\n\
-python -m pylint **/*.py || echo "Pylint warnings found"\n\
+python -m pylint src/**/*.py || echo "Pylint warnings found"\n\
 \n\
 # Run Python tests\n\
 echo "Running Python tests..."\n\
@@ -47,17 +50,17 @@ exec make run\n\
 ' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Default command
-CMD ["/app/entrypoint.sh"]
+# CMD ["/app/entrypoint.sh"]
 
 # Alternative commands for different stages:
-# Development mode with hot reload
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Development mode with hot reload - Fixed to use src.main
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # Production mode
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # Run tests only
 # CMD ["python", "-m", "pytest", "-v"]
 
 # Run linting only
-# CMD ["python", "-m", "pylint", "**/*.py"]
+# CMD ["python", "-m", "pylint", "src/**/*.py"]
