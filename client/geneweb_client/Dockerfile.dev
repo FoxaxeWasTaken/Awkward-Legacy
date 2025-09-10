@@ -1,0 +1,26 @@
+FROM node:alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+FROM node:alpine AS runner
+
+WORKDIR /app
+
+COPY --from=builder /app/ .
+
+RUN apk add --no-cache curl
+
+CMD ["npm", "run", "dev"]
+
+EXPOSE 5173
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5173/ || exit 1
