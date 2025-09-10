@@ -16,6 +16,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
+RUN apk add --no-cache curl
+
 CMD ["nginx", "-g", "daemon off;"]
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \

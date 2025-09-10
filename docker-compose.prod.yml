@@ -1,0 +1,7 @@
+services:
+  client-prod:
+    build:
+      context: ./client/geneweb_client
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
