@@ -1,0 +1,17 @@
+services:
+  client-prod:
+    build:
+      context: ./client/geneweb_client
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+
+  client-dev:
+    build:
+      context: ./client/geneweb_client
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8081:5173"
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "run", "dev"]
