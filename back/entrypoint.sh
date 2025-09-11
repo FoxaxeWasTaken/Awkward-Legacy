@@ -3,14 +3,14 @@ set -e
 
 # Run code formatting and linting checks
 echo "Running Black formatter check..."
-python -m black --check . || echo "Black formatting issues found"
+python -m black --check .
 
 echo "Running Pylint..."
-python -m pylint $(find src -name '*.py') || echo "Pylint warnings found"
+python -m pylint $(find src -name '*.py')
 
 # Run Python tests
 echo "Running Python tests..."
-python -m pytest -v || echo "Some tests failed"
+python -m pytest -v
 
 # Start the application using Makefile
 echo "Starting FastAPI application..."
