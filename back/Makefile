@@ -9,7 +9,7 @@ all: run
 
 # Run the main Python script
 run:
-	$(ASGI_SERVER) $(MAIN):app --reload
+	$(ASGI_SERVER) $(MAIN):app --host 0.0.0.0 --port 8000 --reload
 
 # Re-run (same as run for Python projects)
 re: clean run
