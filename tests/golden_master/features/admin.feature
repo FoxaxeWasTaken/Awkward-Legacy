@@ -4,6 +4,9 @@ Feature: Administrative and database functions
   I want to access administrative functions and database information
   So that I can manage the genealogy database
 
+  # -------------------
+  # Smoke Scenarios
+  # -------------------
   @smoke
   Scenario: Access welcome page
     Given the Geneweb server is running
@@ -34,3 +37,50 @@ Feature: Administrative and database functions
     Given the calendar feature is enabled
     When I request the calendar view
     Then I should see genealogical calendar information
+
+
+  # -------------------
+  # Access Control Scenarios
+  # -------------------
+  Scenario: Deny maintenance access without admin rights
+    Given I am not logged in as an administrator
+    When I request the maintenance page
+    Then I should be denied access
+
+  Scenario: Deny database deletion without admin rights
+    Given I am logged in as a regular user
+    When I attempt to delete a database
+    Then the operation should be forbidden
+
+
+  # -------------------
+  # Error Handling Scenarios
+  # -------------------
+  Scenario: Handle request for non-existent database
+    Given the database "unknown_base" does not exist
+    When I request statistics for "unknown_base"
+    Then I should see an error message indicating the database was not found
+
+  Scenario: Handle empty database statistics
+    Given the empty_test database exists and contains no persons
+    When I request statistics for the empty_test base
+    Then I should see database statistics showing zero persons
+
+
+  # -------------------
+  # Configuration Scenarios
+  # -------------------
+  Scenario: Hide calendar when disabled
+    Given the calendar feature is disabled
+    When I request the calendar view
+    Then I should see a message that the calendar is not available
+
+
+  # -------------------
+  # Golden Master Consistency Scenarios
+  # -------------------
+  Scenario: Preserve alphabetical index order
+    Given the galichet database contains persons
+    When I browse the alphabetical index
+    Then I should see persons listed in lexicographic order
+    And special characters should be ordered consistently
