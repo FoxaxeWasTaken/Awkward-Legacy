@@ -26,25 +26,9 @@ ENV PYTHONPATH=/app/src:/app
 # Expose port for FastAPI
 EXPOSE 8000
 
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Run code formatting and linting checks\n\
-echo "Running Black formatter check..."\n\
-python -m black --check . || echo "Black formatting issues found"\n\
-\n\
-echo "Running Pylint..."\n\
-python -m pylint $(find src -name '*.py') || echo "Pylint warnings found"\n\
-\n\
-# Run Python tests\n\
-echo "Running Python tests..."\n\
-python -m pytest -v || echo "Some tests failed"\n\
-\n\
-# Start the application using Makefile\n\
-echo "Starting FastAPI application..."\n\
-exec make run\n\
-' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+# Copy entrypoint script and make it executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Default command
 CMD ["/app/entrypoint.sh"]
