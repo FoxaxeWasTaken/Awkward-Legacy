@@ -2,7 +2,8 @@
 FROM python:3.11-slim
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+    apt-get --no-install-recommends install -y build-essential \
     curl \
     gnupg \
     make \
@@ -18,7 +19,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
-COPY . .
+COPY ./README.md ./README.md
+COPY ./src ./src
+COPY ./tests ./tests
+COPY ./__init__.py ./__init__.py
+COPY ./Makefile ./Makefile
+COPY ./entrypoint.sh ./entrypoint.sh
 
 # Add src directory to Python path
 ENV PYTHONPATH=/app/src:/app
