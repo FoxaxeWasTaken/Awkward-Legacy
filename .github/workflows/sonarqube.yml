@@ -27,8 +27,9 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run tests with coverage
+        working-directory: back
         run: |
-          export PYTHONPATH=$(pwd)/back pytest back --cov=back --cov-report=xml:back/coverage.xml
+          pytest --cov=src --cov-report=xml:coverage.xml
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
@@ -36,6 +37,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.sources=back
+            -Dsonar.sources=back/src
             -Dsonar.tests=back/tests
             -Dsonar.python.coverage.reportPaths=back/coverage.xml
