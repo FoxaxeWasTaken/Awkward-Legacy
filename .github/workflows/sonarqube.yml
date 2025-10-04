@@ -28,7 +28,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest back --cov=back --cov-report=xml:back/coverage.xml
+          export PYTHONPATH=$(pwd)/back pytest back --cov=back --cov-report=xml:back/coverage.xml
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
