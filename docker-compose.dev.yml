@@ -11,3 +11,16 @@ services:
       - ./client/:/app
       - /app/node_modules
     command: ["npm", "run", "dev"]
+  
+  back-dev:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./back/src:/app/src
+      - ./back/tests:/app/tests
+      - /app/node_modules

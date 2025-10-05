@@ -6,7 +6,7 @@ RUN apk add --no-cache curl
 
 COPY package*.json ./
 
-run npm install
+RUN npm install
 
 EXPOSE 5173
 

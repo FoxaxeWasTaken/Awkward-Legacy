@@ -6,3 +6,11 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+  
+  back-prod:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    ports:
+      - "8000:8000"

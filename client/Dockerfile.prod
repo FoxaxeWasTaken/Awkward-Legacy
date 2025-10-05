@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm run build
 
-FROM nginx:stable-alpine as runner
+FROM nginx:stable-alpine AS runner
 
 RUN adduser -D -H -u 1001 -s /sbin/nologin webuser
 
