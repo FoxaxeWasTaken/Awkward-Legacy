@@ -1,7 +1,7 @@
 services:
   client-prod:
     build:
-      context: ./client/geneweb_client
+      context: ./client
       dockerfile: Dockerfile.prod
     restart: unless-stopped
     ports:

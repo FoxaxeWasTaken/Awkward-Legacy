@@ -1,7 +1,7 @@
 services:
   client-prod:
     build:
-      context: ./client/geneweb_client
+      context: ./client
       dockerfile: Dockerfile.prod
     ports:
       - "80:80"
@@ -15,7 +15,7 @@ services:
 
   unit-tests:
     build:
-      context: ./client/geneweb_client
+      context: ./client
       dockerfile: Dockerfile.dev
     working_dir: /app
     command: ["npm", "run", "test:unit"]
@@ -23,7 +23,7 @@ services:
   e2e-tests:
     image: cypress/included:latest
     volumes:
-      - ./client/geneweb_client/:/e2e
+      - ./client/:/e2e
     working_dir: /e2e
     depends_on:
       client-prod:
