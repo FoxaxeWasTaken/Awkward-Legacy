@@ -31,22 +31,22 @@ logs-prod:
 	@echo "Showing production logs..."
 	$(COMPOSE_PROD) logs -f
 
-# Backend testing and quality
-test-back:
-	@echo "Running backend tests..."
-	$(COMPOSE_DEV) run --rm back-dev python -m pytest -v
+# serverend testing and quality
+test-server:
+	@echo "Running serverend tests..."
+	$(COMPOSE_DEV) run --rm server-dev python -m pytest -v
 
-test-back-coverage:
-	@echo "Running backend tests with coverage..."
-	$(COMPOSE_DEV) run --rm back-dev python -m pytest --cov=src --cov-report=html -v
+test-server-coverage:
+	@echo "Running serverend tests with coverage..."
+	$(COMPOSE_DEV) run --rm server-dev python -m pytest --cov=src --cov-report=html -v
 
-lint-back:
-	@echo "Running backend linting..."
-	$(COMPOSE_DEV) run --rm back-dev sh -c "python -m black --check . && python -m pylint src/"
+lint-server:
+	@echo "Running serverend linting..."
+	$(COMPOSE_DEV) run --rm server-dev sh -c "python -m black --check . && python -m pylint src/"
 
-format-back:
-	@echo "Formatting backend code..."
-	$(COMPOSE_DEV) run --rm back-dev python -m black .
+format-server:
+	@echo "Formatting serverend code..."
+	$(COMPOSE_DEV) run --rm server-dev python -m black .
 
 # Client testing and quality
 test-client:
@@ -70,13 +70,13 @@ format-client:
 	$(COMPOSE_DEV) run --rm client-dev npm run format
 
 # Full testing
-test: test-back test-client
+test: test-server test-client
 	@echo "All tests completed!"
 
-lint: lint-back lint-client
+lint: lint-server lint-client
 	@echo "All linting completed!"
 
-format: format-back format-client
+format: format-server format-client
 	@echo "All formatting completed!"
 
 # Cleanup
@@ -96,6 +96,6 @@ clean:
 
 # Declare phony targets
 .PHONY: all up-dev down-dev logs-dev up-prod down-prod logs-prod \
-        test-back test-back-coverage test-client test-client-e2e test-client-watch \
-        test lint-back lint-client lint format-back format-client format \
+        test-server test-server-coverage test-client test-client-e2e test-client-watch \
+        test lint-server lint-client lint format-server format-client format \
         clean
