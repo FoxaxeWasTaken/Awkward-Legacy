@@ -2,7 +2,7 @@ services:
   client-prod:
     build:
       context: ./client/geneweb_client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80"

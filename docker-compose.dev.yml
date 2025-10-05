@@ -4,20 +4,10 @@ services:
       context: ./client/geneweb_client
       dockerfile: Dockerfile.dev
     ports:
-      - "8081:5173"
+      - "5173:5173"
     environment:
       - NODE_ENV=development
     volumes:
       - ./client/geneweb_client/:/app
       - /app/node_modules
     command: ["npm", "run", "dev"]
-
-  e2e-tests:
-    image: cypress/included:latest
-    volumes:
-      - ./client/geneweb_client/:/e2e
-    working_dir: /e2e
-    depends_on:
-      client-dev:
-        condition: service_healthy
-    command: ["npx", "cypress", "run"]
