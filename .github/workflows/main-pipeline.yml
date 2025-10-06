@@ -39,8 +39,8 @@ jobs:
       - name: Build the development environment
         run: |
           make up-dev
-          docker save server-dev -o server-dev.tar || true
-          docker save client-dev -o client-dev.tar || true
+          docker save awkward-legacy-server-dev -o awkward-legacy-server-dev.tar || true
+          docker save awkward-legacy-client-dev -o awkward-legacy-client-dev.tar || true
 
       - name: Upload built images
         uses: actions/upload-artifact@v4
