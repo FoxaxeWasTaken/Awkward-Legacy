@@ -74,7 +74,7 @@ We’ll **keep these `.feature` files** as documentation and testing artifacts:
 We’ll prioritize:
 - **Unit tests** → For backend logic (Python)
 - **Functional tests** → For routes, API endpoints, and database logic
-- **E2E tests** → For user flows once the new frontend exists (with Playwright or Cypress)
+- **E2E tests** → For user flows once the new frontend exists (with Cypress)
 
 Example (Functional Test in Python):
 ```python
@@ -84,13 +84,13 @@ def test_search_person(client):
     assert "anthoine geruzet" in response.text.lower()
 ```
 
-Example (E2E Test in Playwright):
+Example (E2E Test using Cypress):
 ```javascript
-test('search for person', async ({ page }) => {
-  await page.goto('/search');
-  await page.fill('input[name="query"]', 'anthoine geruzet');
-  await page.click('button[type="submit"]');
-  await expect(page.locator('.results')).toContainText('Anthoine Geruzet');
+it('search for person', () => {
+  cy.visit('/search');
+  cy.get('input[name="query"]').type('anthoine geruzet');
+  cy.get('button[type="submit"]').click();
+  cy.get('.results').should('contain.text', 'Anthoine Geruzet');
 });
 ```
 
@@ -115,7 +115,7 @@ This way, we still honor the *spirit* of Golden Master testing — preserving be
 | **Backend** | Unit tests | `pytest`, asserts on logic & DB |
 | **Integration** | Functional tests | Test Flask/FastAPI routes |
 | **Frontend** | Component tests | Vue Test Utils |
-| **E2E** | User-flow tests | Playwright / Cypress |
+| **E2E** | User-flow tests | Cypress |
 | **Documentation** | BDD features | `.feature` files kept as reference |
 
 ---
