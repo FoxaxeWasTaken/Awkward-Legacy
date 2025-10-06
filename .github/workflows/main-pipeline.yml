@@ -41,6 +41,10 @@ jobs:
           make up-dev
           docker save awkward-legacy-server-dev -o awkward-legacy-server-dev.tar || true
           docker save awkward-legacy-client-dev -o awkward-legacy-client-dev.tar || true
+      
+      - name: Down the development environment
+        run: |
+          make down-dev
 
       - name: Upload built images
         uses: actions/upload-artifact@v4
@@ -183,7 +187,7 @@ jobs:
   mirror:
     name: Mirror the repository files to another repository
     runs-on: ubuntu-latest
-    needs: [run-server-lint, run-client-lint]
+    needs: [run-server-tests, run-client-tests, run-client-e2e-tests]
     steps:
       - name: Download code artifact
         uses: actions/download-artifact@v4
