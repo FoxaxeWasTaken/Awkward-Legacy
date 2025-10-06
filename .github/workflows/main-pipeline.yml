@@ -134,7 +134,7 @@ jobs:
 
       - name: Run the development client e2e tests
         run: |
-          make test-client-e2e-parallel shard=${{ matrix.shard }} total-shards=${{ matrix.total-shards }}
+          make test-client-e2e-parallel shard=${{ matrix.shard }} total-shards=${{ matrix.total-shards }} ci-build-id=${{ github.run_id }}-${{ matrix.shard }}
 
   run-server-lint:
     name: Run the development server lint
