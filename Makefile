@@ -57,6 +57,10 @@ test-client-e2e:
 	@echo "Running client e2e tests..."
 	$(COMPOSE_DEV) run --rm client-dev npm run test:e2e
 
+test-client-e2e-parallel:
+	@echo "Running client e2e tests in parallel (shard $(shard)/$(total-shards))..."
+	$(COMPOSE_DEV) run --rm -e CYPRESS_RECORD_KEY=$(CYPRESS_RECORD_KEY) client-dev npm run test:e2e:parallel -- --shard $(shard)/$(total-shards)
+
 test-client-watch:
 	@echo "Running client tests in watch mode..."
 	$(COMPOSE_DEV) run --rm client-dev npm run test:unit
@@ -96,6 +100,6 @@ clean:
 
 # Declare phony targets
 .PHONY: all up-dev down-dev logs-dev up-prod down-prod logs-prod \
-        test-server test-server-coverage test-client test-client-e2e test-client-watch \
+        test-server test-server-coverage test-client test-client-e2e test-client-e2e-parallel test-client-watch \
         test lint-server lint-client lint format-server format-client format \
         clean

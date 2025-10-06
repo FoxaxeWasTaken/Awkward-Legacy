@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:e2e": "cypress run",
+    "test:e2e:parallel": "cypress run --parallel --record --key $(CYPRESS_RECORD_KEY)",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
