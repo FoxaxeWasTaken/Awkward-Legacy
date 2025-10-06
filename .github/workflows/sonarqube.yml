@@ -23,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r back/requirements-dev.txt
+          pip install -r server/requirements-dev.txt
           pip install pytest pytest-cov
 
       - name: Run tests with coverage
-        working-directory: back
+        working-directory: server
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)/src
           pytest --cov=src --cov-report=xml:coverage.xml
@@ -38,6 +38,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.sources=back/src
-            -Dsonar.tests=back/tests
-            -Dsonar.python.coverage.reportPaths=back/coverage.xml
+            -Dsonar.sources=server/src
+            -Dsonar.tests=server/tests
+            -Dsonar.python.coverage.reportPaths=server/coverage.xml
