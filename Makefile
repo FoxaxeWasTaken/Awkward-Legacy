@@ -1,6 +1,6 @@
 # Docker Compose configuration
-COMPOSE_DEV = docker-compose -f docker-compose.dev.yml
-COMPOSE_PROD = docker-compose -f docker-compose.prod.yml
+COMPOSE_DEV = docker compose -f docker-compose.dev.yml
+COMPOSE_PROD = docker compose -f docker-compose.prod.yml
 
 # Default target - start development environment
 all: up-dev
