@@ -1,9 +1,6 @@
 name: Main pipeline used for testing, linting and mirroring the repository
 
 on:
-  push:
-    branches-ignore:
-      - 'ga-ignore-**'
   pull_request:
     branches-ignore:
       - 'ga-ignore-**'
