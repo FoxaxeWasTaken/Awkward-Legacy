@@ -133,6 +133,8 @@ jobs:
           docker load -i awkward-legacy-client-dev.tar || true
 
       - name: Run the development client e2e tests
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         run: |
           make test-client-e2e-parallel shard=${{ matrix.shard }} total-shards=${{ matrix.total-shards }} ci-build-id=${{ github.run_id }}-${{ matrix.shard }}
 
