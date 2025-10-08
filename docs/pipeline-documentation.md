@@ -16,17 +16,7 @@ The pipeline follows a sophisticated workflow with multiple jobs that run in par
 
 ### Job Dependencies Flow
 
-```
-checkout-and-artifact
-    ├── build-prod
-    └── build-dev
-            ├── run-server-lint
-            │   └── run-server-tests
-            └── run-client-lint
-                ├── run-client-tests
-                └── run-client-e2e-tests
-                        └── mirror
-```
+<img width="1059" height="303" alt="image" src="./assets/pipeline-flow.png" />
 
 ## Detailed Job Breakdown
 
