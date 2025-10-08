@@ -1,14 +1,13 @@
-"""Family model for genealogy data."""
-
 from datetime import date
-from typing import Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .person import Person
     from .event import Event
+    from .child import Child
 
 
 class FamilyBase(SQLModel):
@@ -27,6 +26,11 @@ class Family(FamilyBase, table=True):
     __tablename__ = "families"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    husband: Optional["Person"] = Relationship(back_populates="families_as_husband")
+    wife: Optional["Person"] = Relationship(back_populates="families_as_wife")
+    events: List["Event"] = Relationship(back_populates="family")
+    children: List["Child"] = Relationship(back_populates="family")
 
 
 class FamilyCreate(FamilyBase):

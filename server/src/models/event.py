@@ -1,10 +1,8 @@
-"""Event model for genealogy data."""
-
 from datetime import date
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .person import Person
@@ -16,7 +14,7 @@ class EventBase(SQLModel):
 
     person_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
     family_id: Optional[UUID] = Field(default=None, foreign_key="families.id")
-    type: str = Field(max_length=50)  # e.g., "birth", "baptism", "death", "marriage"
+    type: str = Field(max_length=50)
     date: Optional[date] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)
@@ -28,6 +26,9 @@ class Event(EventBase, table=True):
     __tablename__ = "events"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    person: Optional["Person"] = Relationship(back_populates="events")
+    family: Optional["Family"] = Relationship(back_populates="events")
 
 
 class EventCreate(EventBase):

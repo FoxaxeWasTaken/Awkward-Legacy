@@ -1,15 +1,14 @@
-"""Person model for genealogy data."""
-
 from datetime import date
 from enum import Enum
-from typing import Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .family import Family
     from .event import Event
+    from .child import Child
 
 
 class Sex(str, Enum):
@@ -40,6 +39,11 @@ class Person(PersonBase, table=True):
     __tablename__ = "persons"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    events: List["Event"] = Relationship(back_populates="person")
+    families_as_husband: List["Family"] = Relationship(back_populates="husband")
+    families_as_wife: List["Family"] = Relationship(back_populates="wife")
+    child_relationships: List["Child"] = Relationship(back_populates="child")
 
 
 class PersonCreate(PersonBase):

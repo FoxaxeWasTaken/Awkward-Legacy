@@ -4,16 +4,12 @@ from fastapi import FastAPI, Depends
 from sqlmodel import Session
 
 from .db import create_db_and_tables, get_session
-from .api.persons import router as persons_router
 
 app = FastAPI(
     title="Genealogy API",
-    description="A modern genealogy application API with PostgreSQL backend",
+    description="A modern genealogy application API with PostgreSQL",
     version="1.0.0",
 )
-
-# Include API routers
-app.include_router(persons_router)
 
 
 @app.on_event("startup")
@@ -31,17 +27,6 @@ def read_root():
         "docs": "/docs",
         "health": "/health",
     }
-
-
-@app.get("/health")
-def health_check(db: Session = Depends(get_session)):
-    """Health check endpoint that verifies database connectivity."""
-    try:
-        # Simple query to test database connection
-        db.exec("SELECT 1")
-        return {"status": "healthy", "database": "connected"}
-    except Exception as e:
-        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
 
 @app.get("/items/{item_id}")

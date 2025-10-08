@@ -6,16 +6,12 @@ from typing import Generator
 from dotenv import load_dotenv
 from sqlmodel import SQLModel, create_engine, Session
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Get database URL from environment variable
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://genealogy_user:genealogy_password@localhost:5432/genealogy_db",
 )
 
-# Create engine
 engine = create_engine(DATABASE_URL, echo=False)
 
 

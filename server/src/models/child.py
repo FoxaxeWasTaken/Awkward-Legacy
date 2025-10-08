@@ -1,9 +1,7 @@
-"""Child association model for many-to-many Family ↔ Person relationship."""
-
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .family import Family
@@ -22,9 +20,11 @@ class Child(ChildBase, table=True):
 
     __tablename__ = "children"
 
-    # Composite primary key
     family_id: UUID = Field(primary_key=True, foreign_key="families.id")
     child_id: UUID = Field(primary_key=True, foreign_key="persons.id")
+
+    family: "Family" = Relationship(back_populates="children")
+    child: "Person" = Relationship(back_populates="child_relationships")
 
 
 class ChildCreate(ChildBase):
