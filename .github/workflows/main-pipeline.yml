@@ -22,6 +22,30 @@ jobs:
           name: source-code
           path: .
 
+  build-prod:
+    name: Build the production environment
+    runs-on: ubuntu-latest
+    needs: checkout-and-artifact
+    steps:
+      - name: Download code artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: source-code
+          path: .
+
+      - name: Build production environment
+        run: |
+          make up-prod
+          timeout 60s bash -c 'until docker compose -f docker-compose.prod.yml ps | grep -q "healthy"; do sleep 2; done'
+
+      - name: Test production endpoints
+        run: |
+          curl -f http://localhost:8000/ || exit 1
+          curl -f http://localhost:80/ || exit 1
+
+      - name: Cleanup production environment
+        run: make down-prod
+
   build-dev:
     name: Build the development environment
     runs-on: ubuntu-latest
