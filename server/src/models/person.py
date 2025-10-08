@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as date_type
 from enum import Enum
 from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -25,8 +25,8 @@ class PersonBase(SQLModel):
     first_name: str = Field(max_length=100)
     last_name: str = Field(max_length=100)
     sex: Sex
-    birth_date: Optional[date] = Field(default=None)
-    death_date: Optional[date] = Field(default=None)
+    birth_date: Optional[date_type] = Field(default=None)
+    death_date: Optional[date_type] = Field(default=None)
     birth_place: Optional[str] = Field(default=None, max_length=200)
     death_place: Optional[str] = Field(default=None, max_length=200)
     occupation: Optional[str] = Field(default=None, max_length=200)
@@ -61,12 +61,12 @@ class PersonRead(PersonBase):
 class PersonUpdate(SQLModel):
     """Person model for update requests."""
 
-    first_name: Optional[str] = Field(default=None, max_length=100)
-    last_name: Optional[str] = Field(default=None, max_length=100)
+    first_name: Optional[str] = Field(default=None)
+    last_name: Optional[str] = Field(default=None)
     sex: Optional[Sex] = Field(default=None)
-    birth_date: Optional[date] = Field(default=None)
-    death_date: Optional[date] = Field(default=None)
-    birth_place: Optional[str] = Field(default=None, max_length=200)
-    death_place: Optional[str] = Field(default=None, max_length=200)
-    occupation: Optional[str] = Field(default=None, max_length=200)
+    birth_date: Optional[date_type] = Field(default=None)
+    death_date: Optional[date_type] = Field(default=None)
+    birth_place: Optional[str] = Field(default=None)
+    death_place: Optional[str] = Field(default=None)
+    occupation: Optional[str] = Field(default=None)
     notes: Optional[str] = Field(default=None)

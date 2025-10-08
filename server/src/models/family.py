@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as date_type
 from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -15,7 +15,7 @@ class FamilyBase(SQLModel):
 
     husband_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
     wife_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    marriage_date: Optional[date] = Field(default=None)
+    marriage_date: Optional[date_type] = Field(default=None)
     marriage_place: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)
 
@@ -48,8 +48,8 @@ class FamilyRead(FamilyBase):
 class FamilyUpdate(SQLModel):
     """Family model for update requests."""
 
-    husband_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    wife_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    marriage_date: Optional[date] = Field(default=None)
-    marriage_place: Optional[str] = Field(default=None, max_length=200)
+    husband_id: Optional[UUID] = Field(default=None)
+    wife_id: Optional[UUID] = Field(default=None)
+    marriage_date: Optional[date_type] = Field(default=None)
+    marriage_place: Optional[str] = Field(default=None)
     notes: Optional[str] = Field(default=None)

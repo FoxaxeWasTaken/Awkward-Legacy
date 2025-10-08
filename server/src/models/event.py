@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as date_type
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -15,7 +15,7 @@ class EventBase(SQLModel):
     person_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
     family_id: Optional[UUID] = Field(default=None, foreign_key="families.id")
     type: str = Field(max_length=50)
-    date: Optional[date] = Field(default=None)
+    date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)
 
@@ -46,9 +46,9 @@ class EventRead(EventBase):
 class EventUpdate(SQLModel):
     """Event model for update requests."""
 
-    person_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    family_id: Optional[UUID] = Field(default=None, foreign_key="families.id")
-    type: Optional[str] = Field(default=None, max_length=50)
-    date: Optional[date] = Field(default=None)
-    place: Optional[str] = Field(default=None, max_length=200)
+    person_id: Optional[UUID] = Field(default=None)
+    family_id: Optional[UUID] = Field(default=None)
+    type: Optional[str] = Field(default=None)
+    date: Optional[date_type] = Field(default=None)
+    place: Optional[str] = Field(default=None)
     description: Optional[str] = Field(default=None)
