@@ -309,28 +309,28 @@ class TestPersonCRUD:
 
     def test_person_field_lengths(self, test_db):
         """Test person field length constraints."""
+        from pydantic_core import ValidationError
+        
         # Test with very long first name
         long_name = "A" * 101  # Exceeds max_length=100
-        person_data = PersonCreate(
-            first_name=long_name,
-            last_name="Test",
-            sex=Sex.MALE
-        )
         
-        # This should raise a validation error
-        with pytest.raises(Exception):  # SQLModel validation error
-            person_crud.create(test_db, person_data)
+        # This should raise a validation error during model instantiation
+        with pytest.raises(ValidationError):
+            person_data = PersonCreate(
+                first_name=long_name,
+                last_name="Test",
+                sex=Sex.MALE
+            )
 
     def test_person_date_validation(self, test_db):
         """Test person date field validation."""
-        # Test with invalid date format
-        person_data = PersonCreate(
-            first_name="Test",
-            last_name="Person",
-            sex=Sex.MALE,
-            birth_date="invalid-date"  # This should raise a validation error
-        )
+        from pydantic_core import ValidationError
         
-        # This should raise a validation error
-        with pytest.raises(Exception):  # Date parsing error
-            person_crud.create(test_db, person_data)
+        # Test with invalid date format - this should raise a validation error during model instantiation
+        with pytest.raises(ValidationError):
+            person_data = PersonCreate(
+                first_name="Test",
+                last_name="Person",
+                sex=Sex.MALE,
+                birth_date="invalid-date"  # This should raise a validation error
+            )

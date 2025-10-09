@@ -35,8 +35,14 @@ class Family(FamilyBase, table=True):
         back_populates="families_as_wife",
         sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"}
     )
-    events: List["Event"] = Relationship(back_populates="family")
-    children: List["Child"] = Relationship(back_populates="family")
+    events: List["Event"] = Relationship(
+        back_populates="family",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    children: List["Child"] = Relationship(
+        back_populates="family",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 
 class FamilyCreate(FamilyBase):

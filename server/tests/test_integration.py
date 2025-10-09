@@ -355,7 +355,7 @@ class TestGenealogyIntegration:
         assert len(john_persons) == 2  # John and Johnny
         
         smith_persons = person_crud.search_by_name(test_db, "Smith")
-        assert len(smith_persons) == 2  # John Smith and Jane Smith
+        assert len(smith_persons) == 3  # John Smith, Johnny Smithson, and Jane Smith (contains "Smith")
         
         # Test event type search
         birth_events = event_crud.search_by_type(test_db, "Birth")

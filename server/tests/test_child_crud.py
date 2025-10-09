@@ -130,7 +130,14 @@ class TestChildCRUD:
 
     def test_get_by_child_multiple_families(self, test_db, sample_person, sample_family, sample_person_2):
         """Test getting multiple families where a person is a child."""
-        # Arrange - create another family
+        # Arrange - create first child relationship
+        child1_data = ChildCreate(
+            family_id=sample_family.id,
+            child_id=sample_person.id
+        )
+        child_crud.create(test_db, child1_data)
+        
+        # Create another family
         family2_data = {
             "husband_id": sample_person_2.id,
             "wife_id": sample_person.id,
@@ -294,7 +301,14 @@ class TestChildCRUD:
 
     def test_delete_by_child(self, test_db, sample_person, sample_family, sample_person_2):
         """Test deleting all family relationships for a child."""
-        # Arrange - create another family where the person is a child
+        # Arrange - create first child relationship
+        child1_data = ChildCreate(
+            family_id=sample_family.id,
+            child_id=sample_person.id
+        )
+        child_crud.create(test_db, child1_data)
+        
+        # Create another family where the person is a child
         from src.crud.family import family_crud
         from src.models.family import FamilyCreate
         family2_data = FamilyCreate(
@@ -352,6 +366,8 @@ class TestChildCRUD:
 
     def test_child_foreign_key_constraints(self, test_db):
         """Test child foreign key constraints."""
+        from sqlalchemy.exc import IntegrityError
+        
         # Test with non-existent family and child IDs
         non_existent_family_id = uuid4()
         non_existent_child_id = uuid4()
@@ -362,7 +378,7 @@ class TestChildCRUD:
         )
         
         # This should raise a foreign key constraint error
-        with pytest.raises(Exception):  # Foreign key constraint error
+        with pytest.raises(IntegrityError):  # Foreign key constraint error
             child_crud.create(test_db, child_data)
 
     def test_child_self_relationship(self, test_db, sample_person):

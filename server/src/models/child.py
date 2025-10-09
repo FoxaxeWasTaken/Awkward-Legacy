@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlmodel import Field, Relationship, SQLModel, Column
 
 if TYPE_CHECKING:
     from .family import Family
@@ -20,8 +22,12 @@ class Child(ChildBase, table=True):
 
     __tablename__ = "children"
 
-    family_id: UUID = Field(primary_key=True, foreign_key="families.id")
-    child_id: UUID = Field(primary_key=True, foreign_key="persons.id")
+    family_id: UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("families.id", ondelete="CASCADE"), primary_key=True)
+    )
+    child_id: UUID = Field(
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("persons.id", ondelete="CASCADE"), primary_key=True)
+    )
 
     family: "Family" = Relationship(back_populates="children")
     child: "Person" = Relationship(back_populates="child_relationships")

@@ -8,7 +8,12 @@ client = TestClient(app)
 def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"Hello": "World"}
+    assert response.json() == {
+        "Hello": "World",
+        "message": "Genealogy API is running!",
+        "docs": "/docs",
+        "health": "/health",
+    }
 
 
 def test_read_item_no_query():

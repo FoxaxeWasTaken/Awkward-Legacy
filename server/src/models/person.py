@@ -40,7 +40,10 @@ class Person(PersonBase, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    events: List["Event"] = Relationship(back_populates="person")
+    events: List["Event"] = Relationship(
+        back_populates="person",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
     families_as_husband: List["Family"] = Relationship(
         back_populates="husband",
         sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"}
@@ -49,7 +52,10 @@ class Person(PersonBase, table=True):
         back_populates="wife",
         sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"}
     )
-    child_relationships: List["Child"] = Relationship(back_populates="child")
+    child_relationships: List["Child"] = Relationship(
+        back_populates="child",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 
 class PersonCreate(PersonBase):

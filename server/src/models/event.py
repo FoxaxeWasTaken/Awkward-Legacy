@@ -2,7 +2,9 @@ from datetime import date as date_type
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlmodel import Field, Relationship, SQLModel, Column
 
 if TYPE_CHECKING:
     from .person import Person
@@ -12,8 +14,14 @@ if TYPE_CHECKING:
 class EventBase(SQLModel):
     """Base Event model with common fields."""
 
-    person_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    family_id: Optional[UUID] = Field(default=None, foreign_key="families.id")
+    person_id: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("persons.id", ondelete="CASCADE"), nullable=True)
+    )
+    family_id: Optional[UUID] = Field(
+        default=None,
+        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("families.id", ondelete="CASCADE"), nullable=True)
+    )
     type: str = Field(max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)

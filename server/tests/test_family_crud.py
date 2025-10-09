@@ -381,33 +381,35 @@ class TestFamilyCRUD:
 
     def test_family_date_validation(self, test_db, sample_person, sample_person_2):
         """Test family date field validation."""
-        # Test with invalid date format
-        family_data = FamilyCreate(
-            husband_id=sample_person.id,
-            wife_id=sample_person_2.id,
-            marriage_date="invalid-date"  # This should raise a validation error
-        )
+        from pydantic_core import ValidationError
         
-        # This should raise a validation error
-        with pytest.raises(Exception):  # Date parsing error
-            family_crud.create(test_db, family_data)
+        # Test with invalid date format - this should raise a validation error during model instantiation
+        with pytest.raises(ValidationError):
+            family_data = FamilyCreate(
+                husband_id=sample_person.id,
+                wife_id=sample_person_2.id,
+                marriage_date="invalid-date"  # This should raise a validation error
+            )
 
     def test_family_field_lengths(self, test_db, sample_person, sample_person_2):
         """Test family field length constraints."""
+        from pydantic_core import ValidationError
+        
         # Test with very long marriage place
         long_place = "A" * 201  # Exceeds max_length=200
-        family_data = FamilyCreate(
-            husband_id=sample_person.id,
-            wife_id=sample_person_2.id,
-            marriage_place=long_place
-        )
         
-        # This should raise a validation error
-        with pytest.raises(Exception):  # SQLModel validation error
-            family_crud.create(test_db, family_data)
+        # This should raise a validation error during model instantiation
+        with pytest.raises(ValidationError):
+            family_data = FamilyCreate(
+                husband_id=sample_person.id,
+                wife_id=sample_person_2.id,
+                marriage_place=long_place
+            )
 
     def test_family_foreign_key_constraints(self, test_db):
         """Test family foreign key constraints."""
+        from sqlalchemy.exc import IntegrityError
+        
         # Test with non-existent person IDs
         non_existent_id = uuid4()
         family_data = FamilyCreate(
@@ -416,7 +418,7 @@ class TestFamilyCRUD:
         )
         
         # This should raise a foreign key constraint error
-        with pytest.raises(Exception):  # Foreign key constraint error
+        with pytest.raises(IntegrityError):  # Foreign key constraint error
             family_crud.create(test_db, family_data)
 
     def test_family_self_marriage(self, test_db, sample_person):
