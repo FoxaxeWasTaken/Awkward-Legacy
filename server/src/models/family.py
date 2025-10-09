@@ -27,8 +27,14 @@ class Family(FamilyBase, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    husband: Optional["Person"] = Relationship(back_populates="families_as_husband")
-    wife: Optional["Person"] = Relationship(back_populates="families_as_wife")
+    husband: Optional["Person"] = Relationship(
+        back_populates="families_as_husband",
+        sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"}
+    )
+    wife: Optional["Person"] = Relationship(
+        back_populates="families_as_wife",
+        sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"}
+    )
     events: List["Event"] = Relationship(back_populates="family")
     children: List["Child"] = Relationship(back_populates="family")
 
@@ -48,8 +54,8 @@ class FamilyRead(FamilyBase):
 class FamilyUpdate(SQLModel):
     """Family model for update requests."""
 
-    husband_id: Optional[UUID] = Field(default=None)
-    wife_id: Optional[UUID] = Field(default=None)
+    husband_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
+    wife_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
     marriage_date: Optional[date_type] = Field(default=None)
-    marriage_place: Optional[str] = Field(default=None)
+    marriage_place: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)

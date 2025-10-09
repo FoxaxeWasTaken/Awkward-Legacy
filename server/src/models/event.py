@@ -46,9 +46,9 @@ class EventRead(EventBase):
 class EventUpdate(SQLModel):
     """Event model for update requests."""
 
-    person_id: Optional[UUID] = Field(default=None)
-    family_id: Optional[UUID] = Field(default=None)
-    type: Optional[str] = Field(default=None)
+    person_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
+    family_id: Optional[UUID] = Field(default=None, foreign_key="families.id")
+    type: Optional[str] = Field(default=None, max_length=50)
     date: Optional[date_type] = Field(default=None)
-    place: Optional[str] = Field(default=None)
+    place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)

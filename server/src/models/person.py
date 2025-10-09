@@ -41,8 +41,14 @@ class Person(PersonBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     events: List["Event"] = Relationship(back_populates="person")
-    families_as_husband: List["Family"] = Relationship(back_populates="husband")
-    families_as_wife: List["Family"] = Relationship(back_populates="wife")
+    families_as_husband: List["Family"] = Relationship(
+        back_populates="husband",
+        sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"}
+    )
+    families_as_wife: List["Family"] = Relationship(
+        back_populates="wife",
+        sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"}
+    )
     child_relationships: List["Child"] = Relationship(back_populates="child")
 
 
@@ -61,12 +67,13 @@ class PersonRead(PersonBase):
 class PersonUpdate(SQLModel):
     """Person model for update requests."""
 
-    first_name: Optional[str] = Field(default=None)
-    last_name: Optional[str] = Field(default=None)
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
     sex: Optional[Sex] = Field(default=None)
     birth_date: Optional[date_type] = Field(default=None)
     death_date: Optional[date_type] = Field(default=None)
-    birth_place: Optional[str] = Field(default=None)
-    death_place: Optional[str] = Field(default=None)
-    occupation: Optional[str] = Field(default=None)
+    birth_place: Optional[str] = Field(default=None, max_length=200)
+    death_place: Optional[str] = Field(default=None, max_length=200)
+    occupation: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)
+
