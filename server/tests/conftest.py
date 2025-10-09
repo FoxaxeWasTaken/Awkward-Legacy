@@ -14,19 +14,10 @@ from src.models.event import Event, EventCreate
 
 
 TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL", os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    "TEST_DATABASE_URL", os.getenv("DATABASE_URL", "postgresql:///./test.db")
 )
 
 test_engine = create_engine(TEST_DATABASE_URL, echo=False)
-
-if TEST_DATABASE_URL.startswith("sqlite"):
-    from sqlalchemy import event
-
-    @event.listens_for(test_engine, "connect")
-    def enable_sqlite_foreign_keys(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
 
 
 @pytest.fixture(scope="function")

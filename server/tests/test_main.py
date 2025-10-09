@@ -15,6 +15,7 @@ def test_read_root():
         "health": "/health",
     }
 
+
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200

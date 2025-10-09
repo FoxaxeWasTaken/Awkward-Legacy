@@ -3,6 +3,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from sqlmodel import Session
+from sqlalchemy import text
 
 from .db import create_db_and_tables, get_session
 
@@ -31,6 +32,7 @@ def read_root():
         "docs": "/docs",
         "health": "/health",
     }
+
 
 @app.get("/health")
 def health_check(session: Session = Depends(get_session)):
