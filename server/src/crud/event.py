@@ -45,11 +45,11 @@ class EventCRUD:
 
     def search_by_type(self, db: Session, event_type: str) -> List[Event]:
         """Search events by type (case-sensitive partial match)."""
-        # The col() function from SQLModel does return an object with a contains() method, pylint just can't detect it through static analysis.
+        # The col() function from SQLModel does return an object with a contains() method,
+        # pylint just can't detect it through static analysis.
+        # pylint: disable=no-member
         statement = select(Event).where(
-            col(Event.type).contains(
-                event_type, autoescape=True
-            )  # pylint: disable=no-member
+            col(Event.type).contains(event_type, autoescape=True)
         )
         return list(db.exec(statement))
 
