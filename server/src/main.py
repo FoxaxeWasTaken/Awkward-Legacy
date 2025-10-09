@@ -18,6 +18,7 @@ app = FastAPI(
     title="Genealogy API",
     description="A modern genealogy application API with PostgreSQL",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 
@@ -30,3 +31,12 @@ def read_root():
         "docs": "/docs",
         "health": "/health",
     }
+
+@app.get("/health")
+def health_check(session: Session = Depends(get_session)):
+    """Health check endpoint to verify database connectivity."""
+    try:
+        session.exec(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
