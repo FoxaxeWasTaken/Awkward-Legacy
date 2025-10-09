@@ -29,7 +29,7 @@ services:
       - postgres-dev
 
   postgres-dev:
-    image: postgres:15-alpine
+    image: postgres:16.10-alpine
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-genealogy_db}
       - POSTGRES_USER=${POSTGRES_USER:-genealogy_user}

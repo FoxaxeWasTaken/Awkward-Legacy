@@ -20,7 +20,7 @@ services:
       - postgres-prod
 
   postgres-prod:
-    image: postgres:15-alpine
+    image: postgres:16.10-alpine
     restart: unless-stopped
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-genealogy_db}
