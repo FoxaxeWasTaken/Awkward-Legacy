@@ -37,11 +37,9 @@ class PersonCRUD:
 
     def search_by_name(self, db: Session, name: str) -> List[Person]:
         """Search persons by name (first or last name contains the search term, case-sensitive)."""
-        # Use contains() which respects case in PostgreSQL
-        # For case-sensitive search, we check if the name substring exists in first_name or last_name
         statement = select(Person).where(
-            (col(Person.first_name).contains(name, autoescape=True)) | 
-            (col(Person.last_name).contains(name, autoescape=True))
+            (col(Person.first_name).contains(name, autoescape=True))
+            | (col(Person.last_name).contains(name, autoescape=True))
         )
         return list(db.exec(statement))
 

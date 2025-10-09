@@ -42,19 +42,18 @@ class Person(PersonBase, table=True):
 
     events: List["Event"] = Relationship(
         back_populates="person",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     families_as_husband: List["Family"] = Relationship(
         back_populates="husband",
-        sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"}
+        sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"},
     )
     families_as_wife: List["Family"] = Relationship(
         back_populates="wife",
-        sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"}
+        sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"},
     )
     child_relationships: List["Child"] = Relationship(
-        back_populates="child",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        back_populates="child", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
 
 
@@ -82,4 +81,3 @@ class PersonUpdate(SQLModel):
     death_place: Optional[str] = Field(default=None, max_length=200)
     occupation: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)
-

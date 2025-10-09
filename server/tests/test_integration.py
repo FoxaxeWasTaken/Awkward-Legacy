@@ -13,262 +13,217 @@ from src.models.child import ChildCreate
 from src.models.event import EventCreate
 
 
-@pytest.mark.integration
-@pytest.mark.slow
 class TestGenealogyIntegration:
     """Integration tests for genealogy workflows."""
 
     def test_complete_family_tree_workflow(self, test_db):
         """Test creating a complete family tree with multiple generations."""
-        # Create grandparents
         grandfather_data = PersonCreate(
             first_name="John",
             last_name="Smith",
             sex=Sex.MALE,
             birth_date="1950-01-01",
-            birth_place="New York"
+            birth_place="New York",
         )
         grandfather = person_crud.create(test_db, grandfather_data)
-        
+
         grandmother_data = PersonCreate(
             first_name="Mary",
             last_name="Johnson",
             sex=Sex.FEMALE,
             birth_date="1952-03-15",
-            birth_place="Boston"
+            birth_place="Boston",
         )
         grandmother = person_crud.create(test_db, grandmother_data)
-        
-        # Create parents
+
         father_data = PersonCreate(
             first_name="Robert",
             last_name="Smith",
             sex=Sex.MALE,
             birth_date="1980-05-20",
-            birth_place="Chicago"
+            birth_place="Chicago",
         )
         father = person_crud.create(test_db, father_data)
-        
+
         mother_data = PersonCreate(
             first_name="Sarah",
             last_name="Brown",
             sex=Sex.FEMALE,
             birth_date="1982-08-10",
-            birth_place="Los Angeles"
+            birth_place="Los Angeles",
         )
         mother = person_crud.create(test_db, mother_data)
-        
-        # Create children
+
         child1_data = PersonCreate(
             first_name="Tom",
             last_name="Smith",
             sex=Sex.MALE,
             birth_date="2010-12-25",
-            birth_place="Seattle"
+            birth_place="Seattle",
         )
         child1 = person_crud.create(test_db, child1_data)
-        
+
         child2_data = PersonCreate(
             first_name="Emma",
             last_name="Smith",
             sex=Sex.FEMALE,
             birth_date="2012-07-14",
-            birth_place="Seattle"
+            birth_place="Seattle",
         )
         child2 = person_crud.create(test_db, child2_data)
-        
-        # Create marriages
+
         grandparents_marriage = FamilyCreate(
             husband_id=grandfather.id,
             wife_id=grandmother.id,
             marriage_date="1975-06-15",
-            marriage_place="New York"
+            marriage_place="New York",
         )
         grandparents_family = family_crud.create(test_db, grandparents_marriage)
-        
+
         parents_marriage = FamilyCreate(
             husband_id=father.id,
             wife_id=mother.id,
             marriage_date="2005-09-10",
-            marriage_place="Las Vegas"
+            marriage_place="Las Vegas",
         )
         parents_family = family_crud.create(test_db, parents_marriage)
-        
-        # Create parent-child relationships
+
         father_as_child = ChildCreate(
-            family_id=grandparents_family.id,
-            child_id=father.id
+            family_id=grandparents_family.id, child_id=father.id
         )
         child_crud.create(test_db, father_as_child)
-        
+
         child1_relationship = ChildCreate(
-            family_id=parents_family.id,
-            child_id=child1.id
+            family_id=parents_family.id, child_id=child1.id
         )
         child_crud.create(test_db, child1_relationship)
-        
+
         child2_relationship = ChildCreate(
-            family_id=parents_family.id,
-            child_id=child2.id
+            family_id=parents_family.id, child_id=child2.id
         )
         child_crud.create(test_db, child2_relationship)
-        
-        # Create events
+
         grandfather_birth = EventCreate(
-            person_id=grandfather.id,
-            type="Birth",
-            date="1950-01-01",
-            place="New York"
+            person_id=grandfather.id, type="Birth", date="1950-01-01", place="New York"
         )
         event_crud.create(test_db, grandfather_birth)
-        
+
         parents_wedding = EventCreate(
             family_id=parents_family.id,
             type="Wedding",
             date="2005-09-10",
-            place="Las Vegas"
+            place="Las Vegas",
         )
         event_crud.create(test_db, parents_wedding)
-        
-        # Verify relationships
-        # Check grandparents' children
-        grandparents_children = child_crud.get_by_family(test_db, grandparents_family.id)
+
+        grandparents_children = child_crud.get_by_family(
+            test_db, grandparents_family.id
+        )
         assert len(grandparents_children) == 1
         assert grandparents_children[0].child_id == father.id
-        
-        # Check parents' children
+
         parents_children = child_crud.get_by_family(test_db, parents_family.id)
         assert len(parents_children) == 2
         child_ids = [c.child_id for c in parents_children]
         assert child1.id in child_ids
         assert child2.id in child_ids
-        
-        # Check father's families (as husband and as child)
+
         father_as_husband = family_crud.get_by_husband(test_db, father.id)
         assert len(father_as_husband) == 1
         assert father_as_husband[0].id == parents_family.id
-        
+
         father_as_child_families = child_crud.get_by_child(test_db, father.id)
         assert len(father_as_child_families) == 1
         assert father_as_child_families[0].family_id == grandparents_family.id
 
     def test_person_with_multiple_marriages(self, test_db):
         """Test a person with multiple marriages."""
-        # Create person
         person_data = PersonCreate(
-            first_name="John",
-            last_name="Doe",
-            sex=Sex.MALE,
-            birth_date="1970-01-01"
+            first_name="John", last_name="Doe", sex=Sex.MALE, birth_date="1970-01-01"
         )
         person = person_crud.create(test_db, person_data)
-        
-        # Create first wife
+
         wife1_data = PersonCreate(
             first_name="Jane",
             last_name="Smith",
             sex=Sex.FEMALE,
-            birth_date="1972-01-01"
+            birth_date="1972-01-01",
         )
         wife1 = person_crud.create(test_db, wife1_data)
-        
-        # Create second wife
+
         wife2_data = PersonCreate(
             first_name="Alice",
             last_name="Johnson",
             sex=Sex.FEMALE,
-            birth_date="1975-01-01"
+            birth_date="1975-01-01",
         )
         wife2 = person_crud.create(test_db, wife2_data)
-        
-        # Create first marriage
+
         marriage1 = FamilyCreate(
             husband_id=person.id,
             wife_id=wife1.id,
             marriage_date="1995-06-15",
-            marriage_place="New York"
+            marriage_place="New York",
         )
         family1 = family_crud.create(test_db, marriage1)
-        
-        # Create second marriage
+
         marriage2 = FamilyCreate(
             husband_id=person.id,
             wife_id=wife2.id,
             marriage_date="2010-08-20",
-            marriage_place="Las Vegas"
+            marriage_place="Las Vegas",
         )
         family2 = family_crud.create(test_db, marriage2)
-        
-        # Verify person's marriages
+
         person_marriages = family_crud.get_by_husband(test_db, person.id)
         assert len(person_marriages) == 2
-        
+
         marriage_ids = [m.id for m in person_marriages]
         assert family1.id in marriage_ids
         assert family2.id in marriage_ids
 
     def test_person_with_multiple_children_from_different_families(self, test_db):
         """Test a person who is a child in multiple families."""
-        # Create person
         person_data = PersonCreate(
             first_name="Child",
             last_name="Person",
             sex=Sex.MALE,
-            birth_date="1990-01-01"
+            birth_date="1990-01-01",
         )
         person = person_crud.create(test_db, person_data)
-        
-        # Create first family
-        family1_data = FamilyCreate(
-            marriage_date="1985-01-01"
-        )
+
+        family1_data = FamilyCreate(marriage_date="1985-01-01")
         family1 = family_crud.create(test_db, family1_data)
-        
-        # Create second family
-        family2_data = FamilyCreate(
-            marriage_date="1995-01-01"
-        )
+
+        family2_data = FamilyCreate(marriage_date="1995-01-01")
         family2 = family_crud.create(test_db, family2_data)
-        
-        # Create child relationships
-        child1_relationship = ChildCreate(
-            family_id=family1.id,
-            child_id=person.id
-        )
+
+        child1_relationship = ChildCreate(family_id=family1.id, child_id=person.id)
         child_crud.create(test_db, child1_relationship)
-        
-        child2_relationship = ChildCreate(
-            family_id=family2.id,
-            child_id=person.id
-        )
+
+        child2_relationship = ChildCreate(family_id=family2.id, child_id=person.id)
         child_crud.create(test_db, child2_relationship)
-        
-        # Verify person's families
+
         person_families = child_crud.get_by_child(test_db, person.id)
         assert len(person_families) == 2
-        
+
         family_ids = [f.family_id for f in person_families]
         assert family1.id in family_ids
         assert family2.id in family_ids
 
     def test_complex_event_timeline(self, test_db):
         """Test creating a complex timeline of events for a person."""
-        # Create person
         person_data = PersonCreate(
             first_name="Timeline",
             last_name="Person",
             sex=Sex.MALE,
-            birth_date="1980-01-01"
+            birth_date="1980-01-01",
         )
         person = person_crud.create(test_db, person_data)
-        
-        # Create family
-        family_data = FamilyCreate(
-            marriage_date="2005-06-15"
-        )
+
+        family_data = FamilyCreate(marriage_date="2005-06-15")
         family = family_crud.create(test_db, family_data)
-        
-        # Create timeline of events
+
         events_data = [
             ("Birth", "1980-01-01", "Hospital", "Born in hospital"),
             ("Baptism", "1980-02-15", "Church", "Baptized in church"),
@@ -277,300 +232,231 @@ class TestGenealogyIntegration:
             ("Birth of Child", "2007-03-20", "Hospital", "First child born"),
             ("Anniversary", "2015-06-15", "Restaurant", "10th anniversary"),
         ]
-        
+
         created_events = []
         for event_type, event_date, place, description in events_data:
             event_data = EventCreate(
                 person_id=person.id,
-                family_id=family.id if "Wedding" in event_type or "Anniversary" in event_type else None,
+                family_id=(
+                    family.id
+                    if "Wedding" in event_type or "Anniversary" in event_type
+                    else None
+                ),
                 type=event_type,
                 date=event_date,
                 place=place,
-                description=description
+                description=description,
             )
             event = event_crud.create(test_db, event_data)
             created_events.append(event)
-        
-        # Verify all events were created
+
         person_events = event_crud.get_by_person(test_db, person.id)
         assert len(person_events) == 6
-        
-        # Verify family events
+
         family_events = event_crud.get_by_family(test_db, family.id)
-        assert len(family_events) == 2  # Wedding and Anniversary
-        
-        # Verify events can be retrieved by type
+        assert len(family_events) == 2
+
         birth_events = event_crud.get_by_type(test_db, "Birth")
         assert len(birth_events) == 1
         assert birth_events[0].person_id == person.id
 
     def test_search_functionality_across_entities(self, test_db):
         """Test search functionality across different entities."""
-        # Create persons with similar names
-        person1_data = PersonCreate(
-            first_name="John",
-            last_name="Smith",
-            sex=Sex.MALE
-        )
+        person1_data = PersonCreate(first_name="John", last_name="Smith", sex=Sex.MALE)
         person1 = person_crud.create(test_db, person1_data)
-        
+
         person2_data = PersonCreate(
-            first_name="Johnny",
-            last_name="Smithson",
-            sex=Sex.MALE
+            first_name="Johnny", last_name="Smithson", sex=Sex.MALE
         )
         person2 = person_crud.create(test_db, person2_data)
-        
+
         person3_data = PersonCreate(
-            first_name="Jane",
-            last_name="Smith",
-            sex=Sex.FEMALE
+            first_name="Jane", last_name="Smith", sex=Sex.FEMALE
         )
         person3 = person_crud.create(test_db, person3_data)
-        
-        # Create events with similar types
+
         event1_data = EventCreate(
-            person_id=person1.id,
-            type="Birth Certificate",
-            date="1990-01-01"
+            person_id=person1.id, type="Birth Certificate", date="1990-01-01"
         )
         event_crud.create(test_db, event1_data)
-        
+
         event2_data = EventCreate(
-            person_id=person2.id,
-            type="Birth Registration",
-            date="1991-01-01"
+            person_id=person2.id, type="Birth Registration", date="1991-01-01"
         )
         event_crud.create(test_db, event2_data)
-        
+
         event3_data = EventCreate(
-            person_id=person3.id,
-            type="Death Certificate",
-            date="2020-01-01"
+            person_id=person3.id, type="Death Certificate", date="2020-01-01"
         )
         event_crud.create(test_db, event3_data)
-        
-        # Test person name search
+
         john_persons = person_crud.search_by_name(test_db, "John")
-        assert len(john_persons) == 2  # John and Johnny
-        
+        assert len(john_persons) == 2
+
         smith_persons = person_crud.search_by_name(test_db, "Smith")
-        assert len(smith_persons) == 3  # John Smith, Johnny Smithson, and Jane Smith (contains "Smith")
-        
-        # Test event type search
+        assert len(smith_persons) == 3
+
         birth_events = event_crud.search_by_type(test_db, "Birth")
-        assert len(birth_events) == 2  # Birth Certificate and Birth Registration
-        
+        assert len(birth_events) == 2
+
         certificate_events = event_crud.search_by_type(test_db, "Certificate")
-        assert len(certificate_events) == 2  # Birth Certificate and Death Certificate
+        assert len(certificate_events) == 2
 
     def test_data_consistency_after_updates(self, test_db):
         """Test data consistency after various update operations."""
-        # Create person and family
         person_data = PersonCreate(
             first_name="Original",
             last_name="Name",
             sex=Sex.MALE,
-            birth_date="1980-01-01"
+            birth_date="1980-01-01",
         )
         person = person_crud.create(test_db, person_data)
-        
-        family_data = FamilyCreate(
-            marriage_date="2005-01-01"
-        )
+
+        family_data = FamilyCreate(marriage_date="2005-01-01")
         family = family_crud.create(test_db, family_data)
-        
-        # Create child relationship
-        child_data = ChildCreate(
-            family_id=family.id,
-            child_id=person.id
-        )
+
+        child_data = ChildCreate(family_id=family.id, child_id=person.id)
         child_crud.create(test_db, child_data)
-        
-        # Create event
+
         event_data = EventCreate(
-            person_id=person.id,
-            family_id=family.id,
-            type="Birth",
-            date="1980-01-01"
+            person_id=person.id, family_id=family.id, type="Birth", date="1980-01-01"
         )
         event = event_crud.create(test_db, event_data)
-        
-        # Update person
+
         from src.models.person import PersonUpdate
+
         person_update = PersonUpdate(
-            first_name="Updated",
-            last_name="Name",
-            birth_date=date(1985, 1, 1)
+            first_name="Updated", last_name="Name", birth_date=date(1985, 1, 1)
         )
         updated_person = person_crud.update(test_db, person.id, person_update)
-        
-        # Update family
+
         from src.models.family import FamilyUpdate
+
         family_update = FamilyUpdate(
-            marriage_date=date(2010, 1, 1),
-            marriage_place="Updated Place"
+            marriage_date=date(2010, 1, 1), marriage_place="Updated Place"
         )
         updated_family = family_crud.update(test_db, family.id, family_update)
-        
-        # Update event
+
         from src.models.event import EventUpdate
-        event_update = EventUpdate(
-            type="Updated Event",
-            place="Updated Place"
-        )
+
+        event_update = EventUpdate(type="Updated Event", place="Updated Place")
         updated_event = event_crud.update(test_db, event.id, event_update)
-        
-        # Verify updates
+
         assert updated_person.first_name == "Updated"
         assert updated_person.birth_date == date(1985, 1, 1)
-        
+
         assert updated_family.marriage_date == date(2010, 1, 1)
         assert updated_family.marriage_place == "Updated Place"
-        
+
         assert updated_event.type == "Updated Event"
         assert updated_event.place == "Updated Place"
-        
-        # Verify relationships still exist
+
         person_families = child_crud.get_by_child(test_db, person.id)
         assert len(person_families) == 1
         assert person_families[0].family_id == family.id
-        
+
         person_events = event_crud.get_by_person(test_db, person.id)
         assert len(person_events) == 1
         assert person_events[0].id == event.id
 
     def test_cascade_deletion_behavior(self, test_db):
         """Test cascade deletion behavior across related entities."""
-        # Create person and family
         person_data = PersonCreate(
-            first_name="ToDelete",
-            last_name="Person",
-            sex=Sex.MALE
+            first_name="ToDelete", last_name="Person", sex=Sex.MALE
         )
         person = person_crud.create(test_db, person_data)
-        
-        family_data = FamilyCreate(
-            marriage_date="2005-01-01"
-        )
+
+        family_data = FamilyCreate(marriage_date="2005-01-01")
         family = family_crud.create(test_db, family_data)
-        
-        # Create child relationship
-        child_data = ChildCreate(
-            family_id=family.id,
-            child_id=person.id
-        )
+
+        child_data = ChildCreate(family_id=family.id, child_id=person.id)
         child_crud.create(test_db, child_data)
-        
-        # Create events
-        person_event_data = EventCreate(
-            person_id=person.id,
-            type="Person Event"
-        )
+
+        person_event_data = EventCreate(person_id=person.id, type="Person Event")
         person_event = event_crud.create(test_db, person_event_data)
-        
-        family_event_data = EventCreate(
-            family_id=family.id,
-            type="Family Event"
-        )
+
+        family_event_data = EventCreate(family_id=family.id, type="Family Event")
         family_event = event_crud.create(test_db, family_event_data)
-        
-        # Delete person
+
         person_crud.delete(test_db, person.id)
-        
-        # Verify person is deleted
+
         deleted_person = person_crud.get(test_db, person.id)
         assert deleted_person is None
-        
-        # Verify child relationship is deleted (if cascade delete is configured)
+
         child_relationships = child_crud.get_by_child(test_db, person.id)
         assert len(child_relationships) == 0
-        
-        # Verify person event is deleted (if cascade delete is configured)
+
         person_events = event_crud.get_by_person(test_db, person.id)
         assert len(person_events) == 0
-        
-        # Verify family and family event still exist
+
         remaining_family = family_crud.get(test_db, family.id)
         assert remaining_family is not None
-        
+
         family_events = event_crud.get_by_family(test_db, family.id)
         assert len(family_events) == 1
         assert family_events[0].id == family_event.id
-        
-        # Delete family
+
         family_crud.delete(test_db, family.id)
-        
-        # Verify family is deleted
+
         deleted_family = family_crud.get(test_db, family.id)
         assert deleted_family is None
-        
-        # Verify family event is deleted (if cascade delete is configured)
+
         family_events = event_crud.get_by_family(test_db, family.id)
         assert len(family_events) == 0
 
     def test_performance_with_large_dataset(self, test_db):
         """Test performance with a larger dataset."""
-        # Create many persons
         persons = []
         for i in range(100):
             person_data = PersonCreate(
                 first_name=f"Person{i}",
                 last_name="Test",
-                sex=Sex.MALE if i % 2 == 0 else Sex.FEMALE
+                sex=Sex.MALE if i % 2 == 0 else Sex.FEMALE,
             )
             person = person_crud.create(test_db, person_data)
             persons.append(person)
-        
-        # Create families
+
         families = []
         for i in range(0, 100, 2):
             family_data = FamilyCreate(
                 husband_id=persons[i].id,
                 wife_id=persons[i + 1].id,
-                marriage_date=f"200{i % 10}-01-01"
+                marriage_date=f"200{i % 10}-01-01",
             )
             family = family_crud.create(test_db, family_data)
             families.append(family)
-        
-        # Create child relationships
+
         for i in range(0, 50, 2):
             child_data = ChildCreate(
-                family_id=families[i // 2].id,
-                child_id=persons[i + 50].id
+                family_id=families[i // 2].id, child_id=persons[i + 50].id
             )
             child_crud.create(test_db, child_data)
-        
-        # Create events
+
         for i in range(100):
             event_data = EventCreate(
                 person_id=persons[i].id,
                 type=f"Event{i % 10}",
-                date=f"199{i % 10}-01-01"
+                date=f"199{i % 10}-01-01",
             )
             event_crud.create(test_db, event_data)
-        
-        # Test queries
+
         all_persons = person_crud.get_all(test_db)
         assert len(all_persons) == 100
-        
+
         all_families = family_crud.get_all(test_db)
         assert len(all_families) == 50
-        
+
         all_events = event_crud.get_all(test_db)
         assert len(all_events) == 100
-        
-        # Test pagination
+
         first_page = person_crud.get_all(test_db, skip=0, limit=10)
         assert len(first_page) == 10
-        
+
         second_page = person_crud.get_all(test_db, skip=10, limit=10)
         assert len(second_page) == 10
-        
-        # Test search
+
         test_persons = person_crud.search_by_name(test_db, "Person1")
-        assert len(test_persons) == 11  # Person1, Person10, Person11, etc.
-        
-        # Test type search
+        assert len(test_persons) == 11
+
         event0_events = event_crud.get_by_type(test_db, "Event0")
-        assert len(event0_events) == 10  # Every 10th event
+        assert len(event0_events) == 10

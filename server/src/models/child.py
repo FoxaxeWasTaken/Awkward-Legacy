@@ -23,10 +23,18 @@ class Child(ChildBase, table=True):
     __tablename__ = "children"
 
     family_id: UUID = Field(
-        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("families.id", ondelete="CASCADE"), primary_key=True)
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("families.id", ondelete="CASCADE"),
+            primary_key=True,
+        )
     )
     child_id: UUID = Field(
-        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("persons.id", ondelete="CASCADE"), primary_key=True)
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("persons.id", ondelete="CASCADE"),
+            primary_key=True,
+        )
     )
 
     family: "Family" = Relationship(back_populates="children")

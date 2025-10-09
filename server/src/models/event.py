@@ -16,11 +16,19 @@ class EventBase(SQLModel):
 
     person_id: Optional[UUID] = Field(
         default=None,
-        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("persons.id", ondelete="CASCADE"), nullable=True)
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("persons.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
     )
     family_id: Optional[UUID] = Field(
         default=None,
-        sa_column=Column(PG_UUID(as_uuid=True), ForeignKey("families.id", ondelete="CASCADE"), nullable=True)
+        sa_column=Column(
+            PG_UUID(as_uuid=True),
+            ForeignKey("families.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
     )
     type: str = Field(max_length=50)
     date: Optional[date_type] = Field(default=None)

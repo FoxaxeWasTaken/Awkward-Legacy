@@ -46,7 +46,9 @@ class EventCRUD:
     def search_by_type(self, db: Session, event_type: str) -> List[Event]:
         """Search events by type (case-sensitive partial match)."""
         # Use contains() for case-sensitive search
-        statement = select(Event).where(col(Event.type).contains(event_type, autoescape=True))
+        statement = select(Event).where(
+            col(Event.type).contains(event_type, autoescape=True)
+        )
         return list(db.exec(statement))
 
     def update(

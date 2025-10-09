@@ -29,19 +29,19 @@ class Family(FamilyBase, table=True):
 
     husband: Optional["Person"] = Relationship(
         back_populates="families_as_husband",
-        sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"}
+        sa_relationship_kwargs={"foreign_keys": "[Family.husband_id]"},
     )
     wife: Optional["Person"] = Relationship(
         back_populates="families_as_wife",
-        sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"}
+        sa_relationship_kwargs={"foreign_keys": "[Family.wife_id]"},
     )
     events: List["Event"] = Relationship(
         back_populates="family",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     children: List["Child"] = Relationship(
         back_populates="family",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
 

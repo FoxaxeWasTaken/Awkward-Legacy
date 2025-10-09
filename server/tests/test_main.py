@@ -14,15 +14,3 @@ def test_read_root():
         "docs": "/docs",
         "health": "/health",
     }
-
-
-def test_read_item_no_query():
-    response = client.get("/items/42")
-    assert response.status_code == 200
-    assert response.json() == {"item_id": 42, "q": None}
-
-
-def test_read_item_with_query():
-    response = client.get("/items/99?q=test")
-    assert response.status_code == 200
-    assert response.json() == {"item_id": 99, "q": "test"}

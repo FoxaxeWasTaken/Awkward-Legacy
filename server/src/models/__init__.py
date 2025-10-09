@@ -7,14 +7,14 @@ to avoid circular import issues.
 __all__ = [
     # Person models
     "Person",
-    "PersonCreate", 
+    "PersonCreate",
     "PersonRead",
     "PersonUpdate",
     "Sex",
     # Family models
     "Family",
     "FamilyCreate",
-    "FamilyRead", 
+    "FamilyRead",
     "FamilyUpdate",
     # Child models
     "Child",
