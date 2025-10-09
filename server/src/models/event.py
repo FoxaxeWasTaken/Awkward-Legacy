@@ -1,3 +1,5 @@
+"""Event model and related schemas."""
+
 from datetime import date as date_type
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -49,8 +51,6 @@ class Event(EventBase, table=True):
 
 class EventCreate(EventBase):
     """Event model for creation requests."""
-
-    pass
 
 
 class EventRead(EventBase):

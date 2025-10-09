@@ -4,12 +4,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from sqlmodel import Session
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from .db import create_db_and_tables, get_session
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Handle application lifespan events."""
     create_db_and_tables()
     yield
@@ -40,5 +41,5 @@ def health_check(session: Session = Depends(get_session)):
     try:
         session.exec(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
-    except Exception as e:
+    except SQLAlchemyError as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}

@@ -37,9 +37,14 @@ class PersonCRUD:
 
     def search_by_name(self, db: Session, name: str) -> List[Person]:
         """Search persons by name (first or last name contains the search term, case-sensitive)."""
+        # The col() function from SQLModel does return an object with a contains() method, pylint just can't detect it through static analysis.
         statement = select(Person).where(
-            (col(Person.first_name).contains(name, autoescape=True))
-            | (col(Person.last_name).contains(name, autoescape=True))
+            (
+                col(Person.first_name).contains(name, autoescape=True)
+            )  # pylint: disable=no-member
+            | (
+                col(Person.last_name).contains(name, autoescape=True)
+            )  # pylint: disable=no-member
         )
         return list(db.exec(statement))
 

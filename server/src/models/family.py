@@ -1,3 +1,5 @@
+"""Family model and related schemas."""
+
 from datetime import date as date_type
 from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -47,8 +49,6 @@ class Family(FamilyBase, table=True):
 
 class FamilyCreate(FamilyBase):
     """Family model for creation requests."""
-
-    pass
 
 
 class FamilyRead(FamilyBase):

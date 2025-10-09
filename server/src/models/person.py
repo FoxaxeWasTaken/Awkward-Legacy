@@ -1,3 +1,5 @@
+"""Person model and related schemas."""
+
 from datetime import date as date_type
 from enum import Enum
 from typing import List, Optional, TYPE_CHECKING
@@ -59,8 +61,6 @@ class Person(PersonBase, table=True):
 
 class PersonCreate(PersonBase):
     """Person model for creation requests."""
-
-    pass
 
 
 class PersonRead(PersonBase):

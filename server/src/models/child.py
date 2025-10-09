@@ -1,3 +1,5 @@
+"""Child model and related schemas."""
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -44,10 +46,6 @@ class Child(ChildBase, table=True):
 class ChildCreate(ChildBase):
     """Child model for creation requests."""
 
-    pass
-
 
 class ChildRead(ChildBase):
     """Child model for read responses."""
-
-    pass
