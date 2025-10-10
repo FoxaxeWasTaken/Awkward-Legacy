@@ -14,3 +14,20 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://genealogy_user:genealogy_password@postgres-prod:5432/genealogy_db}
+    depends_on:
+      - postgres-prod
+
+  postgres-prod:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-genealogy_db}
+      - POSTGRES_USER=${POSTGRES_USER:-genealogy_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-genealogy_password}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_prod_data:

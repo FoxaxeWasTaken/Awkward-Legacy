@@ -31,21 +31,21 @@ logs-prod:
 	@echo "Showing production logs..."
 	$(COMPOSE_PROD) logs -f
 
-# serverend testing and quality
+# Server testing and quality
 test-server:
-	@echo "Running serverend tests..."
+	@echo "Running server tests..."
 	$(COMPOSE_DEV) run --rm server-dev python -m pytest -v
 
 test-server-coverage:
-	@echo "Running serverend tests with coverage..."
+	@echo "Running server tests with coverage..."
 	$(COMPOSE_DEV) run --rm server-dev python -m pytest --cov=src --cov-report=html -v
 
 lint-server:
-	@echo "Running serverend linting..."
+	@echo "Running server linting..."
 	$(COMPOSE_DEV) run --rm server-dev sh -c "python -m black --check . && python -m pylint src/"
 
 format-server:
-	@echo "Formatting serverend code..."
+	@echo "Formatting server code..."
 	$(COMPOSE_DEV) run --rm server-dev python -m black .
 
 # Client testing and quality
