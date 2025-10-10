@@ -1,0 +1,27 @@
+fam CORNO Joseph_Marie_Vincent + THOMAS Marie_Julienne
+beg
+- CORNO Alain
+- CORNO Sophie
+end
+
+fam CORNO Alain.1 +25/11/1728 #mp Ile-aux-Moines CAUZIC Marie
+beg
+- CORNO Jean
+- CORNO Pierre
+end
+
+notes CORNO Alain
+beg
+Note personnelle pour Alain CORNO.
+Il était un grand voyageur.
+end notes
+
+rel CORNO Jean
+beg
+- godp: CORNO Pierre + THOMAS Marie
+end
+
+notes-db
+  Note de présentation de la base de données.
+  Cette base contient des informations généalogiques.
+end notes-db
