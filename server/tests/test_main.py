@@ -12,6 +12,7 @@ def test_read_root():
         "Hello": "World",
         "message": "Genealogy API is running!",
         "docs": "/docs",
+        "redoc": "/redoc",
         "health": "/health",
     }
 
