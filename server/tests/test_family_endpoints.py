@@ -1,18 +1,8 @@
-"""Test cases for Family API endpoints."""
-
 from datetime import date
 from uuid import uuid4
 import pytest
-from fastapi.testclient import TestClient
 
-from src.main import app
 from src.models.person import Sex
-
-
-@pytest.fixture
-def client():
-    """Create a test client."""
-    return TestClient(app)
 
 
 @pytest.fixture

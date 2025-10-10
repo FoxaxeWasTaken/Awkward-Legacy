@@ -1,5 +1,3 @@
-"""Family model and related schemas."""
-
 from datetime import date as date_type
 from typing import List, Optional, TYPE_CHECKING
 from uuid import UUID, uuid4

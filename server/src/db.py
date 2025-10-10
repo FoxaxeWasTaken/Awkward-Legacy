@@ -1,5 +1,3 @@
-"""Database connection and session management."""
-
 import os
 from typing import Generator
 

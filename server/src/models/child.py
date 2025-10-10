@@ -1,5 +1,3 @@
-"""Child model and related schemas."""
-
 from typing import TYPE_CHECKING
 from uuid import UUID
 

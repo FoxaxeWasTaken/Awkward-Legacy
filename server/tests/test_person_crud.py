@@ -1,5 +1,3 @@
-"""Test suite for Person CRUD operations."""
-
 import pytest
 from uuid import uuid4
 from datetime import date

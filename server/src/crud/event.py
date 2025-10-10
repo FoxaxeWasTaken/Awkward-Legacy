@@ -1,5 +1,3 @@
-"""CRUD operations for Event model."""
-
 from typing import List, Optional
 from uuid import UUID
 

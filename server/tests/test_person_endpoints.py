@@ -1,20 +1,10 @@
-"""Test cases for Person API endpoints."""
-
 from datetime import date
 from uuid import uuid4
 import pytest
-from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from src.main import app
 from src.models.person import Person, PersonCreate, Sex
 from src.crud.person import person_crud
-
-
-@pytest.fixture
-def client():
-    """Create a test client."""
-    return TestClient(app)
 
 
 @pytest.fixture

@@ -1,5 +1,3 @@
-"""CRUD operations for Person model."""
-
 from typing import List, Optional
 from uuid import UUID
 

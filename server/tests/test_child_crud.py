@@ -1,5 +1,3 @@
-"""Test suite for Child CRUD operations."""
-
 import pytest
 from uuid import uuid4
 

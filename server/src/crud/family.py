@@ -1,5 +1,3 @@
-"""CRUD operations for Family model."""
-
 from typing import List, Optional
 from uuid import UUID
 

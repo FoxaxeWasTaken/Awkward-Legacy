@@ -1,5 +1,3 @@
-"""Test configuration and fixtures."""
-
 import os
 import pytest
 from sqlmodel import SQLModel, create_engine, Session

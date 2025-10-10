@@ -1,5 +1,3 @@
-"""Integration tests for complex relationships and workflows."""
-
 import pytest
 from datetime import date
 
