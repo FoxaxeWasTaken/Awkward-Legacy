@@ -19,7 +19,9 @@ def _validate_person_exists(session: Session, person_id: UUID) -> Person:
     return person
 
 
-def _get_effective_person_data(person_update: PersonUpdate, current_person: Person) -> tuple:
+def _get_effective_person_data(
+    person_update: PersonUpdate, current_person: Person
+) -> tuple:
     """Helper function to get effective person data for updates."""
     birth_date = (
         person_update.birth_date

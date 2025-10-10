@@ -14,16 +14,19 @@ router = APIRouter(prefix="/api/v1/families", tags=["families"])
 def _validate_spouse_exists(session: Session, spouse_id: UUID, role: str) -> None:
     """Helper function to validate that a spouse exists."""
     from ..crud.person import person_crud
-    
+
     if spouse_id:
         spouse = person_crud.get(session, spouse_id)
         if not spouse:
-            raise HTTPException(status_code=404, detail=f"{role.capitalize()} not found")
+            raise HTTPException(
+                status_code=404, detail=f"{role.capitalize()} not found"
+            )
 
 
 def _get_spouse_data(session: Session, spouse_id: UUID):
     """Helper function to get spouse data if spouse_id exists."""
     from ..crud.person import person_crud
+
     return person_crud.get(session, spouse_id) if spouse_id else None
 
 
@@ -34,7 +37,7 @@ def _validate_family_relationships_and_dates(
     from ..validators import validate_family_dates, validate_family_spouses
 
     validate_family_spouses(family.husband_id, family.wife_id)
-    
+
     _validate_spouse_exists(session, family.husband_id, "husband")
     _validate_spouse_exists(session, family.wife_id, "wife")
 
@@ -84,13 +87,19 @@ def _validate_patch_family_relationships_and_dates(
     _validate_spouse_exists(session, family_update.husband_id, "husband")
     _validate_spouse_exists(session, family_update.wife_id, "wife")
 
-    effective_husband_id = _get_effective_spouse_id(family_update.husband_id, current_family.husband_id)
-    effective_wife_id = _get_effective_spouse_id(family_update.wife_id, current_family.wife_id)
-    
+    effective_husband_id = _get_effective_spouse_id(
+        family_update.husband_id, current_family.husband_id
+    )
+    effective_wife_id = _get_effective_spouse_id(
+        family_update.wife_id, current_family.wife_id
+    )
+
     husband = _get_spouse_data(session, effective_husband_id)
     wife = _get_spouse_data(session, effective_wife_id)
-    
-    marriage_date = _get_effective_marriage_date(family_update.marriage_date, current_family.marriage_date)
+
+    marriage_date = _get_effective_marriage_date(
+        family_update.marriage_date, current_family.marriage_date
+    )
 
     validate_family_dates(
         marriage_date=marriage_date,
