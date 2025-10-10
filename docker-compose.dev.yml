@@ -6,7 +6,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
     volumes:
       - ./client/:/app
       - /app/node_modules
@@ -19,8 +19,25 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://genealogy_user:genealogy_password@postgres-dev:5432/genealogy_db}
     volumes:
       - ./server/src:/app/src
       - ./server/tests:/app/tests
       - /app/node_modules
+    depends_on:
+      - postgres-dev
+
+  postgres-dev:
+    image: postgres:16.10-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-genealogy_db}
+      - POSTGRES_USER=${POSTGRES_USER:-genealogy_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-genealogy_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:

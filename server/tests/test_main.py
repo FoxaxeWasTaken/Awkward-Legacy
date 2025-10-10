@@ -8,16 +8,19 @@ client = TestClient(app)
 def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"Hello": "World"}
+    assert response.json() == {
+        "Hello": "World",
+        "message": "Genealogy API is running!",
+        "docs": "/docs",
+        "redoc": "/redoc",
+        "health": "/health",
+    }
 
 
-def test_read_item_no_query():
-    response = client.get("/items/42")
+def test_health_check():
+    response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"item_id": 42, "q": None}
-
-
-def test_read_item_with_query():
-    response = client.get("/items/99?q=test")
-    assert response.status_code == 200
-    assert response.json() == {"item_id": 99, "q": "test"}
+    assert response.json() == {
+        "status": "healthy",
+        "database": "connected",
+    }
