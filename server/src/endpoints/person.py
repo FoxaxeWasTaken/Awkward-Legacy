@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
+from ..constants import PERSON_NOT_FOUND
 from ..crud.person import person_crud
 from ..db import get_session
 from ..models.person import Person, PersonCreate, PersonRead, PersonUpdate
@@ -15,7 +16,7 @@ def _validate_person_exists(session: Session, person_id: UUID) -> Person:
     """Helper function to validate that a person exists."""
     person = person_crud.get(session, person_id)
     if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=PERSON_NOT_FOUND)
     return person
 
 
@@ -107,7 +108,7 @@ def get_person(
     """Get a person by ID."""
     person = person_crud.get(session, person_id)
     if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=PERSON_NOT_FOUND)
     return person
 
 
@@ -139,4 +140,4 @@ def delete_person(
     """Delete a person."""
     success = person_crud.delete(session, person_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=PERSON_NOT_FOUND)

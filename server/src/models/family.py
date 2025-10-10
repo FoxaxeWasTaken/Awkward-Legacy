@@ -6,6 +6,8 @@ from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from ..constants import PERSONS_TABLE_ID
+
 if TYPE_CHECKING:
     from .person import Person
     from .event import Event
@@ -15,8 +17,8 @@ if TYPE_CHECKING:
 class FamilyBase(SQLModel):
     """Base Family model with common fields."""
 
-    husband_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    wife_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
+    husband_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
+    wife_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
     marriage_date: Optional[date_type] = Field(default=None)
     marriage_place: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)
@@ -60,8 +62,8 @@ class FamilyRead(FamilyBase):
 class FamilyUpdate(SQLModel):
     """Family model for update requests."""
 
-    husband_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    wife_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
+    husband_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
+    wife_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
     marriage_date: Optional[date_type] = Field(default=None)
     marriage_place: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)

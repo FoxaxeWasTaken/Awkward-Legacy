@@ -8,6 +8,8 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlmodel import Field, Relationship, SQLModel, Column
 
+from ..constants import FAMILIES_TABLE_ID, PERSONS_TABLE_ID
+
 if TYPE_CHECKING:
     from .person import Person
     from .family import Family
@@ -20,7 +22,7 @@ class EventBase(SQLModel):
         default=None,
         sa_column=Column(
             PG_UUID(as_uuid=True),
-            ForeignKey("persons.id", ondelete="CASCADE"),
+            ForeignKey(PERSONS_TABLE_ID, ondelete="CASCADE"),
             nullable=True,
         ),
     )
@@ -28,7 +30,7 @@ class EventBase(SQLModel):
         default=None,
         sa_column=Column(
             PG_UUID(as_uuid=True),
-            ForeignKey("families.id", ondelete="CASCADE"),
+            ForeignKey(FAMILIES_TABLE_ID, ondelete="CASCADE"),
             nullable=True,
         ),
     )
@@ -62,8 +64,8 @@ class EventRead(EventBase):
 class EventUpdate(SQLModel):
     """Event model for update requests."""
 
-    person_id: Optional[UUID] = Field(default=None, foreign_key="persons.id")
-    family_id: Optional[UUID] = Field(default=None, foreign_key="families.id")
+    person_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
+    family_id: Optional[UUID] = Field(default=None, foreign_key=FAMILIES_TABLE_ID)
     type: Optional[str] = Field(default=None, max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)

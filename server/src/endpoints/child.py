@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
+from ..constants import FAMILY_NOT_FOUND, PERSON_NOT_FOUND
 from ..crud.child import child_crud
 from ..db import get_session
 from ..models.child import Child, ChildCreate, ChildRead
@@ -34,7 +35,7 @@ def _validate_family_exists(session: Session, family_id: UUID) -> None:
 
     family = family_crud.get(session, family_id)
     if not family:
-        raise HTTPException(status_code=404, detail="Family not found")
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
 
 
 def _validate_person_exists(session: Session, person_id: UUID) -> None:
@@ -43,7 +44,7 @@ def _validate_person_exists(session: Session, person_id: UUID) -> None:
 
     person = person_crud.get(session, person_id)
     if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=PERSON_NOT_FOUND)
 
 
 def _validate_parent_child_relationship(

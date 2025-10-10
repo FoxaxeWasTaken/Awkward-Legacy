@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
+from ..constants import EVENT_NOT_FOUND, FAMILY_NOT_FOUND, PERSON_NOT_FOUND
 from ..crud.event import event_crud
 from ..db import get_session
 from ..models.event import Event, EventCreate, EventRead, EventUpdate
@@ -17,7 +18,7 @@ def _validate_person_exists(session: Session, person_id: UUID) -> None:
 
     person = person_crud.get(session, person_id)
     if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=PERSON_NOT_FOUND)
 
 
 def _validate_family_exists(session: Session, family_id: UUID) -> None:
@@ -26,7 +27,7 @@ def _validate_family_exists(session: Session, family_id: UUID) -> None:
 
     family = family_crud.get(session, family_id)
     if not family:
-        raise HTTPException(status_code=404, detail="Family not found")
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
 
 
 def _get_person_for_event(session: Session, person_id: UUID) -> object:
@@ -176,7 +177,7 @@ def get_event(
     """Get an event by ID."""
     event = event_crud.get(session, event_id)
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
     return event
 
 
@@ -191,7 +192,7 @@ def update_event(
 
     event = event_crud.update(session, event_id, event_update)
     if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
     return event
 
 
@@ -204,7 +205,7 @@ def patch_event(
     """Partially update an event."""
     current_event = event_crud.get(session, event_id)
     if not current_event:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)
 
     _validate_patch_event_relationships_and_dates(session, event_update, current_event)
 
@@ -220,4 +221,4 @@ def delete_event(
     """Delete an event."""
     success = event_crud.delete(session, event_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Event not found")
+        raise HTTPException(status_code=404, detail=EVENT_NOT_FOUND)

@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
+from ..constants import FAMILY_NOT_FOUND
 from ..crud.family import family_crud
 from ..db import get_session
 from ..models.family import Family, FamilyCreate, FamilyRead, FamilyUpdate
@@ -149,7 +150,7 @@ def get_family(
     """Get a family by ID."""
     family = family_crud.get(session, family_id)
     if not family:
-        raise HTTPException(status_code=404, detail="Family not found")
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
     return family
 
 
@@ -191,7 +192,7 @@ def update_family(
 
     family = family_crud.update(session, family_id, family_update)
     if not family:
-        raise HTTPException(status_code=404, detail="Family not found")
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
     return family
 
 
@@ -204,7 +205,7 @@ def patch_family(
     """Partially update a family."""
     current_family = family_crud.get(session, family_id)
     if not current_family:
-        raise HTTPException(status_code=404, detail="Family not found")
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
 
     _validate_patch_family_relationships_and_dates(
         session, family_update, current_family
@@ -222,4 +223,4 @@ def delete_family(
     """Delete a family."""
     success = family_crud.delete(session, family_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Family not found")
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
