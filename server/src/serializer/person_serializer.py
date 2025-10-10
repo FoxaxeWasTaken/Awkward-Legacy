@@ -15,8 +15,8 @@ Functions:
 
 from typing import Dict, Any, List
 
-from event_serializer import serialize_event
-from utils import serialize_tags, serialize_dates
+from .event_serializer import serialize_event
+from .utils import serialize_tags, serialize_dates
 
 
 def serialize_person(person: Dict[str, Any], raw=False) -> str:

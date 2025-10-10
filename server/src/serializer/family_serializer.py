@@ -13,9 +13,9 @@ Design goals:
 """
 
 from typing import Dict, Any
-from person_serializer import serialize_person
-from event_serializer import serialize_event
-from sources_serializer import serialize_sources
+from .person_serializer import serialize_person
+from .event_serializer import serialize_event
+from .sources_serializer import serialize_sources
 
 
 def serialize_family(family: Dict[str, Any]) -> str:

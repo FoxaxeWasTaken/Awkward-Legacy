@@ -14,7 +14,7 @@ Functions:
 
 from typing import Any, Dict, List
 
-from event_serializer import serialize_event
+from .event_serializer import serialize_event
 
 
 def serialize_pevts(pevts: Dict[str, List[Dict[str, Any]]]) -> str:

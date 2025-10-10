@@ -26,11 +26,16 @@ def serialize_pages(pages: Dict[str, Dict[str, str]]) -> str:
     Returns:
         str: GeneWeb-formatted extended pages as a single string.
     """
-    output = []
+    all_blocks = []
+
     for page_name, content in pages.items():
-        output.append(f"# extended page \"{page_name}\" used by:")
-        output.append(f"page-ext {page_name}")
+        block_lines = []
+        block_lines.append(f"# extended page \"{page_name}\" used by:")
+        block_lines.append(f"page-ext {page_name}")
         for k, v in content.items():
-            output.append(f"  {k}={v}")
-        output.append("end page-ext")
-    return "\n\n".join(output)
+            block_lines.append(f"{k}={v}")
+        block_lines.append("end page-ext")
+        all_blocks.append("\n".join(block_lines))
+
+    return "\n\n".join(all_blocks)
+

@@ -15,11 +15,11 @@ Classes:
 """
 
 from typing import Dict, Any
-from family_serializer import serialize_family
-from notes_serializer import serialize_notes_db, serialize_notes
-from page_serializer import serialize_pages
-from pevt_serializer import serialize_pevts
-from sources_serializer import serialize_sources
+from .family_serializer import serialize_family
+from .notes_serializer import serialize_notes_db, serialize_notes
+from .page_serializer import serialize_pages
+from .pevt_serializer import serialize_pevts
+from .sources_serializer import serialize_sources
 
 
 class GWSerializer:
