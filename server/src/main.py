@@ -1,3 +1,5 @@
+"""Main FastAPI application module."""
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from sqlmodel import Session
@@ -9,8 +11,6 @@ from .endpoints.person import router as person_router
 from .endpoints.family import router as family_router
 from .endpoints.child import router as child_router
 from .endpoints.event import router as event_router
-
-from .models import Person, Family, Child, Event
 
 
 @asynccontextmanager

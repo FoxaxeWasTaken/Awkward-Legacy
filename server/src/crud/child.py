@@ -1,3 +1,5 @@
+"""CRUD operations for Child model."""
+
 from typing import List, Optional
 from uuid import UUID
 

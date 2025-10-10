@@ -1,3 +1,5 @@
+"""Person model definitions for the genealogy application."""
+
 from datetime import date as date_type
 from enum import Enum
 from typing import List, Optional, TYPE_CHECKING

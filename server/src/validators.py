@@ -1,3 +1,5 @@
+"""Validation functions for genealogy data."""
+
 from datetime import date
 from typing import Optional, NamedTuple
 
@@ -81,23 +83,8 @@ def _validate_divorce_after_marriage(
     )
 
 
-def validate_family_dates(
-    marriage_date: Optional[date] = None,
-    divorce_date: Optional[date] = None,
-    husband_birth_date: Optional[date] = None,
-    wife_birth_date: Optional[date] = None,
-    husband_death_date: Optional[date] = None,
-    wife_death_date: Optional[date] = None,
-) -> None:
+def validate_family_dates(family_data: FamilyDateData) -> None:
     """Validate family dates."""
-    family_data = FamilyDateData(
-        marriage_date=marriage_date,
-        divorce_date=divorce_date,
-        husband_birth_date=husband_birth_date,
-        wife_birth_date=wife_birth_date,
-        husband_death_date=husband_death_date,
-        wife_death_date=wife_death_date,
-    )
     _validate_family_dates_internal(family_data)
 
 

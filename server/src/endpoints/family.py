@@ -34,7 +34,11 @@ def _validate_family_relationships_and_dates(
     session: Session, family: FamilyCreate
 ) -> None:
     """Helper function to validate family relationships and dates."""
-    from ..validators import validate_family_dates, validate_family_spouses
+    from ..validators import (
+        validate_family_dates,
+        validate_family_spouses,
+        FamilyDateData,
+    )
 
     validate_family_spouses(family.husband_id, family.wife_id)
 
@@ -44,7 +48,7 @@ def _validate_family_relationships_and_dates(
     husband = _get_spouse_data(session, family.husband_id)
     wife = _get_spouse_data(session, family.wife_id)
 
-    validate_family_dates(
+    family_data = FamilyDateData(
         marriage_date=family.marriage_date,
         divorce_date=None,
         husband_birth_date=husband.birth_date if husband else None,
@@ -52,6 +56,7 @@ def _validate_family_relationships_and_dates(
         husband_death_date=husband.death_date if husband else None,
         wife_death_date=wife.death_date if wife else None,
     )
+    validate_family_dates(family_data)
 
 
 def _validate_family_update_relationships(
@@ -76,7 +81,11 @@ def _validate_patch_family_relationships_and_dates(
     session: Session, family_update: FamilyUpdate, current_family: Family
 ) -> None:
     """Helper function to validate patch family relationships and dates."""
-    from ..validators import validate_family_dates, validate_family_spouses
+    from ..validators import (
+        validate_family_dates,
+        validate_family_spouses,
+        FamilyDateData,
+    )
 
     update_data = family_update.model_dump(exclude_unset=True)
     husband_id = update_data.get("husband_id", current_family.husband_id)
@@ -101,7 +110,7 @@ def _validate_patch_family_relationships_and_dates(
         family_update.marriage_date, current_family.marriage_date
     )
 
-    validate_family_dates(
+    family_data = FamilyDateData(
         marriage_date=marriage_date,
         divorce_date=None,
         husband_birth_date=husband.birth_date if husband else None,
@@ -109,6 +118,7 @@ def _validate_patch_family_relationships_and_dates(
         husband_death_date=husband.death_date if husband else None,
         wife_death_date=wife.death_date if wife else None,
     )
+    validate_family_dates(family_data)
 
 
 @router.post("/", response_model=FamilyRead, status_code=201)

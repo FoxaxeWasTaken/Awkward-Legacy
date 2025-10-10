@@ -1,3 +1,5 @@
+"""Child relationship model definitions for the genealogy application."""
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
