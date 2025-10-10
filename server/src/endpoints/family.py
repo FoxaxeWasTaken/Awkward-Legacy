@@ -11,27 +11,35 @@ from ..models.family import Family, FamilyCreate, FamilyRead, FamilyUpdate
 router = APIRouter(prefix="/api/v1/families", tags=["families"])
 
 
+def _validate_spouse_exists(session: Session, spouse_id: UUID, role: str) -> None:
+    """Helper function to validate that a spouse exists."""
+    from ..crud.person import person_crud
+    
+    if spouse_id:
+        spouse = person_crud.get(session, spouse_id)
+        if not spouse:
+            raise HTTPException(status_code=404, detail=f"{role.capitalize()} not found")
+
+
+def _get_spouse_data(session: Session, spouse_id: UUID):
+    """Helper function to get spouse data if spouse_id exists."""
+    from ..crud.person import person_crud
+    return person_crud.get(session, spouse_id) if spouse_id else None
+
+
 def _validate_family_relationships_and_dates(
     session: Session, family: FamilyCreate
 ) -> None:
     """Helper function to validate family relationships and dates."""
     from ..validators import validate_family_dates, validate_family_spouses
-    from ..crud.person import person_crud
 
     validate_family_spouses(family.husband_id, family.wife_id)
+    
+    _validate_spouse_exists(session, family.husband_id, "husband")
+    _validate_spouse_exists(session, family.wife_id, "wife")
 
-    if family.husband_id:
-        husband = person_crud.get(session, family.husband_id)
-        if not husband:
-            raise HTTPException(status_code=404, detail="Husband not found")
-
-    if family.wife_id:
-        wife = person_crud.get(session, family.wife_id)
-        if not wife:
-            raise HTTPException(status_code=404, detail="Wife not found")
-
-    husband = person_crud.get(session, family.husband_id) if family.husband_id else None
-    wife = person_crud.get(session, family.wife_id) if family.wife_id else None
+    husband = _get_spouse_data(session, family.husband_id)
+    wife = _get_spouse_data(session, family.wife_id)
 
     validate_family_dates(
         marriage_date=family.marriage_date,
@@ -47,17 +55,18 @@ def _validate_family_update_relationships(
     session: Session, family_update: FamilyUpdate
 ) -> None:
     """Helper function to validate family update relationships."""
-    from ..crud.person import person_crud
+    _validate_spouse_exists(session, family_update.husband_id, "husband")
+    _validate_spouse_exists(session, family_update.wife_id, "wife")
 
-    if family_update.husband_id:
-        husband = person_crud.get(session, family_update.husband_id)
-        if not husband:
-            raise HTTPException(status_code=404, detail="Husband not found")
 
-    if family_update.wife_id:
-        wife = person_crud.get(session, family_update.wife_id)
-        if not wife:
-            raise HTTPException(status_code=404, detail="Wife not found")
+def _get_effective_spouse_id(update_id: UUID, current_id: UUID) -> UUID:
+    """Helper function to get the effective spouse ID for patch operations."""
+    return update_id if update_id is not None else current_id
+
+
+def _get_effective_marriage_date(update_date, current_date):
+    """Helper function to get the effective marriage date for patch operations."""
+    return update_date if update_date is not None else current_date
 
 
 def _validate_patch_family_relationships_and_dates(
@@ -65,7 +74,6 @@ def _validate_patch_family_relationships_and_dates(
 ) -> None:
     """Helper function to validate patch family relationships and dates."""
     from ..validators import validate_family_dates, validate_family_spouses
-    from ..crud.person import person_crud
 
     update_data = family_update.model_dump(exclude_unset=True)
     husband_id = update_data.get("husband_id", current_family.husband_id)
@@ -73,40 +81,16 @@ def _validate_patch_family_relationships_and_dates(
 
     validate_family_spouses(husband_id, wife_id)
 
-    if family_update.husband_id:
-        husband = person_crud.get(session, family_update.husband_id)
-        if not husband:
-            raise HTTPException(status_code=404, detail="Husband not found")
+    _validate_spouse_exists(session, family_update.husband_id, "husband")
+    _validate_spouse_exists(session, family_update.wife_id, "wife")
 
-    if family_update.wife_id:
-        wife = person_crud.get(session, family_update.wife_id)
-        if not wife:
-            raise HTTPException(status_code=404, detail="Wife not found")
-
-    husband = (
-        person_crud.get(session, family_update.husband_id)
-        if family_update.husband_id
-        else (
-            person_crud.get(session, current_family.husband_id)
-            if current_family.husband_id
-            else None
-        )
-    )
-    wife = (
-        person_crud.get(session, family_update.wife_id)
-        if family_update.wife_id
-        else (
-            person_crud.get(session, current_family.wife_id)
-            if current_family.wife_id
-            else None
-        )
-    )
-
-    marriage_date = (
-        family_update.marriage_date
-        if family_update.marriage_date is not None
-        else current_family.marriage_date
-    )
+    effective_husband_id = _get_effective_spouse_id(family_update.husband_id, current_family.husband_id)
+    effective_wife_id = _get_effective_spouse_id(family_update.wife_id, current_family.wife_id)
+    
+    husband = _get_spouse_data(session, effective_husband_id)
+    wife = _get_spouse_data(session, effective_wife_id)
+    
+    marriage_date = _get_effective_marriage_date(family_update.marriage_date, current_family.marriage_date)
 
     validate_family_dates(
         marriage_date=marriage_date,

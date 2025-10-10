@@ -19,14 +19,8 @@ def _validate_person_exists(session: Session, person_id: UUID) -> Person:
     return person
 
 
-def _validate_person_update_data(
-    person_update: PersonUpdate, current_person: Person
-) -> None:
-    """Helper function to validate person update data."""
-    from ..validators import validate_person_dates, validate_person_names
-
-    validate_person_names(person_update.first_name, person_update.last_name)
-
+def _get_effective_person_data(person_update: PersonUpdate, current_person: Person) -> tuple:
+    """Helper function to get effective person data for updates."""
     birth_date = (
         person_update.birth_date
         if person_update.birth_date is not None
@@ -37,7 +31,27 @@ def _validate_person_update_data(
         if person_update.death_date is not None
         else current_person.death_date
     )
+    return birth_date, death_date
+
+
+def _validate_person_update_data(
+    person_update: PersonUpdate, current_person: Person
+) -> None:
+    """Helper function to validate person update data."""
+    from ..validators import validate_person_dates, validate_person_names
+
+    validate_person_names(person_update.first_name, person_update.last_name)
+    birth_date, death_date = _get_effective_person_data(person_update, current_person)
     validate_person_dates(birth_date, death_date)
+
+
+def _update_person_common(
+    person_id: UUID, person_update: PersonUpdate, session: Session
+) -> Person:
+    """Common logic for updating a person (used by both update and patch)."""
+    current_person = _validate_person_exists(session, person_id)
+    _validate_person_update_data(person_update, current_person)
+    return person_crud.update(session, person_id, person_update)
 
 
 @router.post("/", response_model=PersonRead, status_code=201)
@@ -102,11 +116,7 @@ def update_person(
     session: Session = Depends(get_session),
 ):
     """Update a person."""
-    current_person = _validate_person_exists(session, person_id)
-    _validate_person_update_data(person_update, current_person)
-
-    person = person_crud.update(session, person_id, person_update)
-    return person
+    return _update_person_common(person_id, person_update, session)
 
 
 @router.patch("/{person_id}", response_model=PersonRead)
@@ -116,11 +126,7 @@ def patch_person(
     session: Session = Depends(get_session),
 ):
     """Partially update a person."""
-    current_person = _validate_person_exists(session, person_id)
-    _validate_person_update_data(person_update, current_person)
-
-    person = person_crud.update(session, person_id, person_update)
-    return person
+    return _update_person_common(person_id, person_update, session)
 
 
 @router.delete("/{person_id}", status_code=204)

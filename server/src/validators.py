@@ -1,7 +1,17 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, NamedTuple
 
 from fastapi import HTTPException
+
+
+class FamilyDateData(NamedTuple):
+    """Data structure for family date validation."""
+    marriage_date: Optional[date]
+    divorce_date: Optional[date]
+    husband_birth_date: Optional[date]
+    wife_birth_date: Optional[date]
+    husband_death_date: Optional[date]
+    wife_death_date: Optional[date]
 
 
 def _validate_date_not_future(date_value: Optional[date], field_name: str) -> None:
@@ -12,14 +22,19 @@ def _validate_date_not_future(date_value: Optional[date], field_name: str) -> No
         )
 
 
+def _validate_date_after(
+    later_date: Optional[date], earlier_date: Optional[date], error_message: str
+) -> None:
+    """Generic helper function to validate that one date is after another."""
+    if later_date and earlier_date and later_date < earlier_date:
+        raise HTTPException(status_code=400, detail=error_message)
+
+
 def _validate_death_after_birth(
     birth_date: Optional[date], death_date: Optional[date]
 ) -> None:
     """Helper function to validate that death date is after birth date."""
-    if birth_date and death_date and death_date < birth_date:
-        raise HTTPException(
-            status_code=400, detail="Death date cannot be before birth date"
-        )
+    _validate_date_after(death_date, birth_date, "Death date cannot be before birth date")
 
 
 def validate_person_dates(
@@ -36,32 +51,29 @@ def _validate_marriage_after_birth(
     marriage_date: Optional[date], birth_date: Optional[date], spouse_role: str
 ) -> None:
     """Helper function to validate that marriage is after birth."""
-    if marriage_date and birth_date and marriage_date < birth_date:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Marriage date cannot be before {spouse_role}'s birth date",
-        )
+    _validate_date_after(
+        marriage_date, 
+        birth_date, 
+        f"Marriage date cannot be before {spouse_role}'s birth date"
+    )
 
 
 def _validate_marriage_before_death(
     marriage_date: Optional[date], death_date: Optional[date], spouse_role: str
 ) -> None:
     """Helper function to validate that marriage is before death."""
-    if marriage_date and death_date and marriage_date > death_date:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Marriage date cannot be after {spouse_role}'s death date",
-        )
+    _validate_date_after(
+        death_date, 
+        marriage_date, 
+        f"Marriage date cannot be after {spouse_role}'s death date"
+    )
 
 
 def _validate_divorce_after_marriage(
     marriage_date: Optional[date], divorce_date: Optional[date]
 ) -> None:
     """Helper function to validate that divorce is after marriage."""
-    if marriage_date and divorce_date and divorce_date < marriage_date:
-        raise HTTPException(
-            status_code=400, detail="Divorce date cannot be before marriage date"
-        )
+    _validate_date_after(divorce_date, marriage_date, "Divorce date cannot be before marriage date")
 
 
 def validate_family_dates(
@@ -73,33 +85,40 @@ def validate_family_dates(
     wife_death_date: Optional[date] = None,
 ) -> None:
     """Validate family dates."""
-    _validate_date_not_future(marriage_date, "Marriage date")
-    _validate_date_not_future(divorce_date, "Divorce date")
-    _validate_divorce_after_marriage(marriage_date, divorce_date)
-    _validate_marriage_after_birth(marriage_date, husband_birth_date, "husband")
-    _validate_marriage_after_birth(marriage_date, wife_birth_date, "wife")
-    _validate_marriage_before_death(marriage_date, husband_death_date, "husband")
-    _validate_marriage_before_death(marriage_date, wife_death_date, "wife")
+    family_data = FamilyDateData(
+        marriage_date=marriage_date,
+        divorce_date=divorce_date,
+        husband_birth_date=husband_birth_date,
+        wife_birth_date=wife_birth_date,
+        husband_death_date=husband_death_date,
+        wife_death_date=wife_death_date,
+    )
+    _validate_family_dates_internal(family_data)
+
+
+def _validate_family_dates_internal(family_data: FamilyDateData) -> None:
+    """Internal validation function for family dates."""
+    _validate_date_not_future(family_data.marriage_date, "Marriage date")
+    _validate_date_not_future(family_data.divorce_date, "Divorce date")
+    _validate_divorce_after_marriage(family_data.marriage_date, family_data.divorce_date)
+    _validate_marriage_after_birth(family_data.marriage_date, family_data.husband_birth_date, "husband")
+    _validate_marriage_after_birth(family_data.marriage_date, family_data.wife_birth_date, "wife")
+    _validate_marriage_before_death(family_data.marriage_date, family_data.husband_death_date, "husband")
+    _validate_marriage_before_death(family_data.marriage_date, family_data.wife_death_date, "wife")
 
 
 def _validate_event_after_birth(
     event_date: Optional[date], person_birth_date: Optional[date]
 ) -> None:
     """Helper function to validate that event is after person's birth."""
-    if event_date and person_birth_date and event_date < person_birth_date:
-        raise HTTPException(
-            status_code=400, detail="Event date cannot be before person's birth date"
-        )
+    _validate_date_after(event_date, person_birth_date, "Event date cannot be before person's birth date")
 
 
 def _validate_event_before_death(
     event_date: Optional[date], person_death_date: Optional[date]
 ) -> None:
     """Helper function to validate that event is before person's death."""
-    if event_date and person_death_date and event_date > person_death_date:
-        raise HTTPException(
-            status_code=400, detail="Event date cannot be after person's death date"
-        )
+    _validate_date_after(person_death_date, event_date, "Event date cannot be after person's death date")
 
 
 def validate_event_dates(
