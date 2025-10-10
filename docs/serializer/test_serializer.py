@@ -12,8 +12,7 @@ import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "server" / "src" / "serializer"))
-from gw_serializer import GWSerializer
+from server.src.serializer.gw_serializer import GWSerializer
 
 
 def main():

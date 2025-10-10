@@ -221,6 +221,15 @@ serializer.to_file("output.gw")
 
 ---
 
+## `test_serializer.py` - Example/Test Script
+
+A ready-to-use command-line script that demonstrates how to use the parser:
+```bash
+python3 -m docs.serializer.test_serializer docs/serializer/galichet.json galichet.gw
+```
+
+---
+
 ## Error Handling
 
 - Missing optional fields are ignored.
