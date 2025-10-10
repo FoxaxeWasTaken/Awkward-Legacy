@@ -33,8 +33,22 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  // Scroll behavior
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
+})
+
+// Global after hook - runs after navigation
+router.afterEach((to, from) => {
+  // Update page title
+  document.title = to.meta.title || 'My Vue App'
 })
 
 export default router
