@@ -11,37 +11,114 @@ from ..models.event import Event, EventCreate, EventRead, EventUpdate
 router = APIRouter(prefix="/api/v1/events", tags=["events"])
 
 
-@router.post("/", response_model=EventRead, status_code=201)
-def create_event(
-    event: EventCreate,
-    session: Session = Depends(get_session),
-):
-    """Create a new event."""
+def _validate_person_exists(session: Session, person_id: UUID) -> None:
+    """Helper function to validate that a person exists."""
+    from ..crud.person import person_crud
+
+    person = person_crud.get(session, person_id)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+
+def _validate_family_exists(session: Session, family_id: UUID) -> None:
+    """Helper function to validate that a family exists."""
+    from ..crud.family import family_crud
+
+    family = family_crud.get(session, family_id)
+    if not family:
+        raise HTTPException(status_code=404, detail="Family not found")
+
+
+def _get_person_for_event(session: Session, person_id: UUID) -> object:
+    """Helper function to get person for event validation."""
+    from ..crud.person import person_crud
+
+    return person_crud.get(session, person_id) if person_id else None
+
+
+def _validate_event_relationships_and_dates(
+    session: Session, event: EventCreate
+) -> None:
+    """Helper function to validate event relationships and dates."""
     from ..validators import validate_event_dates, validate_event_relationships
 
     validate_event_relationships(event.person_id, event.family_id)
 
-    person = None
     if event.person_id:
-        from ..crud.person import person_crud
-
-        person = person_crud.get(session, event.person_id)
-        if not person:
-            raise HTTPException(status_code=404, detail="Person not found")
+        _validate_person_exists(session, event.person_id)
 
     if event.family_id:
-        from ..crud.family import family_crud
+        _validate_family_exists(session, event.family_id)
 
-        family = family_crud.get(session, event.family_id)
-        if not family:
-            raise HTTPException(status_code=404, detail="Family not found")
-
+    person = _get_person_for_event(session, event.person_id)
     validate_event_dates(
         event_date=event.date,
         person_birth_date=person.birth_date if person else None,
         person_death_date=person.death_date if person else None,
     )
 
+
+def _validate_event_update_relationships(
+    session: Session, event_update: EventUpdate
+) -> None:
+    """Helper function to validate event update relationships."""
+    if event_update.person_id:
+        _validate_person_exists(session, event_update.person_id)
+
+    if event_update.family_id:
+        _validate_family_exists(session, event_update.family_id)
+
+
+def _get_person_for_patch_event(
+    session: Session, event_update: EventUpdate, current_event: Event
+) -> object:
+    """Helper function to get person for patch event validation."""
+    from ..crud.person import person_crud
+
+    if event_update.person_id:
+        return person_crud.get(session, event_update.person_id)
+    elif current_event.person_id:
+        return person_crud.get(session, current_event.person_id)
+    return None
+
+
+def _validate_patch_event_relationships_and_dates(
+    session: Session, event_update: EventUpdate, current_event: Event
+) -> None:
+    """Helper function to validate patch event relationships and dates."""
+    from ..validators import validate_event_dates, validate_event_relationships
+
+    update_data = event_update.model_dump(exclude_unset=True)
+    person_id = update_data.get("person_id", current_event.person_id)
+    family_id = update_data.get("family_id", current_event.family_id)
+
+    validate_event_relationships(person_id, family_id)
+
+    if event_update.person_id:
+        _validate_person_exists(session, event_update.person_id)
+
+    if event_update.family_id:
+        _validate_family_exists(session, event_update.family_id)
+
+    person = _get_person_for_patch_event(session, event_update, current_event)
+    event_date = (
+        event_update.date if event_update.date is not None else current_event.date
+    )
+
+    validate_event_dates(
+        event_date=event_date,
+        person_birth_date=person.birth_date if person else None,
+        person_death_date=person.death_date if person else None,
+    )
+
+
+@router.post("/", response_model=EventRead, status_code=201)
+def create_event(
+    event: EventCreate,
+    session: Session = Depends(get_session),
+):
+    """Create a new event."""
+    _validate_event_relationships_and_dates(session, event)
     return event_crud.create(session, event)
 
 
@@ -110,19 +187,7 @@ def update_event(
     session: Session = Depends(get_session),
 ):
     """Update an event."""
-    if event_update.person_id:
-        from ..crud.person import person_crud
-
-        person = person_crud.get(session, event_update.person_id)
-        if not person:
-            raise HTTPException(status_code=404, detail="Person not found")
-
-    if event_update.family_id:
-        from ..crud.family import family_crud
-
-        family = family_crud.get(session, event_update.family_id)
-        if not family:
-            raise HTTPException(status_code=404, detail="Family not found")
+    _validate_event_update_relationships(session, event_update)
 
     event = event_crud.update(session, event_id, event_update)
     if not event:
@@ -137,45 +202,11 @@ def patch_event(
     session: Session = Depends(get_session),
 ):
     """Partially update an event."""
-    from ..validators import validate_event_dates, validate_event_relationships
-
     current_event = event_crud.get(session, event_id)
     if not current_event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    update_data = event_update.model_dump(exclude_unset=True)
-    person_id = update_data.get("person_id", current_event.person_id)
-    family_id = update_data.get("family_id", current_event.family_id)
-
-    validate_event_relationships(person_id, family_id)
-
-    person = None
-    if event_update.person_id:
-        from ..crud.person import person_crud
-
-        person = person_crud.get(session, event_update.person_id)
-        if not person:
-            raise HTTPException(status_code=404, detail="Person not found")
-    elif current_event.person_id:
-        from ..crud.person import person_crud
-
-        person = person_crud.get(session, current_event.person_id)
-
-    if event_update.family_id:
-        from ..crud.family import family_crud
-
-        family = family_crud.get(session, event_update.family_id)
-        if not family:
-            raise HTTPException(status_code=404, detail="Family not found")
-
-    event_date = (
-        event_update.date if event_update.date is not None else current_event.date
-    )
-    validate_event_dates(
-        event_date=event_date,
-        person_birth_date=person.birth_date if person else None,
-        person_death_date=person.death_date if person else None,
-    )
+    _validate_patch_event_relationships_and_dates(session, event_update, current_event)
 
     event = event_crud.update(session, event_id, event_update)
     return event

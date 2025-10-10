@@ -11,7 +11,6 @@ USER app
 
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-COPY __init__.py ./
 COPY src/ ./src/
 
 ENV PYTHONPATH=/app/src:/app

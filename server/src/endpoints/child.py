@@ -11,32 +11,64 @@ from ..models.child import Child, ChildCreate, ChildRead
 router = APIRouter(prefix="/api/v1/children", tags=["children"])
 
 
+def _validate_child_exists(session: Session, family_id: UUID, child_id: UUID) -> Child:
+    """Helper function to validate that a child relationship exists."""
+    child = child_crud.get(session, family_id, child_id)
+    if not child:
+        raise HTTPException(status_code=404, detail="Child relationship not found")
+    return child
+
+
+def _validate_child_does_not_exist(
+    session: Session, family_id: UUID, child_id: UUID
+) -> None:
+    """Helper function to validate that a child relationship does not already exist."""
+    existing_child = child_crud.get(session, family_id, child_id)
+    if existing_child:
+        raise HTTPException(status_code=409, detail="Child relationship already exists")
+
+
+def _validate_family_exists(session: Session, family_id: UUID) -> None:
+    """Helper function to validate that a family exists."""
+    from ..crud.family import family_crud
+
+    family = family_crud.get(session, family_id)
+    if not family:
+        raise HTTPException(status_code=404, detail="Family not found")
+
+
+def _validate_person_exists(session: Session, person_id: UUID) -> None:
+    """Helper function to validate that a person exists."""
+    from ..crud.person import person_crud
+
+    person = person_crud.get(session, person_id)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+
+def _validate_parent_child_relationship(
+    session: Session, family_id: UUID, child_id: UUID
+) -> None:
+    """Helper function to validate that a parent cannot be their own child."""
+    from ..crud.family import family_crud
+
+    family = family_crud.get(session, family_id)
+    if family.husband_id == child_id or family.wife_id == child_id:
+        raise HTTPException(
+            status_code=400, detail="A parent cannot be their own child"
+        )
+
+
 @router.post("/", response_model=ChildRead, status_code=201)
 def create_child(
     child: ChildCreate,
     session: Session = Depends(get_session),
 ):
     """Create a new child relationship."""
-    existing_child = child_crud.get(session, child.family_id, child.child_id)
-    if existing_child:
-        raise HTTPException(status_code=409, detail="Child relationship already exists")
-
-    from ..crud.family import family_crud
-
-    family = family_crud.get(session, child.family_id)
-    if not family:
-        raise HTTPException(status_code=404, detail="Family not found")
-
-    from ..crud.person import person_crud
-
-    person = person_crud.get(session, child.child_id)
-    if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
-
-    if family.husband_id == child.child_id or family.wife_id == child.child_id:
-        raise HTTPException(
-            status_code=400, detail="A parent cannot be their own child"
-        )
+    _validate_child_does_not_exist(session, child.family_id, child.child_id)
+    _validate_family_exists(session, child.family_id)
+    _validate_person_exists(session, child.child_id)
+    _validate_parent_child_relationship(session, child.family_id, child.child_id)
 
     return child_crud.create(session, child)
 
@@ -96,10 +128,7 @@ def get_child(
     session: Session = Depends(get_session),
 ):
     """Get a specific child relationship."""
-    child = child_crud.get(session, family_id, child_id)
-    if not child:
-        raise HTTPException(status_code=404, detail="Child relationship not found")
-    return child
+    return _validate_child_exists(session, family_id, child_id)
 
 
 @router.delete("/{family_id}/{child_id}", status_code=204)
@@ -109,6 +138,5 @@ def delete_child(
     session: Session = Depends(get_session),
 ):
     """Delete a specific child relationship."""
-    success = child_crud.delete(session, family_id, child_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Child relationship not found")
+    _validate_child_exists(session, family_id, child_id)
+    child_crud.delete(session, family_id, child_id)

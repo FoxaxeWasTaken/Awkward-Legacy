@@ -11,6 +11,35 @@ from ..models.person import Person, PersonCreate, PersonRead, PersonUpdate
 router = APIRouter(prefix="/api/v1/persons", tags=["persons"])
 
 
+def _validate_person_exists(session: Session, person_id: UUID) -> Person:
+    """Helper function to validate that a person exists."""
+    person = person_crud.get(session, person_id)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+    return person
+
+
+def _validate_person_update_data(
+    person_update: PersonUpdate, current_person: Person
+) -> None:
+    """Helper function to validate person update data."""
+    from ..validators import validate_person_dates, validate_person_names
+
+    validate_person_names(person_update.first_name, person_update.last_name)
+
+    birth_date = (
+        person_update.birth_date
+        if person_update.birth_date is not None
+        else current_person.birth_date
+    )
+    death_date = (
+        person_update.death_date
+        if person_update.death_date is not None
+        else current_person.death_date
+    )
+    validate_person_dates(birth_date, death_date)
+
+
 @router.post("/", response_model=PersonRead, status_code=201)
 def create_person(
     person: PersonCreate,
@@ -73,25 +102,8 @@ def update_person(
     session: Session = Depends(get_session),
 ):
     """Update a person."""
-    from ..validators import validate_person_dates, validate_person_names
-
-    current_person = person_crud.get(session, person_id)
-    if not current_person:
-        raise HTTPException(status_code=404, detail="Person not found")
-
-    validate_person_names(person_update.first_name, person_update.last_name)
-
-    birth_date = (
-        person_update.birth_date
-        if person_update.birth_date is not None
-        else current_person.birth_date
-    )
-    death_date = (
-        person_update.death_date
-        if person_update.death_date is not None
-        else current_person.death_date
-    )
-    validate_person_dates(birth_date, death_date)
+    current_person = _validate_person_exists(session, person_id)
+    _validate_person_update_data(person_update, current_person)
 
     person = person_crud.update(session, person_id, person_update)
     return person
@@ -104,25 +116,8 @@ def patch_person(
     session: Session = Depends(get_session),
 ):
     """Partially update a person."""
-    from ..validators import validate_person_dates, validate_person_names
-
-    current_person = person_crud.get(session, person_id)
-    if not current_person:
-        raise HTTPException(status_code=404, detail="Person not found")
-
-    validate_person_names(person_update.first_name, person_update.last_name)
-
-    birth_date = (
-        person_update.birth_date
-        if person_update.birth_date is not None
-        else current_person.birth_date
-    )
-    death_date = (
-        person_update.death_date
-        if person_update.death_date is not None
-        else current_person.death_date
-    )
-    validate_person_dates(birth_date, death_date)
+    current_person = _validate_person_exists(session, person_id)
+    _validate_person_update_data(person_update, current_person)
 
     person = person_crud.update(session, person_id, person_update)
     return person
