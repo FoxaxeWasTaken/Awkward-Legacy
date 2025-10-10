@@ -29,7 +29,10 @@ def _validate_date_after(
     later_date: Optional[date], earlier_date: Optional[date], error_message: str
 ) -> None:
     """Generic helper function to validate that one date is after another."""
-    if later_date and earlier_date and later_date < earlier_date:
+    if not later_date or not earlier_date:
+        return
+
+    if later_date < earlier_date:
         raise HTTPException(status_code=400, detail=error_message)
 
 
@@ -154,7 +157,10 @@ def _validate_not_same_spouse(
     husband_id: Optional[str], wife_id: Optional[str]
 ) -> None:
     """Helper function to validate that husband and wife are not the same person."""
-    if husband_id and wife_id and husband_id == wife_id:
+    if not husband_id or not wife_id:
+        return
+
+    if husband_id == wife_id:
         raise HTTPException(
             status_code=400, detail="Same person cannot be both husband and wife"
         )
