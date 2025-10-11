@@ -58,15 +58,15 @@ const submit = async () => {
     <form @submit.prevent="submit">
       <div>
         <label>First Name *</label>
-        <input v-model="form.first_name" required />
+        <input v-model="form.first_name" required data-cy="first-name" />
       </div>
       <div>
         <label>Last Name *</label>
-        <input v-model="form.last_name" required />
+        <input v-model="form.last_name" required data-cy="last-name" />
       </div>
       <div>
         <label>Sex *</label>
-        <select v-model="form.sex" required>
+        <select v-model="form.sex" required data-cy="sex" >
           <option value="M">Male</option>
           <option value="F">Female</option>
           <option value="U">Unknown</option>
@@ -74,25 +74,25 @@ const submit = async () => {
       </div>
       <div>
         <label>Birth Date</label>
-        <input type="date" v-model="form.birth_date" />
+        <input type="date" v-model="form.birth_date" data-cy="birth-date" />
       </div>
       <div>
         <label>Birth Place</label>
-        <input v-model="form.birth_place" />
+        <input v-model="form.birth_place" data-cy="birth-place" />
       </div>
       <div>
         <label>Death Date</label>
-        <input type="date" v-model="form.death_date" />
+        <input type="date" v-model="form.death_date" data-cy="death-date" />
       </div>
       <div>
         <label>Death Place</label>
-        <input v-model="form.death_place" />
+        <input v-model="form.death_place" data-cy="death-place" />
       </div>
       <div>
         <label>Notes</label>
-        <textarea v-model="form.notes"></textarea>
+        <textarea v-model="form.notes" data-cy="notes"></textarea>
       </div>
-      <button type="submit" :disabled="submitting">Create</button>
+      <button type="submit" :disabled="submitting" data-cy="submit">Create</button>
     </form>
     <div v-if="error" style="color: red; margin-top: 1em;">{{ error }}</div>
     <div v-if="success" style="color: green; margin-top: 1em;">{{ success }}</div>

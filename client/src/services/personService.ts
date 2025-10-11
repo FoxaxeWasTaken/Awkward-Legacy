@@ -2,34 +2,34 @@ import api from './api'
 
 export const personService = {
   createPerson(data: any) {
-    return api.post('/persons', data)
+    return api.post('/api/v1/persons', data)
   },
 
   getAllPersons(params?: { page?: number; limit?: number }) {
-    return api.get('/persons', { params })
+    return api.get('/api/v1/persons', { params })
   },
 
   searchPersonsByName(name: string, params?: { page?: number; limit?: number }) {
-    return api.get('/persons/search', { params: { name, ...params } })
+    return api.get('/api/v1/persons/search', { params: { name, ...params } })
   },
 
   getPersonsByExactName(name: string) {
-    return api.get('/persons/by-name', { params: { name } })
+    return api.get('/api/v1/persons/by-name', { params: { name } })
   },
 
   getPersonById(id: string) {
-    return api.get(`/persons/${id}`)
+    return api.get(`/api/v1/persons/${id}`)
   },
 
   updatePerson(id: string, data: any) {
-    return api.put(`/persons/${id}`, data)
+    return api.put(`/api/v1/persons/${id}`, data)
   },
 
   patchPerson(id: string, data: Partial<any>) {
-    return api.patch(`/persons/${id}`, data)
+    return api.patch(`/api/v1/persons/${id}`, data)
   },
 
   deletePerson(id: string) {
-    return api.delete(`/persons/${id}`)
+    return api.delete(`/api/v1/persons/${id}`)
   }
 }
