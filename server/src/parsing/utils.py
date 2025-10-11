@@ -190,7 +190,7 @@ def parse_person_segment(segment: str) -> PersonDict:
 
     Returns:
         PersonDict with:
-        - name, display_name, tags, dates, raw, other
+        - name, first_name, last_name, sex, display_name, tags, dates, raw, other
     """
     tokens = tokenize_preserving_braces(segment)
     if not tokens:
@@ -199,11 +199,30 @@ def parse_person_segment(segment: str) -> PersonDict:
     name_tokens, remaining_tokens = extract_name_tokens(tokens)
     tags, date_tokens, other_tokens = extract_tags_and_dates_from_tokens(remaining_tokens)
 
+    full_name = " ".join(name_tokens)
+    first_name, last_name = split_name_into_parts(full_name)
+
+    gender_tag = tags.get("gender")
+    sex = None
+    if gender_tag:
+        g = gender_tag[0].upper()
+        if g == "F":
+            sex = "female"
+        elif g == "M":
+            sex = "male"
+        else:
+            sex = "Unknown"
+
+    parsed_tags = {k.lstrip("#"): [normalize_underscores(v) for v in vs] for k, vs in tags.items()}
+
     return {
         "raw": segment,
-        "name": " ".join(name_tokens),
-        "display_name": normalize_underscores(" ".join(name_tokens)) or None,
-        "tags": {k.lstrip("#"): [normalize_underscores(v) for v in vs] for k, vs in tags.items()},
+        "name": full_name,
+        "first_name": first_name,
+        "last_name": last_name,
+        "sex": sex,
+        "display_name": normalize_underscores(full_name) or None,
+        "tags": parsed_tags,
         "dates": [parse_date_token(t) for t in date_tokens],
         **({"other": other_tokens} if other_tokens else {})
     }
@@ -275,3 +294,29 @@ def parse_note_line(line: str) -> str:
 def should_skip_empty_line(line: str) -> bool:
     """Return True if the line is empty or contains only whitespace."""
     return not line.strip()
+
+# ===== NAME PARSING UTILITIES =====
+
+def split_name_into_parts(full_name: str) -> Tuple[str, str]:
+    """
+    Split a full name into first name and last name.
+
+    Args:
+        full_name: The full name string
+
+    Returns:
+        Tuple of (first_name, last_name)
+    """
+    if not full_name or not full_name.strip():
+        return "", ""
+
+    name_parts = full_name.strip().split()
+
+    if len(name_parts) == 0:
+        return "", ""
+    elif len(name_parts) == 1:
+        return name_parts[0], ""
+    else:
+        first_name = name_parts[0]
+        last_name = " ".join(name_parts[1:])
+        return first_name, last_name

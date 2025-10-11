@@ -77,6 +77,9 @@ class EventDict(TypedDict, total=False):
 # Person representation type
 class PersonDict(TypedDict, total=False):
     name: str
+    first_name: str
+    last_name: str
+    sex: str
     tags: List[str]
     events: List[EventDict]
     notes: List[str]

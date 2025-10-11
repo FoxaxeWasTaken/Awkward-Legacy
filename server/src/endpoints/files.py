@@ -79,24 +79,10 @@ async def import_json_data(
     Useful for testing or when another service sends ready-to-store genealogy data.
     """
     try:
-        persons = json_data.get("persons", [])
-        families = json_data.get("families", [])
-        events = json_data.get("events", [])
-        children = json_data.get("children", [])
+        flat_data = extract_entities(json_data)
+        summary = json_to_db(flat_data, session)
 
-        for person in persons:
-            person_crud.create(session, person)
-
-        for family in families:
-            family_crud.create(session, family)
-
-        for event in events:
-            event_crud.create(session, event)
-
-        for child in children:
-            child_crud.create(session, child)
-
-        return {"message": "JSON data imported successfully"}
+        return {"message": "JSON data imported successfully", **summary}
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"JSON import failed: {str(e)}")
