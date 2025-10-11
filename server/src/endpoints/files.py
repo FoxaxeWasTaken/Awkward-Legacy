@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
-from geneweb_converter import db_to_json, extract_entities, json_to_db
+from geneweb_converter import convert_to_json_serializable, db_to_json, extract_entities, json_to_db
 from sqlmodel import Session
 from uuid import UUID
 import tempfile
@@ -87,7 +87,6 @@ async def import_json_data(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"JSON import failed: {str(e)}")
 
-
 @router.get("/export/json", response_class=JSONResponse)
 def export_json_data(session: Session = Depends(get_session)):
     """
@@ -99,10 +98,10 @@ def export_json_data(session: Session = Depends(get_session)):
     children = child_crud.get_all(session)
 
     data = {
-        "persons": [p.model_dump() for p in persons],
-        "families": [f.model_dump() for f in families],
-        "events": [e.model_dump() for e in events],
-        "children": [c.model_dump() for c in children],
+        "persons": [convert_to_json_serializable(p.model_dump()) for p in persons],
+        "families": [convert_to_json_serializable(f.model_dump()) for f in families],
+        "events": [convert_to_json_serializable(e.model_dump()) for e in events],
+        "children": [convert_to_json_serializable(c.model_dump()) for c in children],
     }
 
     return JSONResponse(content=data)

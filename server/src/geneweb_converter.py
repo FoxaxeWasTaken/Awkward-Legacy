@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Optional
 from datetime import date, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 from sqlmodel import Session
 from src.models import Person, Family, Event, Child
 from src.crud.person import person_crud
@@ -444,3 +444,17 @@ def extract_family_notes_from_family_data(family_data: Dict[str, Any]) -> Option
         return " | ".join(event_notes)
 
     return None
+
+def convert_to_json_serializable(obj):
+    """Recursively convert objects into JSON-serializable types."""
+    if isinstance(obj, dict):
+        return {k: convert_to_json_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_json_serializable(v) for v in obj]
+    elif isinstance(obj, (date, datetime)):
+        return obj.isoformat()
+    elif isinstance(obj, UUID):
+        return str(obj)
+    else:
+        return obj
+
