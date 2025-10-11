@@ -458,3 +458,109 @@ def convert_to_json_serializable(obj):
     else:
         return obj
 
+def normalize_db_json(db_json: dict) -> dict:
+    """
+    Transform DB JSON (from db_to_json) into the format expected by the GeneWeb serializers.
+    """
+
+    person_lookup = {}
+    for p in db_json.get("persons", []):
+        person_id = str(p.get("id"))
+        name = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
+        person_lookup[person_id] = name
+
+    persons = []
+    for p in db_json.get("persons", []):
+        raw = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
+
+        tags = {}
+        if occ := p.get("occupation"):
+            tags["occu"] = [occ]
+        if notes := p.get("notes"):
+            tags["note"] = [notes]
+
+        dates = []
+        if p.get("birth_date"):
+            dates.append(str(p.get("birth_date")))
+        if p.get("death_date"):
+            dates.append(str(p.get("death_date")))
+
+        persons.append({
+            "name": raw,
+            "raw": raw,
+            "tags": tags,
+            "dates": dates,
+            "events": [],
+        })
+
+    children_by_family = {}
+    for c in db_json.get("children", []):
+        family_id = str(c.get("family_id"))
+        child_id = str(c.get("child_id"))
+        if family_id not in children_by_family:
+            children_by_family[family_id] = []
+
+        child_person = None
+        for p in db_json.get("persons", []):
+            if str(p.get("id")) == child_id:
+                child_person = p
+                break
+
+        if child_person and child_id in person_lookup:
+            sex = child_person.get("sex", "M")
+            gender = "male" if sex == "M" else "female" if sex == "F" else "male"
+
+            children_by_family[family_id].append({
+                "gender": gender,
+                "person": {
+                    "raw": person_lookup[child_id]
+                }
+            })
+
+    families = []
+    for f in db_json.get("families", []):
+        husband_id = str(f.get("husband_id", "")) if f.get("husband_id") else ""
+        wife_id = str(f.get("wife_id", "")) if f.get("wife_id") else ""
+
+        husband_name = person_lookup.get(husband_id, "")
+        wife_name = person_lookup.get(wife_id, "")
+
+        if husband_name and wife_name:
+            header = f"{husband_name} + {wife_name}"
+        elif husband_name:
+            header = husband_name
+        elif wife_name:
+            header = wife_name
+        else:
+            header = "Unknown + Unknown"
+
+        fam_events = []
+        if f.get("marriage_date") or f.get("marriage_place"):
+            marriage_parts = ["#marr"]
+            if f.get("marriage_date"):
+                marriage_parts.append(str(f.get("marriage_date")))
+            if f.get("marriage_place"):
+                marriage_parts.append(f.get("marriage_place"))
+
+            fam_events.append({
+                "raw": " ".join(marriage_parts)
+            })
+
+        if f.get("notes"):
+            fam_events.append({
+                "raw": f"note {f.get('notes')}"
+            })
+
+        sources = {}
+
+        family_id = str(f.get("id"))
+        family_children = children_by_family.get(family_id, [])
+
+        families.append({
+            "raw_header": header,
+            "sources": sources,
+            "events": fam_events,
+            "children": family_children,
+        })
+
+    return {"persons": persons, "families": families, "events": []}

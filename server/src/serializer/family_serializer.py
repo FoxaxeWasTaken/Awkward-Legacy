@@ -35,11 +35,13 @@ def serialize_family(family: Dict[str, Any]) -> str:
     lines.append(f"fam {family['raw_header']}")
 
     # Family sources
-    if "sources" in family:
-        lines.append(serialize_sources(family["sources"]))
+    if "sources" in family and family["sources"]:
+        sources_output = serialize_sources(family["sources"])
+        if sources_output.strip():
+            lines.append(sources_output)
 
     # Family events
-    if "events" in family:
+    if "events" in family and family["events"]:
         lines.append("fevt")
         for event in family["events"]:
             lines.append(serialize_event(event))

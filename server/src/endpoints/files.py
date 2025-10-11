@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
-from geneweb_converter import convert_to_json_serializable, db_to_json, extract_entities, json_to_db
+from geneweb_converter import convert_to_json_serializable, db_to_json, extract_entities, json_to_db, normalize_db_json
 from sqlmodel import Session
 from uuid import UUID
 import tempfile
@@ -47,15 +47,20 @@ async def import_geneweb_file(
 def export_geneweb_file(session: Session = Depends(get_session)):
     json_data = db_to_json(session)
 
+    normalized_data = normalize_db_json(json_data)
+
     lines = []
-    for person in json_data["persons"]:
+
+    for person in normalized_data["persons"]:
         lines.append(serialize_person(person))
-    for family in json_data["families"]:
+
+    for family in normalized_data["families"]:
         lines.append(serialize_family(family))
-    for event in json_data["events"]:
+
+    for event in normalized_data["events"]:
         lines.append(serialize_event(event))
 
-    output_text = "\n\n".join(lines)
+    output_text = "\n\n".join(line for line in lines if line.strip())
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".gw", mode="w", encoding="utf-8") as tmp:
         tmp.write(output_text)
