@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
-from geneweb_converter import convert_to_json_serializable, db_to_json, extract_entities, json_to_db, normalize_db_json
+from ..geneweb_converter import convert_to_json_serializable, db_to_json, extract_entities, json_to_db, normalize_db_json
 from sqlmodel import Session
 from uuid import UUID
 import tempfile
@@ -34,7 +34,6 @@ async def import_geneweb_file(
         parser = GWParser(tmp_path)
         data = parser.parse()
 
-        print("Data parsed from .gw file:", data)
         flat_data = extract_entities(data)
         summary = json_to_db(flat_data, session)
         return {"message": "GeneWeb file imported successfully", **summary}
