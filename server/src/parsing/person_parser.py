@@ -4,7 +4,7 @@ Person parsing utilities for GeneWeb parser.
 Handles parsing of person segments and related data.
 """
 
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from .models import PersonDict
 from .token_parser import (
     tokenize_preserving_braces, extract_tags_and_dates_from_tokens,
@@ -23,26 +23,15 @@ def parse_person_segment(segment: str) -> PersonDict:
     """
     tokens = tokenize_preserving_braces(segment)
     if not tokens:
-        return {"raw": segment, "name": "", "first_name": "", "last_name": "", "sex": None, "display_name": None, "tags": {}, "dates": []}
+        return _create_empty_person_dict(segment)
 
     name_tokens, remaining_tokens = extract_name_tokens(tokens)
     tags, date_tokens, other_tokens = extract_tags_and_dates_from_tokens(remaining_tokens)
 
     full_name = " ".join(name_tokens)
     first_name, last_name = split_name_into_parts(full_name)
-
-    gender_tag = tags.get("#gender")
-    sex = None
-    if gender_tag:
-        g = gender_tag[0].upper()
-        if g == "F":
-            sex = "female"
-        elif g == "M":
-            sex = "male"
-        else:
-            sex = "Unknown"
-
-    parsed_tags = {k.lstrip("#"): [normalize_underscores(v) for v in vs] for k, vs in tags.items()}
+    sex = _determine_sex_from_tags(tags)
+    parsed_tags = _process_tags(tags)
 
     return {
         "raw": segment,
@@ -55,3 +44,37 @@ def parse_person_segment(segment: str) -> PersonDict:
         "dates": [parse_date_token(t) for t in date_tokens],
         **({"other": other_tokens} if other_tokens else {})
     }
+
+
+def _create_empty_person_dict(segment: str) -> PersonDict:
+    """Create empty person dictionary for empty segments."""
+    return {
+        "raw": segment, 
+        "name": "", 
+        "first_name": "", 
+        "last_name": "", 
+        "sex": None, 
+        "display_name": None, 
+        "tags": {}, 
+        "dates": []
+    }
+
+
+def _determine_sex_from_tags(tags: Dict[str, List[str]]) -> Optional[str]:
+    """Determine sex from gender tag."""
+    gender_tag = tags.get("#gender")
+    if not gender_tag:
+        return None
+    
+    g = gender_tag[0].upper()
+    if g == "F":
+        return "female"
+    elif g == "M":
+        return "male"
+    else:
+        return "Unknown"
+
+
+def _process_tags(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    """Process tags by removing # prefix and normalizing underscores."""
+    return {k.lstrip("#"): [normalize_underscores(v) for v in vs] for k, vs in tags.items()}

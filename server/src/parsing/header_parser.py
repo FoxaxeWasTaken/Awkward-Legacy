@@ -24,32 +24,16 @@ class HeaderParser:
             Tuple of (parsed_headers, new_position)
         """
         headers = {"gwplus": False}
-        
-        def should_parse_line(line: str) -> bool:
-            """Return True if this line should be parsed as a header."""
-            return not should_skip_empty_line(line)
-
-        def find_matching_parser(line: str):
-            """Return the parser for a matching header line, or None."""
-            header_parsers = {
-                "encoding:": self._parse_encoding_header,
-                "gwplus": self._parse_gwplus_header,
-            }
-            
-            for prefix, parser in header_parsers.items():
-                if (prefix == "gwplus" and line == prefix) or line.startswith(prefix):
-                    return parser
-            return None
-
         current_pos = self.pos
+        
         while current_pos < self.length:
             line = self.lines[current_pos].strip()
 
-            if not should_parse_line(line):
+            if not _should_parse_line(line):
                 current_pos += 1
                 continue
 
-            parser = find_matching_parser(line)
+            parser = _find_matching_parser(line, self)
             if parser:
                 parser(line, headers)
                 current_pos += 1
@@ -67,3 +51,27 @@ class HeaderParser:
         """Parse gwplus header line."""
         headers["gwplus"] = True
 
+
+def _should_parse_line(line: str) -> bool:
+    """Return True if this line should be parsed as a header."""
+    return not should_skip_empty_line(line)
+
+
+def _find_matching_parser(line: str, parser_instance) -> Optional[callable]:
+    """Return the parser for a matching header line, or None."""
+    header_parsers = {
+        "encoding:": parser_instance._parse_encoding_header,
+        "gwplus": parser_instance._parse_gwplus_header,
+    }
+    
+    for prefix, parser in header_parsers.items():
+        if _matches_prefix(line, prefix):
+            return parser
+    return None
+
+
+def _matches_prefix(line: str, prefix: str) -> bool:
+    """Check if line matches the prefix."""
+    if prefix == "gwplus":
+        return line == prefix
+    return line.startswith(prefix)

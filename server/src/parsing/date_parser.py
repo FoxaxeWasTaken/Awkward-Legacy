@@ -5,7 +5,7 @@ Handles parsing and interpretation of date tokens and qualifiers.
 """
 
 import re
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from .models import DateDict
 
 
@@ -30,25 +30,51 @@ def parse_date_token(date_token: str) -> DateDict:
     if not token:
         return {"raw": token}
 
-    # Handle literal dates
+    # Try different parsing strategies
+    parsers = [
+        _parse_literal_date,
+        _parse_range_date,
+        _parse_alternatives_date,
+        _parse_qualifier_date
+    ]
+    
+    for parser in parsers:
+        result = parser(token)
+        if result is not None:
+            return result
+    
+    return {"raw": token}
+
+
+def _parse_literal_date(token: str) -> Optional[DateDict]:
+    """Parse literal date format."""
     if token.startswith("0(") and token.endswith(")"):
         literal_text = token[2:-1]
         return {"raw": token, "literal": normalize_underscores(literal_text)}
+    return None
 
-    # Handle ranges
+
+def _parse_range_date(token: str) -> Optional[DateDict]:
+    """Parse range date format."""
     if ".." in token:
         parts = [part.strip() for part in token.split("..", 1)]
         return {"raw": token, "between": parts}
+    return None
 
-    # Handle alternatives
+
+def _parse_alternatives_date(token: str) -> Optional[DateDict]:
+    """Parse alternatives date format."""
     if "|" in token:
         parts = [part.strip() for part in token.split("|")]
         return {"raw": token, "alternatives": parts}
+    return None
 
-    # Handle qualifiers
+
+def _parse_qualifier_date(token: str) -> Optional[DateDict]:
+    """Parse qualifier date format."""
     match = DATE_QUAL_RE.match(token)
     if not match:
-        return {"raw": token}
+        return None
 
     qualifier = match.group("qual") or ""
     value = match.group("val").strip()
@@ -64,7 +90,7 @@ def parse_date_token(date_token: str) -> DateDict:
     if qualifier in qualifiers_map:
         date["qualifier"] = qualifiers_map[qualifier]
         date["value"] = value
-    elif value and DATE_TOKEN_PATTERN.search(token):  # Only set value for date-like tokens
+    elif value and DATE_TOKEN_PATTERN.search(token):
         date["value"] = value
 
     return date

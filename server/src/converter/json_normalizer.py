@@ -79,51 +79,77 @@ def _build_children_by_family(db_json: dict, person_lookup: Dict[str, str]) -> D
     for c in db_json.get("children", []):
         family_id = str(c.get("family_id"))
         child_id = str(c.get("child_id"))
-        if family_id not in children_by_family:
-            children_by_family[family_id] = []
-
-        child_person = None
-        for p in db_json.get("persons", []):
-            if str(p.get("id")) == child_id:
-                child_person = p
-                break
-
-        if child_person and child_id in person_lookup:
-            sex = child_person.get("sex", "M")
-            gender = "male" if sex == "M" else "female" if sex == "F" else "male"
-
-            children_by_family[family_id].append({
-                "gender": gender,
-                "person": {
-                    "raw": person_lookup[child_id]
-                }
-            })
+        
+        _ensure_family_exists(children_by_family, family_id)
+        _add_child_if_valid(db_json, children_by_family, family_id, child_id, person_lookup)
+    
     return children_by_family
+
+
+def _ensure_family_exists(children_by_family: Dict[str, list], family_id: str) -> None:
+    """Ensure family exists in children_by_family dictionary."""
+    if family_id not in children_by_family:
+        children_by_family[family_id] = []
+
+
+def _add_child_if_valid(db_json: dict, children_by_family: Dict[str, list], family_id: str, child_id: str, person_lookup: Dict[str, str]) -> None:
+    """Add child to family if valid."""
+    child_person = _find_person_by_id(db_json, child_id)
+    if child_person and child_id in person_lookup:
+        child_data = _create_child_data(child_person, person_lookup[child_id])
+        children_by_family[family_id].append(child_data)
+
+
+def _find_person_by_id(db_json: dict, person_id: str) -> dict:
+    """Find person by ID in the database JSON."""
+    for p in db_json.get("persons", []):
+        if str(p.get("id")) == person_id:
+            return p
+    return None
+
+
+def _create_child_data(child_person: dict, child_name: str) -> dict:
+    """Create child data structure."""
+    sex = child_person.get("sex", "M")
+    gender = "male" if sex == "M" else "female" if sex == "F" else "male"
+    
+    return {
+        "gender": gender,
+        "person": {
+            "raw": child_name
+        }
+    }
 
 
 def _build_families_list(db_json: dict, person_lookup: Dict[str, str], children_by_family: Dict[str, list]) -> list:
     """Build families list from database JSON."""
     families = []
     for f in db_json.get("families", []):
-        husband_id = str(f.get("husband_id", "")) if f.get("husband_id") else ""
-        wife_id = str(f.get("wife_id", "")) if f.get("wife_id") else ""
-
-        husband_name = person_lookup.get(husband_id, "")
-        wife_name = person_lookup.get(wife_id, "")
-
-        header = _build_family_header(husband_name, wife_name)
-        fam_events = _build_family_events(f)
-        sources = {}
-        family_id = str(f.get("id"))
-        family_children = children_by_family.get(family_id, [])
-
-        families.append({
-            "raw_header": header,
-            "sources": sources,
-            "events": fam_events,
-            "children": family_children,
-        })
+        family_data = _create_family_data(f, person_lookup, children_by_family)
+        families.append(family_data)
     return families
+
+
+def _create_family_data(family: dict, person_lookup: Dict[str, str], children_by_family: Dict[str, list]) -> dict:
+    """Create family data structure."""
+    husband_id = str(family.get("husband_id", "")) if family.get("husband_id") else ""
+    wife_id = str(family.get("wife_id", "")) if family.get("wife_id") else ""
+
+    husband_name = person_lookup.get(husband_id, "")
+    wife_name = person_lookup.get(wife_id, "")
+
+    header = _build_family_header(husband_name, wife_name)
+    fam_events = _build_family_events(family)
+    sources = {}
+    family_id = str(family.get("id"))
+    family_children = children_by_family.get(family_id, [])
+
+    return {
+        "raw_header": header,
+        "sources": sources,
+        "events": fam_events,
+        "children": family_children,
+    }
 
 
 def _build_family_header(husband_name: str, wife_name: str) -> str:

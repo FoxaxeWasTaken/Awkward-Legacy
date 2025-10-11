@@ -28,27 +28,34 @@ def extract_place_and_source(text: str) -> Tuple[Optional[str], List[str]]:
     Returns:
         Tuple: (place_raw, list_of_sources)
     """
-    place_raw, sources = None, []
+    place_raw = _extract_place_from_text(text)
+    sources = _extract_sources_from_text(text)
+    return place_raw, sources
 
+
+def _extract_place_from_text(text: str) -> Optional[str]:
+    """Extract place from text."""
     # Look for explicit #p place tag
     place_match = re.search(r"#p\s*([^#]+)", text)
     if place_match:
-        place_raw = place_match.group(1).strip()
-    else:
-        # If no #p tag, treat text before any # tags as place
-        first_hash = text.find('#')
-        if first_hash > 0:
-            place_raw = text[:first_hash].strip()
-        elif not any(tag in text for tag in ['#s', '#p']) and text.strip():
-            # If no tags at all, treat the whole text as place
-            place_raw = text.strip()
-        else:
-            place_raw = None
+        return place_match.group(1).strip()
+    
+    # If no #p tag, treat text before any # tags as place
+    first_hash = text.find('#')
+    if first_hash > 0:
+        return text[:first_hash].strip()
+    
+    # If no tags at all, treat the whole text as place
+    if not any(tag in text for tag in ['#s', '#p']) and text.strip():
+        return text.strip()
+    
+    return None
 
+
+def _extract_sources_from_text(text: str) -> List[str]:
+    """Extract sources from text."""
     source_matches = re.findall(r"#s\s*([^#]+)", text)
-    sources.extend(s.strip() for s in source_matches)
-
-    return place_raw, sources
+    return [s.strip() for s in source_matches]
 
 
 def parse_event_line(event_line: str, event_type_mapping: Dict[str, str]) -> EventDict:
@@ -66,18 +73,25 @@ def parse_event_line(event_line: str, event_type_mapping: Dict[str, str]) -> Eve
     parsed: EventDict = {"type": event_type, "raw": event_line.strip()}
 
     if content:
-        tokens = content.split()
-        date_token, rest_tokens = extract_date_from_parts(tokens)
-        if date_token:
-            parsed["date"] = parse_date_token(date_token)
-        if rest_tokens:
-            place, sources = extract_place_and_source(" ".join(rest_tokens))
-            if place:
-                parsed["place_raw"] = place
-            if sources:
-                parsed["source"] = sources
+        _parse_event_content(content, parsed)
 
     return parsed
+
+
+def _parse_event_content(content: str, parsed: EventDict) -> None:
+    """Parse event content and add to parsed dict."""
+    tokens = content.split()
+    date_token, rest_tokens = extract_date_from_parts(tokens)
+    
+    if date_token:
+        parsed["date"] = parse_date_token(date_token)
+    
+    if rest_tokens:
+        place, sources = extract_place_and_source(" ".join(rest_tokens))
+        if place:
+            parsed["place_raw"] = place
+        if sources:
+            parsed["source"] = sources
 
 
 def parse_note_line(line: str) -> str:

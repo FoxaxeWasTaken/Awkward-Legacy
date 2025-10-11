@@ -23,20 +23,32 @@ def tokenize_preserving_braces(text: str) -> List[str]:
         if text[i].isspace():
             i += 1
             continue
+        
         if text[i] == "{":
-            start = i
-            i += 1
-            while i < len(text) and text[i] != "}":
-                i += 1
-            if i < len(text):
-                i += 1
-            tokens.append(text[start:i])
+            token, i = _extract_braced_token(text, i)
         else:
-            start = i
-            while i < len(text) and not text[i].isspace():
-                i += 1
-            tokens.append(text[start:i])
+            token, i = _extract_regular_token(text, i)
+        
+        tokens.append(token)
     return tokens
+
+
+def _extract_braced_token(text: str, start: int) -> Tuple[str, int]:
+    """Extract token inside braces."""
+    i = start + 1
+    while i < len(text) and text[i] != "}":
+        i += 1
+    if i < len(text):
+        i += 1
+    return text[start:i], i
+
+
+def _extract_regular_token(text: str, start: int) -> Tuple[str, int]:
+    """Extract regular token (not in braces)."""
+    i = start
+    while i < len(text) and not text[i].isspace():
+        i += 1
+    return text[start:i], i
 
 
 def extract_tags_and_dates_from_tokens(tokens: List[str]) -> Tuple[TagsDict, List[str], List[str]]:
