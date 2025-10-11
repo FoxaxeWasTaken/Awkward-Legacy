@@ -26,17 +26,17 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 try:
-    from .parsing.models import FEVT_MAP, PEVT_MAP, EventDict, FamilyDict, ParserResult, PersonDict
-    from .parsing.utils import (
-        parse_event_line, parse_note_line, parse_person_segment, split_family_header,
-        should_skip_empty_line
-    )
+    from .parsing.models import ParserResult
+    from .parsing.header_parser import HeaderParser
+    from .parsing.family_parser import FamilyParser
+    from .parsing.block_parser import BlockParser
+    from .parsing.family_utils import should_skip_empty_line
 except ImportError:
-    from parsing.models import FEVT_MAP, PEVT_MAP, EventDict, FamilyDict, ParserResult, PersonDict
-    from parsing.utils import (
-        parse_event_line, parse_note_line, parse_person_segment, split_family_header,
-        should_skip_empty_line
-    )
+    from parsing.models import ParserResult
+    from parsing.header_parser import HeaderParser
+    from parsing.family_parser import FamilyParser
+    from parsing.block_parser import BlockParser
+    from parsing.family_utils import should_skip_empty_line
 
 # ===== MAIN PARSER CLASS =====
 
@@ -60,7 +60,9 @@ class GWParser:
             "notes": [],
             "extended_pages": [],
             "database_notes": None,
-            "raw_header": {},
+            "raw_header": {
+                "gwplus": False
+            },
         }
 
         self._block_parsers = {
@@ -71,10 +73,7 @@ class GWParser:
             "page-ext ": self._parse_page_ext,
         }
 
-        self._header_parsers = {
-            "encoding:": self._parse_encoding_header,
-            "gwplus": self._parse_gwplus_header,
-        }
+        # Header parsing moved to HeaderParser class
 
     def _read(self) -> None:
         """Read the .gw file into self.lines."""
@@ -113,30 +112,10 @@ class GWParser:
 
     def _parse_headers(self) -> None:
         """Parse headers at the top of the file."""
-        while self.pos < self.length:
-            line = self._current().strip()
-            if should_skip_empty_line(line):
-                self._advance()
-                continue
-            handled = False
-            for prefix, parser in self._header_parsers.items():
-                if (prefix == "gwplus" and line == prefix) or line.startswith(prefix):
-                    parser(line)
-                    handled = True
-                    break
-            if not handled:
-                break
-
-    def _parse_encoding_header(self, line: str) -> None:
-        """Parse an encoding header line."""
-        encoding = line.split(":", 1)[-1].strip()
-        self.result["raw_header"]["encoding"] = encoding
-        self._advance()
-
-    def _parse_gwplus_header(self, _: str) -> None:
-        """Parse gwplus header line."""
-        self.result["raw_header"]["gwplus"] = True
-        self._advance()
+        header_parser = HeaderParser(self.lines, self.pos)
+        headers, new_pos = header_parser.parse_headers()
+        self.result["raw_header"].update(headers)
+        self.pos = new_pos
 
     # ===== MAIN BLOCK PARSING =====
 
@@ -175,185 +154,42 @@ class GWParser:
 
     def _parse_family(self) -> FamilyDict:
         """Parse a family block starting at current position."""
-        line = self._current().strip()
-        assert line.startswith("fam ")
-        raw_header = line[len("fam "):].strip()
-        self._advance()
-
-        husband_segment, wife_segment = split_family_header(raw_header)
-        husband = parse_person_segment(husband_segment)
-        wife = parse_person_segment(wife_segment) if wife_segment else None
-
-        family: FamilyDict = {
-            "raw_header": raw_header,
-            "husband": husband,
-            "wife": wife,
-            "events": [],
-            "children": [],
-            "sources": {},
-        }
-
-        while self.pos < self.length:
-            line = self._current().strip()
-            if not line:
-                self._advance()
-                continue
-
-            if line.startswith("src "):
-                family["sources"].setdefault("family_source", []).append(line[len("src "):].strip())
-                self._advance()
-                continue
-            if line.startswith("csrc "):
-                family["sources"].setdefault("children_source", []).append(line[len("csrc "):].strip())
-                self._advance()
-                continue
-            if line == "fevt":
-                family["events"].extend(self._parse_fevt())
-                continue
-            if line == "beg":
-                family["children"].extend(self._parse_beg())
-                continue
-            if any(line.startswith(p) for p in self._block_parsers):
-                break
-            family.setdefault("raw_lines", []).append(line)
-            self._advance()
-
+        family_parser = FamilyParser(self.lines, self.pos)
+        family, new_pos = family_parser.parse_family()
+        self.pos = new_pos
         return family
 
-    def _parse_fevt(self) -> List[EventDict]:
-        """Parse fevt ... end fevt block."""
-        assert self._current().strip() == "fevt"
-        self._advance()
-        return self._parse_event_block("end fevt", FEVT_MAP)
-
-    def _parse_event_block(self, end_marker: str, event_map: Dict[str, str]) -> List[EventDict]:
-        """Common logic to parse events in fevt and pevt blocks."""
-        events: List[EventDict] = []
-        while self.pos < self.length:
-            line = self._current().rstrip()
-            if should_skip_empty_line(line):
-                self._advance()
-                continue
-            if line.startswith(end_marker):
-                self._advance()
-                break
-            if line.startswith("#"):
-                events.append(parse_event_line(line, event_map))
-                self._advance()
-                continue
-            if line.startswith("note "):
-                note = parse_note_line(line)
-                if not events:
-                    events.append({"type": "note", "notes": [note]})
-                else:
-                    events[-1].setdefault("notes", []).append(note)
-                self._advance()
-                continue
-            events.append({"type": "raw", "raw": line})
-            self._advance()
-        return events
-
-    def _parse_beg(self) -> List[Dict[str, Any]]:
-        """Parse beg ... end block containing children."""
-        assert self._current().strip() == "beg"
-        self._advance()
-        children: List[Dict[str, Any]] = []
-
-        while self.pos < self.length:
-            line = self._current().rstrip()
-            if not line:
-                self._advance()
-                continue
-            if line == "end":
-                self._advance()
-                break
-            if line.startswith("- "):
-                raw_child = line[2:].strip()
-                gender, remainder = self._extract_gender(raw_child)
-                person = parse_person_segment(remainder)
-                children.append({"raw": raw_child, "gender": gender, "person": person})
-                self._advance()
-                continue
-            children.append({"raw_line": line})
-            self._advance()
-        return children
-
-    def _extract_gender(self, text: str) -> Tuple[Optional[str], str]:
-        """Extract gender prefix from child line."""
-        parts = text.split(None, 1)
-        if parts and parts[0] in ("h", "f"):
-            return ("male" if parts[0] == "h" else "female", parts[1] if len(parts) > 1 else "")
-        return None, text
 
     # ===== PERSON EVENTS =====
 
     def _parse_pevt(self) -> PersonDict:
         """Parse pevt block."""
-        assert self._current().strip().startswith("pevt ")
-        payload = self._current().strip()[len("pevt "):].strip()
-        self._advance()
-        events = self._parse_event_block("end pevt", PEVT_MAP)
-        return {"person": payload, "events": events}
+        block_parser = BlockParser(self.lines, self.pos)
+        data, new_pos = block_parser.parse_pevt()
+        self.pos = new_pos
+        return data
 
     # ===== NOTES =====
 
     def _parse_notes(self) -> Dict[str, Any]:
         """Parse notes block."""
-        assert self._current().strip().startswith("notes ")
-        subject = self._current().strip()[len("notes "):].strip()
-        self._advance()
-        if self._current().strip() == "beg":
-            self._advance()
-        lines = []
-        while self.pos < self.length:
-            line = self._current().rstrip("\n")
-            if line.strip().startswith("end notes"):
-                self._advance()
-                break
-            lines.append(line)
-            self._advance()
-        return {"person": subject, "text": "\n".join(lines).strip(), "raw_lines": lines}
+        block_parser = BlockParser(self.lines, self.pos)
+        data, new_pos = block_parser.parse_notes()
+        self.pos = new_pos
+        return data
 
     def _parse_notes_db(self) -> Dict[str, Any]:
         """Parse notes-db block."""
-        self._advance()
-        lines = []
-        while self.pos < self.length:
-            line = self._current()
-            if line.strip().startswith("end notes-db"):
-                self._advance()
-                break
-            lines.append(line)
-            self._advance()
-        return {"text": "\n".join(lines).strip(), "raw_lines": lines}
+        block_parser = BlockParser(self.lines, self.pos)
+        data, new_pos = block_parser.parse_notes_db()
+        self.pos = new_pos
+        return data
 
     # ===== EXTENDED PAGES =====
 
     def _parse_page_ext(self) -> Dict[str, Any]:
         """Parse page-ext block."""
-        assert self._current().strip().startswith("page-ext ")
-        name = self._current().strip()[len("page-ext "):].strip()
-        self._advance()
-
-        title, ptype, content_lines = None, None, []
-        while self.pos < self.length:
-            line = self._current()
-            stripped = line.strip()
-            if stripped.startswith("end page-ext"):
-                self._advance()
-                break
-            if stripped.startswith("TITLE="):
-                title = stripped.split("=", 1)[1].strip()
-            elif stripped.startswith("TYPE="):
-                ptype = stripped.split("=", 1)[1].strip()
-            else:
-                content_lines.append(line)
-            self._advance()
-
-        content_text = "\n".join(content_lines).strip()
-        try:
-            content = json.loads(content_text) if content_text.startswith("{") and content_text.endswith("}") else content_text
-        except Exception:
-            content = content_text
-
-        return {"name": name, "title": title, "type": ptype, "content": content}
+        block_parser = BlockParser(self.lines, self.pos)
+        data, new_pos = block_parser.parse_page_ext()
+        self.pos = new_pos
+        return data
