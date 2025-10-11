@@ -17,3 +17,6 @@ isort
 
 # Database testing
 pytest-postgresql
+
+# File upload handling
+python-multipart

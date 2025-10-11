@@ -11,6 +11,7 @@ from .endpoints.person import router as person_router
 from .endpoints.family import router as family_router
 from .endpoints.child import router as child_router
 from .endpoints.event import router as event_router
+from .endpoints.files import router as files_router
 
 
 @asynccontextmanager
@@ -31,6 +32,7 @@ app.include_router(person_router)
 app.include_router(family_router)
 app.include_router(child_router)
 app.include_router(event_router)
+app.include_router(files_router)
 
 
 @app.get("/")
