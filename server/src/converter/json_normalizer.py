@@ -63,33 +63,37 @@ def _build_persons_list(db_json: dict) -> list:
         if p.get("death_date"):
             dates.append(str(p.get("death_date")))
 
-        persons.append({
-            "name": raw,
-            "raw": raw,
-            "tags": tags,
-            "dates": dates,
-            "events": [],
-        })
+        persons.append(
+            {
+                "name": raw,
+                "raw": raw,
+                "tags": tags,
+                "dates": dates,
+                "events": [],
+            }
+        )
     return persons
 
 
-def _build_children_by_family(db_json: dict, person_lookup: Dict[str, str]) -> Dict[str, list]:
+def _build_children_by_family(
+    db_json: dict, person_lookup: Dict[str, str]
+) -> Dict[str, list]:
     """Build children by family dictionary."""
     children_by_family = {}
     for c in db_json.get("children", []):
         family_id = str(c.get("family_id"))
         child_id = str(c.get("child_id"))
-        
+
         _ensure_family_exists(children_by_family, family_id)
         context = {
             "db_json": db_json,
             "children_by_family": children_by_family,
             "family_id": family_id,
             "child_id": child_id,
-            "person_lookup": person_lookup
+            "person_lookup": person_lookup,
         }
         _add_child_if_valid(context)
-    
+
     return children_by_family
 
 
@@ -106,7 +110,7 @@ def _add_child_if_valid(context: dict) -> None:
     family_id = context["family_id"]
     child_id = context["child_id"]
     person_lookup = context["person_lookup"]
-    
+
     child_person = _find_person_by_id(db_json, child_id)
     if child_person and child_id in person_lookup:
         child_data = _create_child_data(child_person, person_lookup[child_id])
@@ -125,16 +129,13 @@ def _create_child_data(child_person: dict, child_name: str) -> dict:
     """Create child data structure."""
     sex = child_person.get("sex", "M")
     gender = "male" if sex == "M" else "female" if sex == "F" else "male"
-    
-    return {
-        "gender": gender,
-        "person": {
-            "raw": child_name
-        }
-    }
+
+    return {"gender": gender, "person": {"raw": child_name}}
 
 
-def _build_families_list(db_json: dict, person_lookup: Dict[str, str], children_by_family: Dict[str, list]) -> list:
+def _build_families_list(
+    db_json: dict, person_lookup: Dict[str, str], children_by_family: Dict[str, list]
+) -> list:
     """Build families list from database JSON."""
     families = []
     for f in db_json.get("families", []):
@@ -143,7 +144,9 @@ def _build_families_list(db_json: dict, person_lookup: Dict[str, str], children_
     return families
 
 
-def _create_family_data(family: dict, person_lookup: Dict[str, str], children_by_family: Dict[str, list]) -> dict:
+def _create_family_data(
+    family: dict, person_lookup: Dict[str, str], children_by_family: Dict[str, list]
+) -> dict:
     """Create family data structure."""
     husband_id = str(family.get("husband_id", "")) if family.get("husband_id") else ""
     wife_id = str(family.get("wife_id", "")) if family.get("wife_id") else ""
@@ -166,12 +169,12 @@ def _create_family_data(family: dict, person_lookup: Dict[str, str], children_by
         "events": fam_events,
         "children": family_children,
     }
-    
+
     # Preserve other family fields
     for key, value in family.items():
         if key not in ["id", "husband_id", "wife_id"]:
             result[key] = value
-    
+
     return result
 
 
@@ -197,14 +200,9 @@ def _build_family_events(f: dict) -> list:
         if f.get("marriage_place"):
             marriage_parts.append(f.get("marriage_place"))
 
-        fam_events.append({
-            "raw": " ".join(marriage_parts)
-        })
+        fam_events.append({"raw": " ".join(marriage_parts)})
 
     if f.get("notes"):
-        fam_events.append({
-            "raw": f"note {f.get('notes')}"
-        })
+        fam_events.append({"raw": f"note {f.get('notes')}"})
 
     return fam_events
-

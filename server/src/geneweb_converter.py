@@ -6,7 +6,10 @@ from src.crud.family import family_crud
 from src.crud.event import event_crud
 from src.crud.child import child_crud
 from src.converter.entity_extractor import extract_entities
-from src.converter.json_normalizer import convert_to_json_serializable, normalize_db_json
+from src.converter.json_normalizer import (
+    convert_to_json_serializable,
+    normalize_db_json,
+)
 
 
 def json_to_db(data: Dict[str, Any], session: Session):

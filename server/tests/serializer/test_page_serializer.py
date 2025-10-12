@@ -7,7 +7,7 @@ def test_single_page_basic():
         "Biography": {
             "TITLE": "Life of John Doe",
             "TYPE": "biography",
-            "CONTENT": "Born in 1800."
+            "CONTENT": "Born in 1800.",
         }
     }
 
@@ -25,7 +25,7 @@ def test_single_page_basic():
 def test_multiple_pages():
     pages = {
         "Bio1": {"TITLE": "Bio 1", "TYPE": "summary"},
-        "Bio2": {"TITLE": "Bio 2", "TYPE": "history"}
+        "Bio2": {"TITLE": "Bio 2", "TYPE": "history"},
     }
 
     result = serialize_pages(pages)
@@ -57,13 +57,10 @@ def test_page_with_none_values():
 
 def test_page_with_special_characters():
     pages = {
-        "Résumé": {
-            "TITLE": "Résumé & Overview",
-            "CONTENT": "Café, naïve, jalapeño"
-        }
+        "Résumé": {"TITLE": "Résumé & Overview", "CONTENT": "Café, naïve, jalapeño"}
     }
     result = serialize_pages(pages)
-    assert 'page-ext Résumé' in result
+    assert "page-ext Résumé" in result
     assert "TITLE=Résumé & Overview" in result
     assert "CONTENT=Café, naïve, jalapeño" in result
 
@@ -71,7 +68,10 @@ def test_page_with_special_characters():
 def test_page_with_quotes_in_name():
     pages = {'"QuotePage"': {"TITLE": "Has quotes"}}
     result = serialize_pages(pages)
-    assert '# extended page "\\"QuotePage\\"" used by:' in result or 'page-ext "QuotePage"' in result
+    assert (
+        '# extended page "\\"QuotePage\\"" used by:' in result
+        or 'page-ext "QuotePage"' in result
+    )
 
 
 def test_trailing_newlines_consistency():
@@ -91,5 +91,5 @@ def test_pages_order_is_deterministic():
 def test_handles_non_string_keys_and_values():
     pages = {123: {"YEAR": 2025}}
     result = serialize_pages(pages)
-    assert 'page-ext 123' in result
-    assert 'YEAR=2025' in result
+    assert "page-ext 123" in result
+    assert "YEAR=2025" in result

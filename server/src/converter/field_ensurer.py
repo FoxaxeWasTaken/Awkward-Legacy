@@ -26,7 +26,7 @@ def ensure_person_fields(person_data: Dict[str, Any]) -> Dict[str, Any]:
         extract_birth_place_from_person_data,
         extract_death_place_from_person_data,
         extract_occupation_from_person_data,
-        extract_notes_from_person_data
+        extract_notes_from_person_data,
     )
 
     first_name = person_data.get("first_name", "")
@@ -41,6 +41,7 @@ def ensure_person_fields(person_data: Dict[str, Any]) -> Dict[str, Any]:
 
     if _should_extract_name_from_full_name(first_name, last_name, person_data):
         from src.parsing.token_parser import split_name_into_parts
+
         first_name, last_name = split_name_into_parts(person_data["name"])
 
     birth_date = extract_birth_date_from_person_data(person_data)
@@ -76,7 +77,7 @@ def ensure_event_fields(event_data: Dict[str, Any]) -> Dict[str, Any]:
         Event data with required fields (date, place, description converted properly)
     """
     result = event_data.copy()
-    
+
     _process_event_date(event_data, result)
     _process_event_place(event_data, result)
     _process_event_notes(event_data, result)
@@ -119,7 +120,8 @@ def _ensure_event_id(result: Dict[str, Any]) -> None:
         result["id"] = str(uuid4())
 
 
-def _should_extract_name_from_full_name(first_name: str, last_name: str, person_data: Dict[str, Any]) -> bool:
+def _should_extract_name_from_full_name(
+    first_name: str, last_name: str, person_data: Dict[str, Any]
+) -> bool:
     """Check if we should extract name from full name."""
     return not first_name and not last_name and person_data.get("name")
-

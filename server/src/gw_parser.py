@@ -40,6 +40,7 @@ except ImportError:
 
 # ===== MAIN PARSER CLASS =====
 
+
 class GWParser:
     """
     Main GeneWeb parser.
@@ -60,9 +61,7 @@ class GWParser:
             "notes": [],
             "extended_pages": [],
             "database_notes": None,
-            "raw_header": {
-                "gwplus": False
-            },
+            "raw_header": {"gwplus": False},
         }
 
         self._block_parsers = {
@@ -72,6 +71,7 @@ class GWParser:
             "notes ": self._parse_notes,
             "page-ext ": self._parse_page_ext,
         }
+
     def _read(self) -> None:
         """Read the .gw file into self.lines."""
         self.lines = self.path.read_text(encoding="utf-8").splitlines()
@@ -103,7 +103,9 @@ class GWParser:
         """Write parser result to a JSON file."""
         p = Path(output_path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps(self.result, ensure_ascii=False, indent=2), encoding="utf-8")
+        p.write_text(
+            json.dumps(self.result, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     # ===== HEADER PARSING =====
 
@@ -123,10 +125,10 @@ class GWParser:
             if should_skip_empty_line(line):
                 self._advance()
                 continue
-            
+
             if self._try_parse_block(line):
                 continue
-            
+
             self._handle_unrecognized_line(line)
 
     def _try_parse_block(self, line: str) -> bool:
@@ -164,7 +166,6 @@ class GWParser:
         family, new_pos = family_parser.parse_family()
         self.pos = new_pos
         return family
-
 
     # ===== PERSON EVENTS =====
 

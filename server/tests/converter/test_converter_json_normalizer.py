@@ -15,7 +15,7 @@ from src.converter.json_normalizer import (
     _add_child_if_valid,
     _find_person_by_id,
     _create_child_data,
-    _create_family_data
+    _create_family_data,
 )
 
 
@@ -57,12 +57,8 @@ class TestConvertToJsonSerializable:
         test_date = date(2023, 1, 1)
         test_uuid = uuid4()
         obj = {
-            "person": {
-                "id": test_uuid,
-                "birth_date": test_date,
-                "name": "John"
-            },
-            "count": 1
+            "person": {"id": test_uuid, "birth_date": test_date, "name": "John"},
+            "count": 1,
         }
         result = convert_to_json_serializable(obj)
         assert result["person"]["id"] == str(test_uuid)
@@ -106,13 +102,7 @@ class TestBuildPersonLookup:
     def test_build_person_lookup_single_person(self):
         """Test building person lookup with single person."""
         db_json = {
-            "persons": [
-                {
-                    "id": "person1",
-                    "first_name": "John",
-                    "last_name": "Doe"
-                }
-            ]
+            "persons": [{"id": "person1", "first_name": "John", "last_name": "Doe"}]
         }
         result = _build_person_lookup(db_json)
         expected = {"person1": "John Doe"}
@@ -122,23 +112,12 @@ class TestBuildPersonLookup:
         """Test building person lookup with multiple persons."""
         db_json = {
             "persons": [
-                {
-                    "id": "person1",
-                    "first_name": "John",
-                    "last_name": "Doe"
-                },
-                {
-                    "id": "person2",
-                    "first_name": "Jane",
-                    "last_name": "Smith"
-                }
+                {"id": "person1", "first_name": "John", "last_name": "Doe"},
+                {"id": "person2", "first_name": "Jane", "last_name": "Smith"},
             ]
         }
         result = _build_person_lookup(db_json)
-        expected = {
-            "person1": "John Doe",
-            "person2": "Jane Smith"
-        }
+        expected = {"person1": "John Doe", "person2": "Jane Smith"}
         assert result == expected
 
     def test_build_person_lookup_missing_names(self):
@@ -147,26 +126,22 @@ class TestBuildPersonLookup:
             "persons": [
                 {
                     "id": "person1",
-                    "first_name": "John"
+                    "first_name": "John",
                     # missing last_name
                 },
                 {
                     "id": "person2",
-                    "last_name": "Smith"
+                    "last_name": "Smith",
                     # missing first_name
                 },
                 {
                     "id": "person3"
                     # missing both names
-                }
+                },
             ]
         }
         result = _build_person_lookup(db_json)
-        expected = {
-            "person1": "John",
-            "person2": "Smith",
-            "person3": ""
-        }
+        expected = {"person1": "John", "person2": "Smith", "person3": ""}
         assert result == expected
 
 
@@ -183,22 +158,12 @@ class TestBuildChildrenByFamily:
     def test_build_children_by_family_single_child(self):
         """Test building children by family with single child."""
         db_json = {
-            "children": [
-                {
-                    "family_id": "family1",
-                    "child_id": "child1"
-                }
-            ],
-            "persons": [
-                {
-                    "id": "child1",
-                    "sex": "M"
-                }
-            ]
+            "children": [{"family_id": "family1", "child_id": "child1"}],
+            "persons": [{"id": "child1", "sex": "M"}],
         }
         person_lookup = {"child1": "Child Name"}
         result = _build_children_by_family(db_json, person_lookup)
-        
+
         assert "family1" in result
         assert len(result["family1"]) == 1
         child = result["family1"][0]
@@ -209,32 +174,17 @@ class TestBuildChildrenByFamily:
         """Test building children by family with multiple children."""
         db_json = {
             "children": [
-                {
-                    "family_id": "family1",
-                    "child_id": "child1"
-                },
-                {
-                    "family_id": "family1",
-                    "child_id": "child2"
-                }
+                {"family_id": "family1", "child_id": "child1"},
+                {"family_id": "family1", "child_id": "child2"},
             ],
-            "persons": [
-                {
-                    "id": "child1",
-                    "sex": "M"
-                },
-                {
-                    "id": "child2",
-                    "sex": "F"
-                }
-            ]
+            "persons": [{"id": "child1", "sex": "M"}, {"id": "child2", "sex": "F"}],
         }
         person_lookup = {"child1": "Child1 Name", "child2": "Child2 Name"}
         result = _build_children_by_family(db_json, person_lookup)
-        
+
         assert "family1" in result
         assert len(result["family1"]) == 2
-        
+
         genders = {child["gender"] for child in result["family1"]}
         assert "male" in genders
         assert "female" in genders
@@ -242,38 +192,23 @@ class TestBuildChildrenByFamily:
     def test_build_children_by_family_missing_person(self):
         """Test building children by family with missing person."""
         db_json = {
-            "children": [
-                {
-                    "family_id": "family1",
-                    "child_id": "child1"
-                }
-            ],
-            "persons": []  # No persons
+            "children": [{"family_id": "family1", "child_id": "child1"}],
+            "persons": [],  # No persons
         }
         person_lookup = {"child1": "Child Name"}
         result = _build_children_by_family(db_json, person_lookup)
-        
+
         assert result == {"family1": []}  # No children added due to missing person
 
     def test_build_children_by_family_missing_in_lookup(self):
         """Test building children by family with missing person in lookup."""
         db_json = {
-            "children": [
-                {
-                    "family_id": "family1",
-                    "child_id": "child1"
-                }
-            ],
-            "persons": [
-                {
-                    "id": "child1",
-                    "sex": "M"
-                }
-            ]
+            "children": [{"family_id": "family1", "child_id": "child1"}],
+            "persons": [{"id": "child1", "sex": "M"}],
         }
         person_lookup = {}  # Empty lookup
         result = _build_children_by_family(db_json, person_lookup)
-        
+
         assert result == {"family1": []}  # No children added due to missing in lookup
 
 
@@ -292,20 +227,13 @@ class TestBuildFamiliesList:
         """Test building families list with single family."""
         db_json = {
             "families": [
-                {
-                    "id": "family1",
-                    "husband_id": "husband1",
-                    "wife_id": "wife1"
-                }
+                {"id": "family1", "husband_id": "husband1", "wife_id": "wife1"}
             ]
         }
-        person_lookup = {
-            "husband1": "Husband Name",
-            "wife1": "Wife Name"
-        }
+        person_lookup = {"husband1": "Husband Name", "wife1": "Wife Name"}
         children_by_family = {}
         result = _build_families_list(db_json, person_lookup, children_by_family)
-        
+
         assert len(result) == 1
         family = result[0]
         assert family["id"] == "family1"
@@ -315,18 +243,12 @@ class TestBuildFamiliesList:
     def test_build_families_list_missing_spouses(self):
         """Test building families list with missing spouses."""
         db_json = {
-            "families": [
-                {
-                    "id": "family1",
-                    "husband_id": "husband1",
-                    "wife_id": None
-                }
-            ]
+            "families": [{"id": "family1", "husband_id": "husband1", "wife_id": None}]
         }
         person_lookup = {"husband1": "Husband Name"}
         children_by_family = {}
         result = _build_families_list(db_json, person_lookup, children_by_family)
-        
+
         assert len(result) == 1
         family = result[0]
         assert family["id"] == "family1"
@@ -355,7 +277,7 @@ class TestHelperFunctions:
         db_json = {
             "persons": [
                 {"id": "person1", "name": "John"},
-                {"id": "person2", "name": "Jane"}
+                {"id": "person2", "name": "Jane"},
             ]
         }
         result = _find_person_by_id(db_json, "person1")
@@ -372,7 +294,7 @@ class TestHelperFunctions:
         child_person = {"sex": "F"}
         child_name = "Child Name"
         result = _create_child_data(child_person, child_name)
-        
+
         assert result["gender"] == "female"
         assert result["person"]["raw"] == "Child Name"
 
@@ -381,7 +303,7 @@ class TestHelperFunctions:
         child_person = {"sex": "U"}
         child_name = "Child Name"
         result = _create_child_data(child_person, child_name)
-        
+
         assert result["gender"] == "male"  # Default to male
         assert result["person"]["raw"] == "Child Name"
 
@@ -392,15 +314,12 @@ class TestHelperFunctions:
             "husband_id": "husband1",
             "wife_id": "wife1",
             "marriage_date": "2020-01-01",
-            "marriage_place": "Paris"
+            "marriage_place": "Paris",
         }
-        person_lookup = {
-            "husband1": "Husband Name",
-            "wife1": "Wife Name"
-        }
+        person_lookup = {"husband1": "Husband Name", "wife1": "Wife Name"}
         children_by_family = {}
         result = _create_family_data(family, person_lookup, children_by_family)
-        
+
         assert result["id"] == "family1"
         assert result["marriage_date"] == "2020-01-01"
         assert result["marriage_place"] == "Paris"
@@ -413,7 +332,7 @@ class TestHelperFunctions:
         person_lookup = {}
         children_by_family = {}
         result = _create_family_data(family, person_lookup, children_by_family)
-        
+
         assert result["id"] == "family1"
         assert result["husband"] is None
         assert result["wife"] is None
@@ -424,44 +343,24 @@ class TestNormalizeDbJson:
 
     def test_normalize_db_json_empty(self):
         """Test normalizing empty database JSON."""
-        db_json = {
-            "persons": [],
-            "families": [],
-            "children": [],
-            "events": []
-        }
+        db_json = {"persons": [], "families": [], "children": [], "events": []}
         result = normalize_db_json(db_json)
-        
-        expected = {
-            "persons": [],
-            "families": [],
-            "events": []
-        }
+
+        expected = {"persons": [], "families": [], "events": []}
         assert result == expected
 
     def test_normalize_db_json_complete(self):
         """Test normalizing complete database JSON."""
         db_json = {
             "persons": [
-                {
-                    "id": "person1",
-                    "first_name": "John",
-                    "last_name": "Doe",
-                    "sex": "M"
-                }
+                {"id": "person1", "first_name": "John", "last_name": "Doe", "sex": "M"}
             ],
-            "families": [
-                {
-                    "id": "family1",
-                    "husband_id": "person1",
-                    "wife_id": None
-                }
-            ],
+            "families": [{"id": "family1", "husband_id": "person1", "wife_id": None}],
             "children": [],
-            "events": []
+            "events": [],
         }
         result = normalize_db_json(db_json)
-        
+
         assert "persons" in result
         assert "families" in result
         assert "events" in result

@@ -1,9 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
-from ..geneweb_converter import convert_to_json_serializable, db_to_json, extract_entities, json_to_db, normalize_db_json
+from ..geneweb_converter import (
+    convert_to_json_serializable,
+    db_to_json,
+    extract_entities,
+    json_to_db,
+    normalize_db_json,
+)
 from sqlmodel import Session
 from uuid import UUID
 import tempfile
+import aiofiles
+import os
 
 from ..db import get_session
 from ..crud.family import family_crud
@@ -27,15 +35,21 @@ async def import_geneweb_file(
     session: Session = Depends(get_session),
 ):
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".gw") as tmp:
-            tmp.write(await file.read())
-            tmp_path = tmp.name
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=".gw")
+        os.close(tmp_fd)  # Close the file descriptor as we'll use aiofiles
+
+        async with aiofiles.open(tmp_path, "wb") as tmp:
+            content = await file.read()
+            await tmp.write(content)
 
         parser = GWParser(tmp_path)
         data = parser.parse()
 
         flat_data = extract_entities(data)
         summary = json_to_db(flat_data, session)
+
+        os.unlink(tmp_path)
+
         return {"message": "GeneWeb file imported successfully", **summary}
 
     except Exception as e:
@@ -43,7 +57,7 @@ async def import_geneweb_file(
 
 
 @router.get("/export", response_class=FileResponse)
-def export_geneweb_file(session: Session = Depends(get_session)):
+async def export_geneweb_file(session: Session = Depends(get_session)):
     json_data = db_to_json(session)
 
     normalized_data = normalize_db_json(json_data)
@@ -61,9 +75,11 @@ def export_geneweb_file(session: Session = Depends(get_session)):
 
     output_text = "\n\n".join(line for line in lines if line.strip())
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".gw", mode="w", encoding="utf-8") as tmp:
-        tmp.write(output_text)
-        tmp_path = tmp.name
+    tmp_fd, tmp_path = tempfile.mkstemp(suffix=".gw")
+    os.close(tmp_fd)  # Close the file descriptor as we'll use aiofiles
+
+    async with aiofiles.open(tmp_path, "w", encoding="utf-8") as tmp:
+        await tmp.write(output_text)
 
     return FileResponse(
         tmp_path,
@@ -90,6 +106,7 @@ async def import_json_data(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"JSON import failed: {str(e)}")
+
 
 @router.get("/export/json", response_class=JSONResponse)
 def export_json_data(session: Session = Depends(get_session)):

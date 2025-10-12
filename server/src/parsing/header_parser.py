@@ -10,7 +10,7 @@ from .family_utils import should_skip_empty_line
 
 class HeaderParser:
     """Handles parsing of GeneWeb file headers."""
-    
+
     def __init__(self, lines: List[str], pos: int):
         self.lines = lines
         self.pos = pos
@@ -19,13 +19,13 @@ class HeaderParser:
     def parse_headers(self) -> tuple[Dict[str, Any], int]:
         """
         Parse headers at the top of the file.
-        
+
         Returns:
             Tuple of (parsed_headers, new_position)
         """
         headers = {"gwplus": False}
         current_pos = self.pos
-        
+
         while current_pos < self.length:
             line = self.lines[current_pos].strip()
 
@@ -63,7 +63,7 @@ def _find_matching_parser(line: str, parser_instance) -> Optional[callable]:
         "encoding:": parser_instance._parse_encoding_header,
         "gwplus": parser_instance._parse_gwplus_header,
     }
-    
+
     for prefix, parser in header_parsers.items():
         if _matches_prefix(line, prefix):
             return parser

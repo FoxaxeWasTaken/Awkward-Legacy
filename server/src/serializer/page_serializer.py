@@ -30,7 +30,7 @@ def serialize_pages(pages: Dict[str, Dict[str, str]]) -> str:
 
     for page_name, content in pages.items():
         block_lines = []
-        block_lines.append(f"# extended page \"{page_name}\" used by:")
+        block_lines.append(f'# extended page "{page_name}" used by:')
         block_lines.append(f"page-ext {page_name}")
         for k, v in content.items():
             block_lines.append(f"{k}={v}")
@@ -38,4 +38,3 @@ def serialize_pages(pages: Dict[str, Dict[str, str]]) -> str:
         all_blocks.append("\n".join(block_lines))
 
     return "\n\n".join(all_blocks)
-

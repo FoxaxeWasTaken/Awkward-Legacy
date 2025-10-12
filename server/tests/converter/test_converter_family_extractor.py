@@ -9,7 +9,7 @@ from src.converter.family_extractor import (
     extract_marriage_place_from_family_data,
     extract_family_notes_from_family_data,
     _extract_direct_notes,
-    _extract_event_notes
+    _extract_event_notes,
 )
 
 
@@ -18,40 +18,21 @@ class TestExtractMarriageDateFromFamilyData:
 
     def test_extract_marriage_date_from_events(self):
         """Test extracting marriage date from events."""
-        family_data = {
-            "events": [
-                {
-                    "type": "marriage",
-                    "date": "2020-01-01"
-                }
-            ]
-        }
+        family_data = {"events": [{"type": "marriage", "date": "2020-01-01"}]}
         result = extract_marriage_date_from_family_data(family_data)
         assert result == date(2020, 1, 1)
 
     def test_extract_marriage_date_from_dict(self):
         """Test extracting marriage date from dict format."""
         family_data = {
-            "events": [
-                {
-                    "type": "marriage",
-                    "date": {"value": "2020-01-01"}
-                }
-            ]
+            "events": [{"type": "marriage", "date": {"value": "2020-01-01"}}]
         }
         result = extract_marriage_date_from_family_data(family_data)
         assert result == date(2020, 1, 1)
 
     def test_no_marriage_date(self):
         """Test when no marriage date is found."""
-        family_data = {
-            "events": [
-                {
-                    "type": "birth",
-                    "date": "2020-01-01"
-                }
-            ]
-        }
+        family_data = {"events": [{"type": "birth", "date": "2020-01-01"}]}
         result = extract_marriage_date_from_family_data(family_data)
         assert result is None
 
@@ -67,27 +48,13 @@ class TestExtractMarriagePlaceFromFamilyData:
 
     def test_extract_marriage_place_from_events(self):
         """Test extracting marriage place from events."""
-        family_data = {
-            "events": [
-                {
-                    "type": "marriage",
-                    "place_raw": "Paris"
-                }
-            ]
-        }
+        family_data = {"events": [{"type": "marriage", "place_raw": "Paris"}]}
         result = extract_marriage_place_from_family_data(family_data)
         assert result == "Paris"
 
     def test_no_marriage_place(self):
         """Test when no marriage place is found."""
-        family_data = {
-            "events": [
-                {
-                    "type": "birth",
-                    "place_raw": "Paris"
-                }
-            ]
-        }
+        family_data = {"events": [{"type": "birth", "place_raw": "Paris"}]}
         result = extract_marriage_place_from_family_data(family_data)
         assert result is None
 
@@ -103,47 +70,26 @@ class TestExtractFamilyNotesFromFamilyData:
 
     def test_extract_direct_notes(self):
         """Test extracting direct notes from family data."""
-        family_data = {
-            "notes": "Family notes"
-        }
+        family_data = {"notes": "Family notes"}
         result = extract_family_notes_from_family_data(family_data)
         assert result == "Family notes"
 
     def test_extract_notes_from_events(self):
         """Test extracting notes from events."""
-        family_data = {
-            "events": [
-                {
-                    "notes": "Event notes"
-                }
-            ]
-        }
+        family_data = {"events": [{"notes": "Event notes"}]}
         result = extract_family_notes_from_family_data(family_data)
         assert result == "Event notes"
 
     def test_extract_notes_from_events_list(self):
         """Test extracting notes from events with list format."""
-        family_data = {
-            "events": [
-                {
-                    "notes": ["Note 1", "Note 2"]
-                }
-            ]
-        }
+        family_data = {"events": [{"notes": ["Note 1", "Note 2"]}]}
         result = extract_family_notes_from_family_data(family_data)
         assert result == "Note 1 | Note 2"
 
     def test_extract_notes_from_multiple_events(self):
         """Test extracting notes from multiple events."""
         family_data = {
-            "events": [
-                {
-                    "notes": "Event 1 notes"
-                },
-                {
-                    "notes": "Event 2 notes"
-                }
-            ]
+            "events": [{"notes": "Event 1 notes"}, {"notes": "Event 2 notes"}]
         }
         result = extract_family_notes_from_family_data(family_data)
         assert result == "Event 1 notes | Event 2 notes"
@@ -156,14 +102,7 @@ class TestExtractFamilyNotesFromFamilyData:
 
     def test_empty_notes(self):
         """Test when notes are empty."""
-        family_data = {
-            "notes": "",
-            "events": [
-                {
-                    "notes": ""
-                }
-            ]
-        }
+        family_data = {"notes": "", "events": [{"notes": ""}]}
         result = extract_family_notes_from_family_data(family_data)
         assert result is None
 
@@ -195,39 +134,20 @@ class TestExtractEventNotes:
 
     def test_extract_event_notes_single(self):
         """Test extracting notes from single event."""
-        family_data = {
-            "events": [
-                {
-                    "notes": "Event notes"
-                }
-            ]
-        }
+        family_data = {"events": [{"notes": "Event notes"}]}
         result = _extract_event_notes(family_data)
         assert result == ["Event notes"]
 
     def test_extract_event_notes_list(self):
         """Test extracting notes from event with list format."""
-        family_data = {
-            "events": [
-                {
-                    "notes": ["Note 1", "Note 2"]
-                }
-            ]
-        }
+        family_data = {"events": [{"notes": ["Note 1", "Note 2"]}]}
         result = _extract_event_notes(family_data)
         assert result == ["Note 1", "Note 2"]
 
     def test_extract_event_notes_multiple_events(self):
         """Test extracting notes from multiple events."""
         family_data = {
-            "events": [
-                {
-                    "notes": "Event 1 notes"
-                },
-                {
-                    "notes": "Event 2 notes"
-                }
-            ]
+            "events": [{"notes": "Event 1 notes"}, {"notes": "Event 2 notes"}]
         }
         result = _extract_event_notes(family_data)
         assert result == ["Event 1 notes", "Event 2 notes"]
@@ -240,24 +160,12 @@ class TestExtractEventNotes:
 
     def test_extract_event_notes_empty_notes(self):
         """Test extracting notes when notes are empty."""
-        family_data = {
-            "events": [
-                {
-                    "notes": ""
-                }
-            ]
-        }
+        family_data = {"events": [{"notes": ""}]}
         result = _extract_event_notes(family_data)
         assert result == []
 
     def test_extract_event_notes_missing_notes(self):
         """Test extracting notes when notes field is missing."""
-        family_data = {
-            "events": [
-                {
-                    "type": "marriage"
-                }
-            ]
-        }
+        family_data = {"events": [{"type": "marriage"}]}
         result = _extract_event_notes(family_data)
         assert result == []

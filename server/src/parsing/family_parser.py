@@ -13,22 +13,22 @@ from .models import FEVT_MAP, FamilyDict, EventDict
 
 class FamilyParser:
     """Handles parsing of family blocks and related structures."""
-    
+
     def __init__(self, lines: List[str], pos: int):
         self.lines = lines
         self.pos = pos
         self.length = len(lines)
-        
+
     def parse_family(self) -> tuple[FamilyDict, int]:
         """
         Parse a family block starting at current position.
-        
+
         Returns:
             Tuple of (family_data, new_position)
         """
         line = self.lines[self.pos].strip()
         assert line.startswith("fam ")
-        raw_header = line[len("fam "):].strip()
+        raw_header = line[len("fam ") :].strip()
         current_pos = self.pos + 1
 
         husband_segment, wife_segment = split_family_header(raw_header)
@@ -73,7 +73,9 @@ class FamilyParser:
 
         for key, field in source_map.items():
             if line.startswith(f"{key} "):
-                family["sources"].setdefault(field, []).append(line[len(f"{key} "):].strip())
+                family["sources"].setdefault(field, []).append(
+                    line[len(f"{key} ") :].strip()
+                )
                 return True
         return False
 
@@ -94,11 +96,13 @@ class FamilyParser:
         assert self.lines[start_pos].strip() == "fevt"
         return self._parse_event_block(start_pos + 1, "end fevt", FEVT_MAP)
 
-    def _parse_event_block(self, start_pos: int, end_marker: str, event_map: Dict[str, str]) -> List[EventDict]:
+    def _parse_event_block(
+        self, start_pos: int, end_marker: str, event_map: Dict[str, str]
+    ) -> List[EventDict]:
         """Common logic to parse events in fevt and pevt blocks."""
         events: List[EventDict] = []
         current_pos = start_pos
-        
+
         while current_pos < self.length:
             line = self.lines[current_pos].rstrip()
             if should_skip_empty_line(line):
@@ -107,13 +111,15 @@ class FamilyParser:
             if line.startswith(end_marker):
                 current_pos += 1
                 break
-            
+
             self._process_event_line(line, event_map, events)
             current_pos += 1
-            
+
         return events
 
-    def _process_event_line(self, line: str, event_map: Dict[str, str], events: List[EventDict]) -> None:
+    def _process_event_line(
+        self, line: str, event_map: Dict[str, str], events: List[EventDict]
+    ) -> None:
         """Process a single event line and add to events list."""
         if line.startswith("#"):
             events.append(parse_event_line(line, event_map))
@@ -125,7 +131,7 @@ class FamilyParser:
     def _handle_note_line(self, line: str, events: List[EventDict]) -> None:
         """Handle note line by either creating new note event or adding to last event."""
         note = parse_note_line(line)
-        
+
         if not events:
             events.append({"type": "note", "notes": [note]})
         else:
@@ -154,18 +160,20 @@ class FamilyParser:
                 continue
             children.append({"raw_line": line})
             current_pos += 1
-            
+
         return children
 
     def _extract_gender(self, text: str) -> Tuple[Optional[str], str]:
         """Extract gender prefix from child line."""
         parts = text.split(None, 1)
         if parts and parts[0] in ("h", "f"):
-            return ("male" if parts[0] == "h" else "female", parts[1] if len(parts) > 1 else "")
+            return (
+                "male" if parts[0] == "h" else "female",
+                parts[1] if len(parts) > 1 else "",
+            )
         return None, text
 
     def _is_block_start(self, line: str) -> bool:
         """Check if line starts a new block."""
         block_parsers = ["fam ", "pevt ", "notes-db", "notes ", "page-ext "]
         return any(line.startswith(p) for p in block_parsers)
-

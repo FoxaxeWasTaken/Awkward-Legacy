@@ -59,20 +59,23 @@ def test_serialize_dates_non_string_values():
     assert result == dates
 
 
-@pytest.mark.parametrize("gender,input_value,expected", [
-    ("male", "male", "h"),
-    ("male", "m", "h"),
-    ("male", "man", "h"),
-    ("male", "homme", "h"),
-    ("male", "h", "h"),
-    ("female", "female", "f"),
-    ("female", "f", "f"),
-    ("female", "woman", "f"),
-    ("female", "femme", "f"),
-    ("male", "unknown", "h"),
-    ("male", "", "h"),
-    ("male", None, "h"),
-])
+@pytest.mark.parametrize(
+    "gender,input_value,expected",
+    [
+        ("male", "male", "h"),
+        ("male", "m", "h"),
+        ("male", "man", "h"),
+        ("male", "homme", "h"),
+        ("male", "h", "h"),
+        ("female", "female", "f"),
+        ("female", "f", "f"),
+        ("female", "woman", "f"),
+        ("female", "femme", "f"),
+        ("male", "unknown", "h"),
+        ("male", "", "h"),
+        ("male", None, "h"),
+    ],
+)
 def test_gender_prefix(gender, input_value, expected):
     result = gender_prefix(input_value if input_value is not None else "")
     assert result == expected

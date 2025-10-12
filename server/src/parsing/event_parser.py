@@ -39,16 +39,16 @@ def _extract_place_from_text(text: str) -> Optional[str]:
     place_match = re.search(r"#p\s*([^#]+)", text)
     if place_match:
         return place_match.group(1).strip()
-    
+
     # If no #p tag, treat text before any # tags as place
-    first_hash = text.find('#')
+    first_hash = text.find("#")
     if first_hash > 0:
         return text[:first_hash].strip()
-    
+
     # If no tags at all, treat the whole text as place
-    if not any(tag in text for tag in ['#s', '#p']) and text.strip():
+    if not any(tag in text for tag in ["#s", "#p"]) and text.strip():
         return text.strip()
-    
+
     return None
 
 
@@ -82,10 +82,10 @@ def _parse_event_content(content: str, parsed: EventDict) -> None:
     """Parse event content and add to parsed dict."""
     tokens = content.split()
     date_token, rest_tokens = extract_date_from_parts(tokens)
-    
+
     if date_token:
         parsed["date"] = parse_date_token(date_token)
-    
+
     if rest_tokens:
         place, sources = extract_place_and_source(" ".join(rest_tokens))
         if place:
@@ -96,4 +96,6 @@ def _parse_event_content(content: str, parsed: EventDict) -> None:
 
 def parse_note_line(line: str) -> str:
     """Extract note text, removing 'note' prefix."""
-    return line.strip()[5:].strip() if line.strip().startswith("note ") else line.strip()
+    return (
+        line.strip()[5:].strip() if line.strip().startswith("note ") else line.strip()
+    )

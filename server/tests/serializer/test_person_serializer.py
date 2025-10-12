@@ -6,6 +6,7 @@ from serializer.person_serializer import serialize_person, serialize_person_even
 # Tests for serialize_person
 # ==========================================================
 
+
 def test_serialize_person_basic():
     person = {"name": "John Doe"}
     result = serialize_person(person)
@@ -13,8 +14,13 @@ def test_serialize_person_basic():
 
 
 def test_serialize_person_with_tags_and_dates(monkeypatch):
-    monkeypatch.setattr("serializer.person_serializer.serialize_tags", lambda x: ["#tag1 a", "#tag2 b"])
-    monkeypatch.setattr("serializer.person_serializer.serialize_dates", lambda x: ["2025-01-01", "2025-01-02"])
+    monkeypatch.setattr(
+        "serializer.person_serializer.serialize_tags", lambda x: ["#tag1 a", "#tag2 b"]
+    )
+    monkeypatch.setattr(
+        "serializer.person_serializer.serialize_dates",
+        lambda x: ["2025-01-01", "2025-01-02"],
+    )
 
     person = {
         "name": "Alice",
@@ -55,8 +61,11 @@ def test_serialize_person_with_empty_tags_and_dates(monkeypatch):
 # Tests for serialize_person_events
 # ==========================================================
 
+
 def test_serialize_person_events_basic(monkeypatch):
-    monkeypatch.setattr("serializer.person_serializer.serialize_event", lambda e: f"event {e['type']}")
+    monkeypatch.setattr(
+        "serializer.person_serializer.serialize_event", lambda e: f"event {e['type']}"
+    )
     person = {"name": "Bob", "events": [{"type": "birth"}, {"type": "death"}]}
     result = serialize_person_events(person)
     lines = result.splitlines()
@@ -80,14 +89,18 @@ def test_serialize_person_events_no_events_key():
 
 
 def test_serialize_person_events_with_invalid_event(monkeypatch):
-    monkeypatch.setattr("serializer.person_serializer.serialize_event", lambda e: "event_invalid")
+    monkeypatch.setattr(
+        "serializer.person_serializer.serialize_event", lambda e: "event_invalid"
+    )
     person = {"name": "Carl", "events": [None, {}]}
     result = serialize_person_events(person)
     assert result.count("event_invalid") == 2
 
 
 def test_serialize_person_events_handles_strange_names(monkeypatch):
-    monkeypatch.setattr("serializer.person_serializer.serialize_event", lambda e: "event test")
+    monkeypatch.setattr(
+        "serializer.person_serializer.serialize_event", lambda e: "event test"
+    )
     person = {"name": "Jöhn Dœ #42", "events": [{"type": "birth"}]}
     result = serialize_person_events(person)
     assert "pevt Jöhn Dœ #42" in result

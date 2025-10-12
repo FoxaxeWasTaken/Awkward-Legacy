@@ -27,9 +27,7 @@ def test_serialize_notes_db_empty():
 
 
 def test_serialize_notes_basic():
-    notes = [
-        {"person": "John_Doe", "text": "First line\nSecond line"}
-    ]
+    notes = [{"person": "John_Doe", "text": "First line\nSecond line"}]
     result = serialize_notes(notes)
     lines = result.splitlines()
 
@@ -43,7 +41,7 @@ def test_serialize_notes_basic():
 def test_serialize_notes_multiple_notes():
     notes = [
         {"person": "John_Doe", "text": "Line 1"},
-        {"person": "Jane_Doe", "text": "Line A\nLine B"}
+        {"person": "Jane_Doe", "text": "Line A\nLine B"},
     ]
     result = serialize_notes(notes)
     blocks = result.split("notes ")

@@ -60,7 +60,7 @@ def parse_date_string_to_date(date_str: str) -> Optional[date]:
             continue
 
     try:
-        year_match = re.search(r'\b(1[0-9]{3}|2[0-9]{3})\b', date_str)
+        year_match = re.search(r"\b(1[0-9]{3}|2[0-9]{3})\b", date_str)
         if year_match:
             year = int(year_match.group(1))
             return date(year, 1, 1)
@@ -68,4 +68,3 @@ def parse_date_string_to_date(date_str: str) -> Optional[date]:
         pass
 
     return None
-

@@ -35,14 +35,14 @@ def parse_date_token(date_token: str) -> DateDict:
         _parse_literal_date,
         _parse_range_date,
         _parse_alternatives_date,
-        _parse_qualifier_date
+        _parse_qualifier_date,
     ]
-    
+
     for parser in parsers:
         result = parser(token)
         if result is not None:
             return result
-    
+
     return {"raw": token}
 
 
@@ -81,10 +81,12 @@ def _parse_qualifier_date(token: str) -> Optional[DateDict]:
     date: DateDict = {"raw": token}
 
     qualifiers_map = {
-        "<": "before", "<<": "before",
-        ">": "after", ">>": "after",
+        "<": "before",
+        "<<": "before",
+        ">": "after",
+        ">>": "after",
         "~": "approx",
-        "?": "uncertain"
+        "?": "uncertain",
     }
 
     if qualifier in qualifiers_map:

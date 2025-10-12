@@ -6,18 +6,12 @@ from serializer.family_serializer import serialize_family
 def basic_family():
     return {
         "raw_header": "Smith John + Doe Jane",
-        "sources": {
-            "family_source": ["source1"],
-            "children_source": ["source2"]
-        },
-        "events": [
-            {"raw": "#marr 1900"},
-            {"raw": "#div 1920"}
-        ],
+        "sources": {"family_source": ["source1"], "children_source": ["source2"]},
+        "events": [{"raw": "#marr 1900"}, {"raw": "#div 1920"}],
         "children": [
             {"gender": "male", "person": {"raw": "Smith Junior"}},
-            {"gender": "female", "person": {"raw": "Smith Anna"}}
-        ]
+            {"gender": "female", "person": {"raw": "Smith Anna"}},
+        ],
     }
 
 
@@ -40,7 +34,7 @@ def test_family_no_sources():
     family = {
         "raw_header": "Smith John + Doe Jane",
         "events": [{"raw": "#marr 1900"}],
-        "children": []
+        "children": [],
     }
     result = serialize_family(family)
     assert "src" not in result
@@ -54,7 +48,7 @@ def test_family_no_events():
     family = {
         "raw_header": "Smith John + Doe Jane",
         "sources": {"family_source": ["src1"]},
-        "children": [{"gender": "male", "person": {"raw": "Smith Junior"}}]
+        "children": [{"gender": "male", "person": {"raw": "Smith Junior"}}],
     }
     result = serialize_family(family)
     assert "fevt" not in result
@@ -66,7 +60,7 @@ def test_family_no_children():
     family = {
         "raw_header": "Smith John + Doe Jane",
         "sources": {"family_source": ["src1"]},
-        "events": [{"raw": "#marr 1900"}]
+        "events": [{"raw": "#marr 1900"}],
     }
     result = serialize_family(family)
     assert "beg" in result
@@ -85,7 +79,7 @@ def test_family_empty_fields():
 def test_family_missing_gender():
     family = {
         "raw_header": "Smith John + Doe Jane",
-        "children": [{"person": {"raw": "Smith Unknown"}}]
+        "children": [{"person": {"raw": "Smith Unknown"}}],
     }
     result = serialize_family(family)
     assert "- h Smith Unknown" in result
@@ -94,7 +88,7 @@ def test_family_missing_gender():
 def test_family_unknown_gender():
     family = {
         "raw_header": "Smith John + Doe Jane",
-        "children": [{"gender": "other", "person": {"raw": "Smith X"}}]
+        "children": [{"gender": "other", "person": {"raw": "Smith X"}}],
     }
     result = serialize_family(family)
     assert "- other Smith X" in result
@@ -105,8 +99,8 @@ def test_family_multiple_children_same_gender():
         "raw_header": "Smith John + Doe Jane",
         "children": [
             {"gender": "female", "person": {"raw": "Smith A"}},
-            {"gender": "female", "person": {"raw": "Smith B"}}
-        ]
+            {"gender": "female", "person": {"raw": "Smith B"}},
+        ],
     }
     result = serialize_family(family)
     assert "- f Smith A" in result

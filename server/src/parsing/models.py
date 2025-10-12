@@ -47,14 +47,33 @@ PEVT_MAP: Dict[str, str] = {
 
 # Precise tag types (optional for stricter checking)
 FamilyEventTag = Literal[
-    "#marr", "#nmar", "#nmen", "#enga", "#div", "#sep",
-    "#anul", "#marb", "#marc", "#marl", "#pacs", "#resi"
+    "#marr",
+    "#nmar",
+    "#nmen",
+    "#enga",
+    "#div",
+    "#sep",
+    "#anul",
+    "#marb",
+    "#marc",
+    "#marl",
+    "#pacs",
+    "#resi",
 ]
 
 PersonEventTag = Literal[
-    "#birt", "#bapt", "#deat", "#buri", "#crem", "#occu",
-    "#cens", "#resi", "#immig", "#strng"
+    "#birt",
+    "#bapt",
+    "#deat",
+    "#buri",
+    "#crem",
+    "#occu",
+    "#cens",
+    "#resi",
+    "#immig",
+    "#strng",
 ]
+
 
 # Date representation type
 class DateDict(TypedDict, total=False):
@@ -65,6 +84,7 @@ class DateDict(TypedDict, total=False):
     alternatives: List[str]
     literal: str
 
+
 # Event representation type
 class EventDict(TypedDict, total=False):
     type: str
@@ -73,6 +93,7 @@ class EventDict(TypedDict, total=False):
     source: str
     notes: List[str]
     raw: str
+
 
 # Person representation type
 class PersonDict(TypedDict, total=False):
@@ -84,6 +105,7 @@ class PersonDict(TypedDict, total=False):
     events: List[EventDict]
     notes: List[str]
 
+
 # Family representation type
 class FamilyDict(TypedDict, total=False):
     husband: PersonDict
@@ -91,6 +113,7 @@ class FamilyDict(TypedDict, total=False):
     children: List[PersonDict]
     events: List[EventDict]
     notes: List[str]
+
 
 # Tags mapping
 TagsDict = Dict[str, List[str]]

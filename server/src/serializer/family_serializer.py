@@ -36,10 +36,10 @@ def serialize_family(family: Dict[str, Any]) -> str:
 
     # Add sources if present
     _add_family_sources(lines, family)
-    
+
     # Add events if present
     _add_family_events(lines, family)
-    
+
     # Add children
     _add_family_children(lines, family)
 
