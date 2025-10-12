@@ -201,6 +201,21 @@ data = parser.parse()
 parser.to_json("output.json")
 ```
 
+### API Integration
+The parser is integrated into the REST API for file import/export:
+
+```python
+# Import via API
+POST /api/v1/files/import
+# Uploads .gw file, parses it, and stores in database
+
+# Export via API  
+GET /api/v1/files/export
+# Exports database data back to .gw format
+```
+
+We can also import and export from/as json.
+
 ### Backward Compatibility
 ```python
 # The original import still works

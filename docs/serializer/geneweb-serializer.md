@@ -208,6 +208,7 @@ end page-ext
 
 ## Usage Example
 
+### Direct Usage
 ```python
 from parser.gw_parser import GWParser
 from serializer.gw_serializer import GWSerializer
@@ -218,6 +219,17 @@ data = parser.parse()
 serializer = GWSerializer(data)
 serializer.to_file("output.gw")
 ```
+
+### API Integration
+The serializer is integrated into the REST API for file export:
+
+```python
+# Export via API
+GET /api/v1/files/export
+# Exports database data to .gw format and returns as downloadable file
+```
+
+We can also export as json.
 
 ---
 
