@@ -72,9 +72,6 @@ class GWParser:
             "notes ": self._parse_notes,
             "page-ext ": self._parse_page_ext,
         }
-
-        # Header parsing moved to HeaderParser class
-
     def _read(self) -> None:
         """Read the .gw file into self.lines."""
         self.lines = self.path.read_text(encoding="utf-8").splitlines()
@@ -126,16 +123,25 @@ class GWParser:
             if should_skip_empty_line(line):
                 self._advance()
                 continue
-            handled = False
-            for prefix, parser in self._block_parsers.items():
-                if line.startswith(prefix):
-                    data = parser()
-                    self._add_parsed_data(prefix, data)
-                    handled = True
-                    break
-            if not handled:
-                self.result.setdefault("raw_header_extra", []).append(line)
-                self._advance()
+            
+            if self._try_parse_block(line):
+                continue
+            
+            self._handle_unrecognized_line(line)
+
+    def _try_parse_block(self, line: str) -> bool:
+        """Try to parse a recognized block type."""
+        for prefix, parser in self._block_parsers.items():
+            if line.startswith(prefix):
+                data = parser()
+                self._add_parsed_data(prefix, data)
+                return True
+        return False
+
+    def _handle_unrecognized_line(self, line: str) -> None:
+        """Handle lines that don't match any known block type."""
+        self.result.setdefault("raw_header_extra", []).append(line)
+        self._advance()
 
     def _add_parsed_data(self, prefix: str, data: Any) -> None:
         """Add parsed block data to the result dict."""

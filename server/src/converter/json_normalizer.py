@@ -81,7 +81,14 @@ def _build_children_by_family(db_json: dict, person_lookup: Dict[str, str]) -> D
         child_id = str(c.get("child_id"))
         
         _ensure_family_exists(children_by_family, family_id)
-        _add_child_if_valid(db_json, children_by_family, family_id, child_id, person_lookup)
+        context = {
+            "db_json": db_json,
+            "children_by_family": children_by_family,
+            "family_id": family_id,
+            "child_id": child_id,
+            "person_lookup": person_lookup
+        }
+        _add_child_if_valid(context)
     
     return children_by_family
 
@@ -92,8 +99,14 @@ def _ensure_family_exists(children_by_family: Dict[str, list], family_id: str) -
         children_by_family[family_id] = []
 
 
-def _add_child_if_valid(db_json: dict, children_by_family: Dict[str, list], family_id: str, child_id: str, person_lookup: Dict[str, str]) -> None:
+def _add_child_if_valid(context: dict) -> None:
     """Add child to family if valid."""
+    db_json = context["db_json"]
+    children_by_family = context["children_by_family"]
+    family_id = context["family_id"]
+    child_id = context["child_id"]
+    person_lookup = context["person_lookup"]
+    
     child_person = _find_person_by_id(db_json, child_id)
     if child_person and child_id in person_lookup:
         child_data = _create_child_data(child_person, person_lookup[child_id])
@@ -144,12 +157,22 @@ def _create_family_data(family: dict, person_lookup: Dict[str, str], children_by
     family_id = str(family.get("id"))
     family_children = children_by_family.get(family_id, [])
 
-    return {
+    result = {
+        "id": family_id,
         "raw_header": header,
+        "husband": {"raw": husband_name} if husband_name else None,
+        "wife": {"raw": wife_name} if wife_name else None,
         "sources": sources,
         "events": fam_events,
         "children": family_children,
     }
+    
+    # Preserve other family fields
+    for key, value in family.items():
+        if key not in ["id", "husband_id", "wife_id"]:
+            result[key] = value
+    
+    return result
 
 
 def _build_family_header(husband_name: str, wife_name: str) -> str:

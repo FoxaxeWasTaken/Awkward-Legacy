@@ -48,39 +48,59 @@ class GWSerializer:
         """
         output_lines = []
 
-        # Serialize families
+        self._serialize_families(output_lines)
+        self._serialize_sources(output_lines)
+        self._serialize_people_events(output_lines)
+        self._serialize_notes_db(output_lines)
+        self._serialize_notes(output_lines)
+        self._serialize_pages(output_lines)
+        self._serialize_database_notes(output_lines)
+
+        return "\n\n".join(output_lines)
+
+    def _serialize_families(self, output_lines: list) -> None:
+        """Serialize families section."""
         for family in self.data.get("families", []):
             output_lines.append(serialize_family(family))
 
-        # Serialize sources
+    def _serialize_sources(self, output_lines: list) -> None:
+        """Serialize sources section."""
         if "sources" in self.data:
             output_lines.append(serialize_sources(self.data["sources"]))
 
-        # Serialize person events
+    def _serialize_people_events(self, output_lines: list) -> None:
+        """Serialize people events section."""
         if "people" in self.data:
-            pevts_dict = {}
-            for p in self.data["people"]:
-                if "person" in p and "events" in p:
-                    pevts_dict[p["person"]] = p["events"] or []
+            pevts_dict = self._build_pevts_dict()
             output_lines.append(serialize_pevts(pevts_dict))
 
-        # Serialize notes database
+    def _build_pevts_dict(self) -> Dict[str, Any]:
+        """Build person events dictionary."""
+        pevts_dict = {}
+        for p in self.data["people"]:
+            if "person" in p and "events" in p:
+                pevts_dict[p["person"]] = p["events"] or []
+        return pevts_dict
+
+    def _serialize_notes_db(self, output_lines: list) -> None:
+        """Serialize notes database section."""
         if "notes_db" in self.data:
             output_lines.append(serialize_notes_db(self.data["notes_db"]))
 
-        # Serialize individual notes
+    def _serialize_notes(self, output_lines: list) -> None:
+        """Serialize individual notes section."""
         if "notes" in self.data:
             output_lines.append(serialize_notes(self.data["notes"]))
 
-        # Serialize extended pages
+    def _serialize_pages(self, output_lines: list) -> None:
+        """Serialize extended pages section."""
         if "pages" in self.data:
             output_lines.append(serialize_pages(self.data["pages"]))
 
-        # Serialize database notes if present
+    def _serialize_database_notes(self, output_lines: list) -> None:
+        """Serialize database notes section."""
         if "database_notes" in self.data:
             output_lines.append(serialize_notes_db(self.data["database_notes"]))
-
-        return "\n\n".join(output_lines)
 
     def to_file(self, path: str) -> None:
         """

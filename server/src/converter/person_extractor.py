@@ -28,37 +28,73 @@ def extract_birth_date_from_person_data(person_data: Dict[str, Any]) -> Optional
 
 def _extract_birth_date_from_events(person_data: Dict[str, Any]) -> Optional[date]:
     """Extract birth date from events."""
-    events = person_data.get("events", [])
-    for event in events:
-        if event.get("type") == "birth" and "date" in event:
-            return parse_date_dict_to_date(event["date"]) if isinstance(event["date"], dict) else parse_date_string_to_date(event["date"])
-    return None
+    return _extract_date_from_events(person_data, "birth")
 
 
 def _extract_birth_date_from_dates(person_data: Dict[str, Any]) -> Optional[date]:
     """Extract birth date from dates list."""
-    dates = person_data.get("dates", [])
-    if dates:
-        first_date = dates[0]
-        if isinstance(first_date, dict):
-            return parse_date_dict_to_date(first_date)
-        elif isinstance(first_date, str):
-            return parse_date_string_to_date(first_date)
-    return None
+    return _extract_date_from_dates_list(person_data, 0)
 
 
 def _extract_birth_date_from_tags(person_data: Dict[str, Any]) -> Optional[date]:
     """Extract birth date from tags."""
-    tags = person_data.get("tags", {})
-    if "birth" in tags:
-        birth_values = tags["birth"]
-        if birth_values:
-            return parse_date_string_to_date(birth_values[0])
-    return None
+    return _extract_date_from_tags(person_data, "birth")
 
 
 def _extract_birth_date_from_raw_string(person_data: Dict[str, Any]) -> Optional[date]:
     """Extract birth date from raw string."""
+    return _extract_date_from_raw_string(person_data)
+
+
+def _extract_death_date_from_events(person_data: Dict[str, Any]) -> Optional[date]:
+    """Extract death date from events."""
+    return _extract_date_from_events(person_data, "death")
+
+
+def _extract_death_date_from_dates(person_data: Dict[str, Any]) -> Optional[date]:
+    """Extract death date from dates list."""
+    return _extract_date_from_dates_list(person_data, 1)
+
+
+def _extract_death_date_from_tags(person_data: Dict[str, Any]) -> Optional[date]:
+    """Extract death date from tags."""
+    return _extract_date_from_tags(person_data, "death")
+
+
+def _extract_death_date_from_raw_string(person_data: Dict[str, Any]) -> Optional[date]:
+    """Extract death date from raw string."""
+    return _extract_date_from_raw_string(person_data)
+
+
+def _extract_date_from_events(person_data: Dict[str, Any], event_type: str) -> Optional[date]:
+    """Extract date from events by type."""
+    events = person_data.get("events", [])
+    for event in events:
+        if event.get("type") == event_type and "date" in event:
+            return _parse_date_value(event["date"])
+    return None
+
+
+def _extract_date_from_dates_list(person_data: Dict[str, Any], index: int = 0) -> Optional[date]:
+    """Extract date from dates list at specified index."""
+    dates = person_data.get("dates", [])
+    if len(dates) > index:
+        return _parse_date_value(dates[index])
+    return None
+
+
+def _extract_date_from_tags(person_data: Dict[str, Any], tag_key: str) -> Optional[date]:
+    """Extract date from tags by key."""
+    tags = person_data.get("tags", {})
+    if tag_key in tags:
+        tag_values = tags[tag_key]
+        if tag_values:
+            return parse_date_string_to_date(tag_values[0])
+    return None
+
+
+def _extract_date_from_raw_string(person_data: Dict[str, Any]) -> Optional[date]:
+    """Extract date from raw string."""
     raw_string = person_data.get("raw", "")
     if raw_string:
         import re
@@ -69,6 +105,15 @@ def _extract_birth_date_from_raw_string(person_data: Dict[str, Any]) -> Optional
                 return date(year, 1, 1)
             except ValueError:
                 pass
+    return None
+
+
+def _parse_date_value(date_value: Any) -> Optional[date]:
+    """Parse a date value that could be a dict or string."""
+    if isinstance(date_value, dict):
+        return parse_date_dict_to_date(date_value)
+    elif isinstance(date_value, str):
+        return parse_date_string_to_date(date_value)
     return None
 
 
@@ -89,81 +134,45 @@ def extract_death_date_from_person_data(person_data: Dict[str, Any]) -> Optional
     return None
 
 
-def _extract_death_date_from_events(person_data: Dict[str, Any]) -> Optional[date]:
-    """Extract death date from events."""
-    events = person_data.get("events", [])
-    for event in events:
-        if event.get("type") == "death" and "date" in event:
-            return parse_date_dict_to_date(event["date"]) if isinstance(event["date"], dict) else parse_date_string_to_date(event["date"])
-    return None
-
-
-def _extract_death_date_from_dates(person_data: Dict[str, Any]) -> Optional[date]:
-    """Extract death date from dates list."""
-    dates = person_data.get("dates", [])
-    if len(dates) >= 2:
-        second_date = dates[1]
-        if isinstance(second_date, dict):
-            return parse_date_dict_to_date(second_date)
-        elif isinstance(second_date, str):
-            return parse_date_string_to_date(second_date)
-    return None
-
-
-def _extract_death_date_from_tags(person_data: Dict[str, Any]) -> Optional[date]:
-    """Extract death date from tags."""
-    tags = person_data.get("tags", {})
-    if "death" in tags:
-        death_values = tags["death"]
-        if death_values:
-            return parse_date_string_to_date(death_values[0])
-    return None
-
-
-def _extract_death_date_from_raw_string(person_data: Dict[str, Any]) -> Optional[date]:
-    """Extract death date from raw string."""
-    raw_string = person_data.get("raw", "")
-    if raw_string:
-        import re
-        years = re.findall(r'\b(1[0-9]{3}|2[0-9]{3})\b', raw_string)
-        if len(years) >= 2:
-            try:
-                year = int(years[1])
-                return date(year, 1, 1)
-            except ValueError:
-                pass
-    return None
 
 
 def extract_birth_place_from_person_data(person_data: Dict[str, Any]) -> Optional[str]:
     """Extract birth place from person data."""
-    events = person_data.get("events", [])
-    for event in events:
-        if event.get("type") == "birth" and "place_raw" in event:
-            return event["place_raw"]
-
-    tags = person_data.get("tags", {})
-    if "birth_place" in tags:
-        birth_places = tags["birth_place"]
-        if birth_places:
-            return birth_places[0]
-
-    return None
+    return _extract_place_from_person_data(person_data, "birth", "birth_place")
 
 
 def extract_death_place_from_person_data(person_data: Dict[str, Any]) -> Optional[str]:
     """Extract death place from person data."""
+    return _extract_place_from_person_data(person_data, "death", "death_place")
+
+
+def _extract_place_from_person_data(person_data: Dict[str, Any], event_type: str, tag_key: str) -> Optional[str]:
+    """Extract place from person data by event type and tag key."""
+    # Try events first
+    place = _extract_place_from_events(person_data, event_type)
+    if place:
+        return place
+    
+    # Try tags
+    return _extract_place_from_tags(person_data, tag_key)
+
+
+def _extract_place_from_events(person_data: Dict[str, Any], event_type: str) -> Optional[str]:
+    """Extract place from events by type."""
     events = person_data.get("events", [])
     for event in events:
-        if event.get("type") == "death" and "place_raw" in event:
+        if event.get("type") == event_type and "place_raw" in event:
             return event["place_raw"]
+    return None
 
+
+def _extract_place_from_tags(person_data: Dict[str, Any], tag_key: str) -> Optional[str]:
+    """Extract place from tags by key."""
     tags = person_data.get("tags", {})
-    if "death_place" in tags:
-        death_places = tags["death_place"]
-        if death_places:
-            return death_places[0]
-
+    if tag_key in tags:
+        places = tags[tag_key]
+        if places:
+            return places[0]
     return None
 
 

@@ -107,22 +107,29 @@ class FamilyParser:
             if line.startswith(end_marker):
                 current_pos += 1
                 break
-            if line.startswith("#"):
-                events.append(parse_event_line(line, event_map))
-                current_pos += 1
-                continue
-            if line.startswith("note "):
-                note = parse_note_line(line)
-                if not events:
-                    events.append({"type": "note", "notes": [note]})
-                else:
-                    events[-1].setdefault("notes", []).append(note)
-                current_pos += 1
-                continue
-            events.append({"type": "raw", "raw": line})
+            
+            self._process_event_line(line, event_map, events)
             current_pos += 1
             
         return events
+
+    def _process_event_line(self, line: str, event_map: Dict[str, str], events: List[EventDict]) -> None:
+        """Process a single event line and add to events list."""
+        if line.startswith("#"):
+            events.append(parse_event_line(line, event_map))
+        elif line.startswith("note "):
+            self._handle_note_line(line, events)
+        else:
+            events.append({"type": "raw", "raw": line})
+
+    def _handle_note_line(self, line: str, events: List[EventDict]) -> None:
+        """Handle note line by either creating new note event or adding to last event."""
+        note = parse_note_line(line)
+        
+        if not events:
+            events.append({"type": "note", "notes": [note]})
+        else:
+            events[-1].setdefault("notes", []).append(note)
 
     def _parse_beg(self, start_pos: int) -> List[Dict[str, Any]]:
         """Parse beg ... end block containing children."""

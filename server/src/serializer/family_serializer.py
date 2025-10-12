@@ -34,25 +34,50 @@ def serialize_family(family: Dict[str, Any]) -> str:
     # Family header
     lines.append(f"fam {family['raw_header']}")
 
-    # Family sources
+    # Add sources if present
+    _add_family_sources(lines, family)
+    
+    # Add events if present
+    _add_family_events(lines, family)
+    
+    # Add children
+    _add_family_children(lines, family)
+
+    return "\n".join(lines)
+
+
+def _add_family_sources(lines: list, family: Dict[str, Any]) -> None:
+    """Add family sources to the output lines."""
     if "sources" in family and family["sources"]:
         sources_output = serialize_sources(family["sources"])
         if sources_output.strip():
             lines.append(sources_output)
 
-    # Family events
+
+def _add_family_events(lines: list, family: Dict[str, Any]) -> None:
+    """Add family events to the output lines."""
     if "events" in family and family["events"]:
         lines.append("fevt")
         for event in family["events"]:
             lines.append(serialize_event(event))
         lines.append("end fevt")
 
-    # Children block
+
+def _add_family_children(lines: list, family: Dict[str, Any]) -> None:
+    """Add family children to the output lines."""
     lines.append("beg")
     for child in family.get("children", []):
         gender = child.get("gender", "h")
-        prefix = "h" if gender == "male" else "f" if gender == "female" else gender
+        prefix = _get_child_prefix(gender)
         lines.append(f"- {prefix} {serialize_person(child['person'], raw=True)}")
     lines.append("end")
 
-    return "\n".join(lines)
+
+def _get_child_prefix(gender: str) -> str:
+    """Get the appropriate prefix for a child based on gender."""
+    if gender == "male":
+        return "h"
+    elif gender == "female":
+        return "f"
+    else:
+        return gender

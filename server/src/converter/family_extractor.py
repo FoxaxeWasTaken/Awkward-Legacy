@@ -31,6 +31,11 @@ def extract_marriage_place_from_family_data(family_data: Dict[str, Any]) -> Opti
 
 def extract_family_notes_from_family_data(family_data: Dict[str, Any]) -> Optional[str]:
     """Extract family notes from family data."""
+    # First check for direct notes field
+    if "notes" in family_data and family_data["notes"]:
+        return str(family_data["notes"])
+    
+    # Then check for notes in events
     events = family_data.get("events", [])
     event_notes = []
     for event in events:

@@ -163,9 +163,9 @@ class TestBuildPersonLookup:
         }
         result = _build_person_lookup(db_json)
         expected = {
-            "person1": "John ",
-            "person2": " Smith",
-            "person3": " "
+            "person1": "John",
+            "person2": "Smith",
+            "person3": ""
         }
         assert result == expected
 
@@ -284,7 +284,8 @@ class TestBuildFamiliesList:
         """Test building families list with empty data."""
         db_json = {"families": []}
         person_lookup = {}
-        result = _build_families_list(db_json, person_lookup)
+        children_by_family = {}
+        result = _build_families_list(db_json, person_lookup, children_by_family)
         assert result == []
 
     def test_build_families_list_single_family(self):
@@ -302,7 +303,8 @@ class TestBuildFamiliesList:
             "husband1": "Husband Name",
             "wife1": "Wife Name"
         }
-        result = _build_families_list(db_json, person_lookup)
+        children_by_family = {}
+        result = _build_families_list(db_json, person_lookup, children_by_family)
         
         assert len(result) == 1
         family = result[0]
@@ -322,7 +324,8 @@ class TestBuildFamiliesList:
             ]
         }
         person_lookup = {"husband1": "Husband Name"}
-        result = _build_families_list(db_json, person_lookup)
+        children_by_family = {}
+        result = _build_families_list(db_json, person_lookup, children_by_family)
         
         assert len(result) == 1
         family = result[0]
@@ -386,12 +389,17 @@ class TestHelperFunctions:
         """Test _create_family_data function."""
         family = {
             "id": "family1",
+            "husband_id": "husband1",
+            "wife_id": "wife1",
             "marriage_date": "2020-01-01",
             "marriage_place": "Paris"
         }
-        husband_name = "Husband Name"
-        wife_name = "Wife Name"
-        result = _create_family_data(family, husband_name, wife_name)
+        person_lookup = {
+            "husband1": "Husband Name",
+            "wife1": "Wife Name"
+        }
+        children_by_family = {}
+        result = _create_family_data(family, person_lookup, children_by_family)
         
         assert result["id"] == "family1"
         assert result["marriage_date"] == "2020-01-01"
@@ -402,7 +410,9 @@ class TestHelperFunctions:
     def test_create_family_data_missing_spouses(self):
         """Test _create_family_data with missing spouses."""
         family = {"id": "family1"}
-        result = _create_family_data(family, None, None)
+        person_lookup = {}
+        children_by_family = {}
+        result = _create_family_data(family, person_lookup, children_by_family)
         
         assert result["id"] == "family1"
         assert result["husband"] is None

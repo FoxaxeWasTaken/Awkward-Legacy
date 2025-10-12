@@ -34,6 +34,7 @@ def json_to_db(data: Dict[str, Any], session: Session):
     for event_data in events:
         event_crud.create(session, event_data)
 
+    created_children = 0
     for child_data in children:
         family_id = family_map.get(child_data.get("family_id"))
         child_id = person_map.get(child_data.get("child_id"))
@@ -41,12 +42,13 @@ def json_to_db(data: Dict[str, Any], session: Session):
             child_data["family_id"] = family_id
             child_data["child_id"] = child_id
             child_crud.create(session, child_data)
+            created_children += 1
 
     return {
         "persons": len(persons),
         "families": len(families),
         "events": len(events),
-        "children": len(children),
+        "children": created_children,
     }
 
 
