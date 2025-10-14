@@ -1,8 +1,10 @@
 # Docker Compose configuration
 COMPOSE_DEV = docker compose -f docker-compose.dev.yml
 COMPOSE_PROD = docker compose -f docker-compose.prod.yml
-CYPRESS_RECORD_KEY = 599e3ceb-4254-4c40-8096-09ed7df7daa7
 VITE_API_URL = http://server-dev:8000
+
+-include .env
+export
 
 # Default target - start development environment
 all: up-dev
