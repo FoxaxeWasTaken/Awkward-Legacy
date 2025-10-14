@@ -31,5 +31,5 @@ export const personService = {
 
   deletePerson(id: string) {
     return api.delete(`/api/v1/persons/${id}`)
-  }
+  },
 }

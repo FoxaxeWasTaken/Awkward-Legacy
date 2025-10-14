@@ -42,7 +42,7 @@ const router = createRouter({
     } else {
       return { top: 0 }
     }
-  }
+  },
 })
 
 // Global after hook - runs after navigation

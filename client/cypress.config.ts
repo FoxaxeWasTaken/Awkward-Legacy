@@ -11,6 +11,6 @@ export default defineConfig({
     specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
   },
   env: {
-    apiUrl: 'http://server-dev:8000'
+    apiUrl: "http://server-dev:8000"
   }
 });

@@ -10,7 +10,7 @@ const form = ref({
   birth_place: '',
   death_date: '',
   death_place: '',
-  notes: ''
+  notes: '',
 })
 
 const error = ref('')
@@ -42,7 +42,7 @@ const submit = async () => {
       birth_place: '',
       death_date: '',
       death_place: '',
-      notes: ''
+      notes: '',
     }
   } catch (e: any) {
     error.value = e?.response?.data?.detail || 'Failed to create person'
@@ -66,7 +66,7 @@ const submit = async () => {
       </div>
       <div>
         <label>Sex *</label>
-        <select v-model="form.sex" required data-cy="sex" >
+        <select v-model="form.sex" required data-cy="sex">
           <option value="M">Male</option>
           <option value="F">Female</option>
           <option value="U">Unknown</option>
@@ -94,8 +94,8 @@ const submit = async () => {
       </div>
       <button type="submit" :disabled="submitting" data-cy="submit">Create</button>
     </form>
-    <div v-if="error" style="color: red; margin-top: 1em;">{{ error }}</div>
-    <div v-if="success" style="color: green; margin-top: 1em;">{{ success }}</div>
+    <div v-if="error" style="color: red; margin-top: 1em">{{ error }}</div>
+    <div v-if="success" style="color: green; margin-top: 1em">{{ success }}</div>
   </div>
 </template>
 
