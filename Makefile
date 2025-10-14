@@ -1,6 +1,8 @@
 # Docker Compose configuration
 COMPOSE_DEV = docker compose -f docker-compose.dev.yml
 COMPOSE_PROD = docker compose -f docker-compose.prod.yml
+CYPRESS_RECORD_KEY = 599e3ceb-4254-4c40-8096-09ed7df7daa7
+VITE_API_URL = http://server-dev:8000
 
 # Default target - start development environment
 all: up-dev
@@ -54,10 +56,26 @@ test-client:
 	$(COMPOSE_DEV) run --rm client-dev npm run test:unit -- --run
 
 test-client-e2e:
+	@echo "Restarting server and client for e2e tests..."
+	VITE_API_URL=$(VITE_API_URL) $(COMPOSE_DEV) up -d server-dev client-dev
+	@echo "Waiting for services to be ready..."
+	@sleep 3
 	@echo "Running client e2e tests..."
 	$(COMPOSE_DEV) run --rm client-dev npm run test:e2e
 
+test-client-e2e-record:
+	@echo "Restarting server and client for e2e tests..."
+	VITE_API_URL=$(VITE_API_URL) $(COMPOSE_DEV) up -d server-dev client-dev
+	@echo "Waiting for services to be ready..."
+	@sleep 3
+	@echo "Running client e2e tests with recording..."
+	$(COMPOSE_DEV) run --rm -e CYPRESS_RECORD_KEY=$(CYPRESS_RECORD_KEY) client-dev npm run test:e2e -- --record
+
 test-client-e2e-parallel:
+	@echo "Restarting server and client for e2e tests..."
+	VITE_API_URL=$(VITE_API_URL) $(COMPOSE_DEV) up -d server-dev client-dev
+	@echo "Waiting for services to be ready..."
+	@sleep 3
 	@echo "Running client e2e tests in parallel (shard $(shard)/$(total-shards))..."
 	$(COMPOSE_DEV) run --rm -e CYPRESS_RECORD_KEY=$(CYPRESS_RECORD_KEY) client-dev npm run test:e2e:parallel -- --shard $(shard)/$(total-shards) --ci-build-id $(ci-build-id)
 
