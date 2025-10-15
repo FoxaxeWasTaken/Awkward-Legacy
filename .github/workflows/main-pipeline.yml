@@ -9,30 +9,12 @@ env:
   MIRROR_REPO_URL: "git@github.com:EpitechPGE45-2025/G-ING-900-PAR-9-1-legacy-14.git"
 
 jobs:
-  checkout-and-artifact:
-    name: Checkout and upload code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-      
-      - name: Upload code artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: source-code
-          path: .
-          retention-days: 1
-
   build-prod:
     name: Build the production environment
     runs-on: ubuntu-latest
-    needs: checkout-and-artifact
     steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       - name: Build production environment
         run: |
@@ -47,57 +29,13 @@ jobs:
       - name: Cleanup production environment
         run: make down-prod
 
-  build-dev:
-    name: Build the development environment
-    runs-on: ubuntu-latest
-    needs: checkout-and-artifact
-    steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
-
-      - name: Build the development environment
-        run: |
-          make up-dev
-          docker save awkward-legacy-server-dev -o awkward-legacy-server-dev.tar || true
-          docker save awkward-legacy-client-dev -o awkward-legacy-client-dev.tar || true
-      
-      - name: Down the development environment
-        run: |
-          make down-dev
-
-      - name: Upload built images
-        uses: actions/upload-artifact@v4
-        with:
-          name: built-images
-          path: |
-            awkward-legacy-server-dev.tar
-            awkward-legacy-client-dev.tar
-          retention-days: 1
-
   run-server-tests:
     name: Run the development server tests
     runs-on: ubuntu-latest
     needs: run-server-lint
     steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
-      
-      - name: Download built images
-        uses: actions/download-artifact@v4
-        with:
-          name: built-images
-          path: .
-
-      - name: Load Docker images
-        run: |
-          docker load -i awkward-legacy-server-dev.tar || true
-          docker load -i awkward-legacy-client-dev.tar || true
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       - name: Run the development server tests
         run: |
@@ -108,22 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: run-client-lint
     steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
-      
-      - name: Download built images
-        uses: actions/download-artifact@v4
-        with:
-          name: built-images
-          path: .
-
-      - name: Load Docker images
-        run: |
-          docker load -i awkward-legacy-server-dev.tar || true
-          docker load -i awkward-legacy-client-dev.tar || true
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       - name: Run the development client tests
         run: |
@@ -138,22 +62,8 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
-
-      - name: Download built images
-        uses: actions/download-artifact@v4
-        with:
-          name: built-images
-          path: .
-
-      - name: Load Docker images
-        run: |
-          docker load -i awkward-legacy-server-dev.tar || true
-          docker load -i awkward-legacy-client-dev.tar || true
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       - name: Run the development client e2e tests
         env:
@@ -164,24 +74,9 @@ jobs:
   run-server-lint:
     name: Run the development server lint
     runs-on: ubuntu-latest
-    needs: build-dev
     steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
-
-      - name: Download built images
-        uses: actions/download-artifact@v4
-        with:
-          name: built-images
-          path: .
-
-      - name: Load Docker images
-        run: |
-          docker load -i awkward-legacy-server-dev.tar || true
-          docker load -i awkward-legacy-client-dev.tar || true
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       - name: Run the development server lint
         run: |
@@ -190,24 +85,9 @@ jobs:
   run-client-lint:
     name: Run the development client lint
     runs-on: ubuntu-latest
-    needs: build-dev
     steps:
-      - name: Download code artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: source-code
-          path: .
-      
-      - name: Download built images
-        uses: actions/download-artifact@v4
-        with:
-          name: built-images
-          path: .
-
-      - name: Load Docker images
-        run: |
-          docker load -i awkward-legacy-server-dev.tar || true
-          docker load -i awkward-legacy-client-dev.tar || true
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       - name: Run the development client lint
         run: |
