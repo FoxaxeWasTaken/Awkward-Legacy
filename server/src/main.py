@@ -14,9 +14,12 @@ from .endpoints.child import router as child_router
 from .endpoints.event import router as event_router
 from fastapi.middleware.cors import CORSMiddleware
 
-ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://client-dev:5173").split(",")
+ALLOWED_ORIGINS = os.getenv(
+    "CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://client-dev:5173"
+).split(",")
 ALLOWED_METHODS = os.getenv("CORS_METHODS", "*").split(",")
 ALLOWED_HEADERS = os.getenv("CORS_HEADERS", "*").split(",")
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
