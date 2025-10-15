@@ -1,7 +1,8 @@
 import api from './api'
+import type { CreatePerson } from '@/types/person.ts'
 
 export const personService = {
-  createPerson(data: any) {
+  createPerson(data: CreatePerson) {
     return api.post('/api/v1/persons', data)
   },
 

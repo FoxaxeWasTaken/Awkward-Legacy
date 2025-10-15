@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { personService } from '../services/personService'
+import type { CreatePerson } from '@/types/person.ts'
 
 const form = ref({
   first_name: '',
@@ -24,7 +25,7 @@ const submit = async () => {
   submitting.value = true
   try {
     // Prepare data, remove empty optional fields
-    const data: any = { ...form.value }
+    const data: CreatePerson = { ...form.value }
     if (!data.birth_date) delete data.birth_date
     if (!data.birth_place) delete data.birth_place
     if (!data.death_date) delete data.death_date
