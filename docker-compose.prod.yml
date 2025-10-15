@@ -15,7 +15,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://genealogy_user:genealogy_password@postgres-prod:5432/genealogy_db}
+      - DATABASE_URL=${DATABASE_PROD_URL:-postgresql://genealogy_user:genealogy_password@postgres-prod:5432/genealogy_db}
     depends_on:
       postgres-prod:
         condition: service_healthy
