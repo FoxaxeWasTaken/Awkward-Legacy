@@ -19,7 +19,8 @@ jobs:
       - name: Build production environment
         run: |
           make up-prod
-          timeout 60s bash -c 'until docker compose -f docker-compose.prod.yml ps | grep -q "healthy"; do sleep 2; done'
+          timeout 50s bash -c 'until docker compose -f docker-compose.prod.yml ps | grep -q "healthy"; do sleep 2; done'
+          timeout 10s echo "Production environment built successfully"
 
       - name: Test production endpoints
         run: |
@@ -39,7 +40,8 @@ jobs:
       - name: Build production environment
         run: |
           make up-dev
-          timeout 60s bash -c 'until docker compose -f docker-compose.dev.yml ps | grep -q "healthy"; do sleep 2; done'
+          timeout 50s bash -c 'until docker compose -f docker-compose.dev.yml ps | grep -q "healthy"; do sleep 2; done'
+          timeout 10s echo "Production environment built successfully"
       
       - name: Test development endpoints
         run: |
