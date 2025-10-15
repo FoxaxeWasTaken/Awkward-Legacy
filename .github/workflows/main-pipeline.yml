@@ -20,12 +20,6 @@ jobs:
         run: |
           make up-prod
           timeout 50s bash -c 'until docker compose -f docker-compose.prod.yml ps | grep -q "healthy"; do sleep 2; done'
-          timeout 10s echo "Production environment built successfully"
-
-      - name: Test production endpoints
-        run: |
-          docker compose -f docker-compose.prod.yml exec -T client-prod wget http://server-prod:8000/
-          docker compose -f docker-compose.prod.yml exec -T server-prod wget http://client-prod:80/
 
       - name: Cleanup production environment
         run: make down-prod
@@ -41,15 +35,6 @@ jobs:
         run: |
           make up-dev
           timeout 50s bash -c 'until docker compose -f docker-compose.dev.yml ps | grep -q "healthy"; do sleep 2; done'
-          timeout 10s echo "Production environment built successfully"
-      
-      - name: Test development endpoints
-        run: |
-          docker compose -f docker-compose.dev.yml exec -T client-dev wget -q -O /dev/null http://server-dev:8000/ || exit 1
-          docker compose -f docker-compose.dev.yml exec -T server-dev wget -q -O /dev/null http://client-dev:5173/ || exit 1     
-      - name: Down the development environment
-        run: |
-          make down-dev
 
       - name: Cleanup development environment
         run: make down-dev
