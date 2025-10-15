@@ -21,6 +21,7 @@ jobs:
         with:
           name: source-code
           path: .
+          retention-days: 1
 
   build-prod:
     name: Build the production environment
@@ -74,6 +75,7 @@ jobs:
           path: |
             awkward-legacy-server-dev.tar
             awkward-legacy-client-dev.tar
+          retention-days: 1
 
   run-server-tests:
     name: Run the development server tests
