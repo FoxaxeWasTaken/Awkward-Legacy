@@ -24,7 +24,7 @@ export interface OwnFamily {
 export interface Child {
   id: string;
   family_id: string;
-  child_id: string;
+  person_id: string;
   person?: Person;
 }
 
