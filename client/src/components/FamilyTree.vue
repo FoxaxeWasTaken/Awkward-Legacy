@@ -708,7 +708,7 @@ watch(() => props.familyId, () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 500px;
+  width: 500px;
 }
 
 .spouses-row {
@@ -716,6 +716,13 @@ watch(() => props.familyId, () => {
   align-items: center;
   gap: 1rem;
   position: relative;
+  justify-content: center;
+  width: 100%;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  border: 2px solid rgba(150, 150, 200, 0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
 .marriage-line {
@@ -809,7 +816,7 @@ watch(() => props.familyId, () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 500px;
+  width: 500px;
 }
 
 .children-connection {
@@ -818,6 +825,7 @@ watch(() => props.familyId, () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 1rem;
 }
 
 .connection-line {
@@ -834,6 +842,12 @@ watch(() => props.familyId, () => {
   gap: 1.5rem;
   justify-content: center;
   align-items: flex-start;
+  width: 100%;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  border: 2px dashed rgba(100, 180, 100, 0.4);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
 .child-node {
@@ -936,12 +950,13 @@ watch(() => props.familyId, () => {
   }
   
   .couple-container {
-    min-width: 320px;
+    width: 320px;
   }
   
   .spouses-row {
     flex-direction: column;
     gap: 0.5rem;
+    padding: 1rem;
   }
   
   .marriage-line {
@@ -957,12 +972,13 @@ watch(() => props.familyId, () => {
   }
   
   .children-group {
-    min-width: 320px;
+    width: 320px;
   }
   
   .children-container {
     flex-direction: column;
     align-items: center;
+    padding: 1rem;
   }
 }
 </style>
