@@ -63,10 +63,13 @@
                   <div 
                     v-if="couple.husband" 
                     class="person-node husband"
-                    :class="{ 'has-spouse': couple.wife }"
+                    :class="[
+                      { 'has-spouse': couple.wife },
+                      getPersonHighlightClass(couple.husband)
+                    ]"
                     @click="selectPerson(couple.husband)"
-                    @mouseover="showTooltip($event, couple.husband)"
-                    @mouseout="hideTooltip"
+                    @mouseenter="handlePersonHover(couple.husband); showTooltip($event, couple.husband)"
+                    @mouseleave="handlePersonLeave(); hideTooltip()"
                   >
                     <div class="person-avatar">
                       <div class="avatar-circle">
@@ -88,10 +91,13 @@
                   <div 
                     v-if="couple.wife" 
                     class="person-node wife"
-                    :class="{ 'has-spouse': couple.husband }"
+                    :class="[
+                      { 'has-spouse': couple.husband },
+                      getPersonHighlightClass(couple.wife)
+                    ]"
                     @click="selectPerson(couple.wife)"
-                    @mouseover="showTooltip($event, couple.wife)"
-                    @mouseout="hideTooltip"
+                    @mouseenter="handlePersonHover(couple.wife); showTooltip($event, couple.wife)"
+                    @mouseleave="handlePersonLeave(); hideTooltip()"
                   >
                     <div class="person-avatar">
                       <div class="avatar-circle">
@@ -125,9 +131,10 @@
                       v-for="child in couple.children" 
                       :key="child.id"
                       class="child-node"
+                      :class="getPersonHighlightClass(child)"
                       @click="selectPerson(child)"
-                      @mouseover="showTooltip($event, child)"
-                      @mouseout="hideTooltip"
+                      @mouseenter="handlePersonHover(child); showTooltip($event, child)"
+                      @mouseleave="handlePersonLeave(); hideTooltip()"
                     >
                       <div class="child-avatar">
                         <div class="avatar-circle">
@@ -219,6 +226,13 @@ const tooltip = ref({
   y: 0,
   person: null as Person | null
 });
+
+// Highlight state
+const hoveredPerson = ref<Person | null>(null);
+const clickedPerson = ref<Person | null>(null);
+const highlightedParents = ref<Set<string>>(new Set());
+const highlightedChildren = ref<Set<string>>(new Set());
+const highlightedSpouse = ref<string | null>(null);
 
 // Pan and zoom state
 const panX = ref(0);
@@ -339,6 +353,12 @@ const loadFamilyData = async () => {
     // Fetch children data for cross-family relationships
     await loadCrossFamilyChildren(data);
     
+    // Fit tree to view after data is loaded
+    await nextTick();
+    setTimeout(() => {
+      fitTreeToView();
+    }, 100); // Small delay to ensure DOM is fully rendered
+    
   } catch (err: any) {
     console.error('Error loading family data:', err);
     error.value = err.response?.data?.detail || 'Failed to load family tree. Please try again.';
@@ -384,9 +404,116 @@ const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
 };
 
 const selectPerson = (person: Person) => {
-  selectedPerson.value = person;
-  // You can add navigation to person detail page here
-  console.log('Selected person:', person);
+  // Toggle off if clicking the same person
+  if (clickedPerson.value?.id === person.id) {
+    clickedPerson.value = null;
+    clearHighlights();
+      } else {
+    clickedPerson.value = person;
+    selectedPerson.value = person;
+    updateHighlights(person);
+  }
+};
+
+const handlePersonHover = (person: Person) => {
+  if (!clickedPerson.value) {
+    hoveredPerson.value = person;
+    updateHighlights(person);
+  }
+};
+
+const handlePersonLeave = () => {
+  if (!clickedPerson.value) {
+    hoveredPerson.value = null;
+    clearHighlights();
+  }
+};
+
+const clearHighlights = () => {
+  highlightedParents.value = new Set();
+  highlightedChildren.value = new Set();
+  highlightedSpouse.value = null;
+};
+
+const updateHighlights = (person: Person) => {
+  clearHighlights();
+  
+  if (!familyData.value) return;
+  
+  const parents = new Set<string>();
+  const children = new Set<string>();
+  let spouse: string | null = null;
+  
+  // Find parents (check if person is a child in the main family or any sub-family)
+  const findParents = (data: FamilyDetailResult) => {
+    data.children.forEach(child => {
+      if (child.person?.id === person.id) {
+        if (data.husband?.id) parents.add(data.husband.id);
+        if (data.wife?.id) parents.add(data.wife.id);
+      }
+    });
+  };
+  
+  // Check main family
+  findParents(familyData.value);
+  
+  // Check all cross-families
+  familyGenerations.value.forEach(generation => {
+    generation.couples.forEach(couple => {
+      couple.children.forEach(child => {
+        if (child.id === person.id) {
+          if (couple.husband?.id) parents.add(couple.husband.id);
+          if (couple.wife?.id) parents.add(couple.wife.id);
+        }
+      });
+    });
+  });
+  
+  // Find spouse (check if person is part of a couple)
+  familyGenerations.value.forEach(generation => {
+    generation.couples.forEach(couple => {
+      if (couple.husband?.id === person.id && couple.wife?.id) {
+        spouse = couple.wife.id;
+      } else if (couple.wife?.id === person.id && couple.husband?.id) {
+        spouse = couple.husband.id;
+      }
+    });
+  });
+  
+  // Recursively find all descendants (children, grandchildren, etc.)
+  const findAllDescendants = (personToCheck: Person) => {
+    if (personToCheck.has_own_family && personToCheck.own_families) {
+      personToCheck.own_families.forEach(ownFamily => {
+        const familyChildren = crossFamilyChildren.value.get(ownFamily.id) || [];
+        familyChildren.forEach(child => {
+          if (child.id && !children.has(child.id)) {
+            children.add(child.id);
+            // Recursively find this child's descendants
+            findAllDescendants(child);
+          }
+        });
+      });
+    }
+  };
+  
+  // Start recursive search from the selected person
+  findAllDescendants(person);
+  
+  highlightedParents.value = parents;
+  highlightedChildren.value = children;
+  highlightedSpouse.value = spouse;
+};
+
+const getPersonHighlightClass = (person: Person): string => {
+  const activePerson = clickedPerson.value || hoveredPerson.value;
+  if (!activePerson) return '';
+  
+  if (person.id === activePerson.id) return 'highlight-self';
+  if (highlightedParents.value.has(person.id)) return 'highlight-parent';
+  if (highlightedChildren.value.has(person.id)) return 'highlight-child';
+  if (highlightedSpouse.value === person.id) return 'highlight-spouse';
+  
+  return '';
 };
 
 const showTooltip = (event: MouseEvent, person: Person) => {
@@ -503,9 +630,30 @@ const zoomOut = () => {
 };
 
 const resetZoom = () => {
-  panX.value = 0;
-  panY.value = 0;
-  scale.value = 1;
+  fitTreeToView();
+};
+
+const fitTreeToView = async () => {
+  // Wait for next tick to ensure DOM is updated
+  await nextTick();
+  
+  if (!treeContainer.value || !treeContent.value) return;
+  
+  const containerRect = treeContainer.value.getBoundingClientRect();
+  const contentRect = treeContent.value.getBoundingClientRect();
+  
+  // Calculate scale to fit content with some padding (90% of container)
+  const scaleX = (containerRect.width * 0.9) / contentRect.width;
+  const scaleY = (containerRect.height * 0.9) / contentRect.height;
+  const newScale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
+  
+  // Calculate pan to center the content
+  const scaledWidth = contentRect.width * newScale;
+  const scaledHeight = contentRect.height * newScale;
+  
+  panX.value = (containerRect.width - scaledWidth) / 2;
+  panY.value = (containerRect.height - scaledHeight) / 2 + 50; // Add offset for header
+  scale.value = newScale;
 };
 
 // Lifecycle
@@ -796,6 +944,40 @@ watch(() => props.familyId, () => {
 
 .person-node.wife {
   border-left: 4px solid #e74c3c;
+}
+
+/* Highlight states */
+.person-node.highlight-self,
+.child-node.highlight-self {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%) !important;
+  border-left-color: #ff8c00 !important;
+  box-shadow: 0 8px 35px rgba(255, 215, 0, 0.5) !important;
+  transform: scale(1.05);
+  z-index: 100;
+}
+
+.person-node.highlight-parent,
+.child-node.highlight-parent {
+  background: linear-gradient(135deg, #87ceeb 0%, #b0e0e6 100%) !important;
+  border-left-color: #4682b4 !important;
+  box-shadow: 0 6px 25px rgba(70, 130, 180, 0.4) !important;
+  z-index: 50;
+}
+
+.person-node.highlight-spouse,
+.child-node.highlight-spouse {
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%) !important;
+  border-left-color: #ff69b4 !important;
+  box-shadow: 0 6px 25px rgba(255, 105, 180, 0.4) !important;
+  z-index: 50;
+}
+
+.person-node.highlight-child,
+.child-node.highlight-child {
+  background: linear-gradient(135deg, #98fb98 0%, #90ee90 100%) !important;
+  border-left-color: #32cd32 !important;
+  box-shadow: 0 6px 25px rgba(50, 205, 50, 0.4) !important;
+  z-index: 50;
 }
 
 .person-avatar {
