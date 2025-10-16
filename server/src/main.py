@@ -2,7 +2,9 @@
 
 import os
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,7 +14,6 @@ from .endpoints.person import router as person_router
 from .endpoints.family import router as family_router
 from .endpoints.child import router as child_router
 from .endpoints.event import router as event_router
-from fastapi.middleware.cors import CORSMiddleware
 
 ALLOWED_ORIGINS = os.getenv(
     "CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://client-dev:5173"
