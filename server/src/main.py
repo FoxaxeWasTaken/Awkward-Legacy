@@ -1,7 +1,10 @@
 """Main FastAPI application module."""
 
+import os
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,6 +14,12 @@ from .endpoints.person import router as person_router
 from .endpoints.family import router as family_router
 from .endpoints.child import router as child_router
 from .endpoints.event import router as event_router
+
+ALLOWED_ORIGINS = os.getenv(
+    "CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://client-dev:5173"
+).split(",")
+ALLOWED_METHODS = os.getenv("CORS_METHODS", "*").split(",")
+ALLOWED_HEADERS = os.getenv("CORS_HEADERS", "*").split(",")
 
 
 @asynccontextmanager
@@ -25,6 +34,14 @@ app = FastAPI(
     description="A modern genealogy application API with PostgreSQL",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
 )
 
 app.include_router(person_router)
