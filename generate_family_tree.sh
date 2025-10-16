@@ -17,6 +17,7 @@ create_person() {
     local death_date="$5"
     local birth_place="$6"
     local occupation="$7"
+    local notes="$8"
     
     local data="{\"first_name\":\"$first_name\",\"last_name\":\"$last_name\",\"sex\":\"$sex\",\"birth_date\":\"$birth_date\""
     
@@ -30,6 +31,12 @@ create_person() {
     
     if [ -n "$occupation" ]; then
         data="$data,\"occupation\":\"$occupation\""
+    fi
+    
+    if [ -n "$notes" ]; then
+        # Escape quotes in notes for JSON
+        local escaped_notes=$(echo "$notes" | sed 's/"/\\"/g')
+        data="$data,\"notes\":\"$escaped_notes\""
     fi
     
     data="$data}"
@@ -79,8 +86,8 @@ add_child() {
 
 echo "📅 GENERATION 1 (1920s) - The Founders"
 echo "Creating William and Margaret Smith..."
-william_id=$(create_person "William" "Smith" "M" "1920-03-15" "1995-12-10" "Boston, MA" "Carpenter")
-margaret_id=$(create_person "Margaret" "Brown" "F" "1922-07-22" "2000-05-18" "Boston, MA" "Homemaker")
+william_id=$(create_person "William" "Smith" "M" "1920-03-15" "1995-12-10" "Boston, MA" "Carpenter" "Served in World War II as a combat engineer. Founded Smith Construction Company in 1950. Known for his integrity and craftsmanship.")
+margaret_id=$(create_person "Margaret" "Brown" "F" "1922-07-22" "2000-05-18" "Boston, MA" "Homemaker" "Active in the local church community. Volunteered at the Boston Public Library for 30 years. Excellent cook, famous for her apple pies.")
 gen1_family=$(create_family "$william_id" "$margaret_id" "1941-06-14" "Boston, MA")
 echo "✓ William & Margaret Smith family created"
 echo ""
@@ -88,10 +95,10 @@ echo ""
 echo "📅 GENERATION 2 (1940s-1950s) - The Children"
 # William and Margaret have 4 children
 echo "Creating children of William & Margaret..."
-james_id=$(create_person "James" "Smith" "M" "1942-04-10" "" "Boston, MA" "Lawyer")
-robert_id=$(create_person "Robert" "Smith" "M" "1945-08-23" "" "Boston, MA" "Doctor")
-mary_id=$(create_person "Mary" "Smith" "F" "1948-11-05" "" "Boston, MA" "Teacher")
-elizabeth_id=$(create_person "Elizabeth" "Smith" "F" "1952-02-14" "" "Boston, MA" "Nurse")
+james_id=$(create_person "James" "Smith" "M" "1942-04-10" "" "Boston, MA" "Lawyer" "Harvard Law School graduate. Specialized in civil rights law. Partner at Smith & Associates. Argued before the Supreme Court twice.")
+robert_id=$(create_person "Robert" "Smith" "M" "1945-08-23" "" "Boston, MA" "Doctor" "Pediatrician at Boston Children's Hospital. Published research on childhood vaccines. Awarded the Humanitarian Award in 1998.")
+mary_id=$(create_person "Mary" "Smith" "F" "1948-11-05" "" "Boston, MA" "Teacher" "Elementary school principal for 25 years. Introduced innovative music education programs. Passionate about children's literacy.")
+elizabeth_id=$(create_person "Elizabeth" "Smith" "F" "1952-02-14" "" "Boston, MA" "Nurse" "Head nurse in the ICU at Massachusetts General Hospital. Mentored over 100 nursing students during her career.")
 
 add_child "$gen1_family" "$james_id"
 add_child "$gen1_family" "$robert_id"
@@ -101,10 +108,10 @@ echo "✓ Added 4 children to Gen 1"
 
 # Create spouses for Gen 2
 echo "Creating spouses for Gen 2..."
-jennifer_id=$(create_person "Jennifer" "Davis" "F" "1943-09-12" "" "New York, NY" "Accountant")
-linda_id=$(create_person "Linda" "Wilson" "F" "1946-12-30" "" "Philadelphia, PA" "Librarian")
-michael_id=$(create_person "Michael" "Johnson" "M" "1947-05-18" "" "Chicago, IL" "Engineer")
-david_id=$(create_person "David" "Martinez" "M" "1950-03-25" "" "San Francisco, CA" "Architect")
+jennifer_id=$(create_person "Jennifer" "Davis" "F" "1943-09-12" "" "New York, NY" "Accountant" "CPA with expertise in tax law. Helped establish the first women's professional networking group in Boston.")
+linda_id=$(create_person "Linda" "Wilson" "F" "1946-12-30" "" "Philadelphia, PA" "Librarian" "Chief librarian at Boston Public Library. Digitized the historical archives. Passionate about preserving local history.")
+michael_id=$(create_person "Michael" "Johnson" "M" "1947-05-18" "" "Chicago, IL" "Engineer" "Aerospace engineer who worked on the Space Shuttle program. Holds 12 patents in propulsion systems.")
+david_id=$(create_person "David" "Martinez" "M" "1950-03-25" "" "San Francisco, CA" "Architect" "Designed several award-winning sustainable buildings. LEED certification expert. Loves modern minimalist design.")
 
 # Create Gen 2 families
 james_family=$(create_family "$james_id" "$jennifer_id" "1965-07-20" "Boston, MA")
@@ -117,9 +124,9 @@ echo ""
 echo "📅 GENERATION 3 (1960s-1980s) - The Grandchildren"
 # James & Jennifer have 3 children
 echo "Creating children of James & Jennifer..."
-thomas_id=$(create_person "Thomas" "Smith" "M" "1966-10-15" "" "Boston, MA" "Software Engineer")
+thomas_id=$(create_person "Thomas" "Smith" "M" "1966-10-15" "" "Boston, MA" "Software Engineer" "Early internet pioneer. Co-founded a successful tech startup in the 1990s. Enjoys sailing and photography.")
 sarah_id=$(create_person "Sarah" "Smith" "F" "1968-12-22" "" "Boston, MA" "Marketing Manager")
-daniel_id=$(create_person "Daniel" "Smith" "M" "1971-03-30" "" "Boston, MA" "Dentist")
+daniel_id=$(create_person "Daniel" "Smith" "M" "1971-03-30" "" "Boston, MA" "Dentist" "Runs a family dental practice. Volunteers at free dental clinics. Marathon runner who completed Boston Marathon 10 times.")
 
 add_child "$james_family" "$thomas_id"
 add_child "$james_family" "$sarah_id"
@@ -135,10 +142,10 @@ add_child "$robert_family" "$christopher_id"
 
 # Michael & Mary have 4 children
 echo "Creating children of Michael & Mary..."
-emily_id=$(create_person "Emily" "Johnson" "F" "1973-07-12" "" "Chicago, IL" "Artist")
+emily_id=$(create_person "Emily" "Johnson" "F" "1973-07-12" "" "Chicago, IL" "Artist" "Contemporary painter whose work has been exhibited in galleries across the US. Inspired by nature and urban landscapes.")
 matthew_id=$(create_person "Matthew" "Johnson" "M" "1975-09-20" "" "Chicago, IL" "Journalist")
-jessica_id=$(create_person "Jessica" "Johnson" "F" "1978-11-08" "" "Chicago, IL" "Chef")
-andrew_id=$(create_person "Andrew" "Johnson" "M" "1981-01-15" "" "Chicago, IL" "Musician")
+jessica_id=$(create_person "Jessica" "Johnson" "F" "1978-11-08" "" "Chicago, IL" "Chef" "Award-winning chef and restaurateur. Appeared on several cooking shows. Specializes in farm-to-table cuisine.")
+andrew_id=$(create_person "Andrew" "Johnson" "M" "1981-01-15" "" "Chicago, IL" "Musician" "Professional jazz pianist. Released three albums. Teaches music at the Chicago Conservatory.")
 
 add_child "$mary_family" "$emily_id"
 add_child "$mary_family" "$matthew_id"
@@ -147,8 +154,8 @@ add_child "$mary_family" "$andrew_id"
 
 # David & Elizabeth have 3 children
 echo "Creating children of David & Elizabeth..."
-sophia_id=$(create_person "Sophia" "Martinez" "F" "1976-04-22" "" "San Francisco, CA" "Designer")
-alexander_id=$(create_person "Alexander" "Martinez" "M" "1979-06-30" "" "San Francisco, CA" "Entrepreneur")
+sophia_id=$(create_person "Sophia" "Martinez" "F" "1976-04-22" "" "San Francisco, CA" "Designer" "UX/UI designer for major tech companies. Advocates for accessible design. Loves hiking in the Sierras.")
+alexander_id=$(create_person "Alexander" "Martinez" "M" "1979-06-30" "" "San Francisco, CA" "Entrepreneur" "Founded a renewable energy startup. TED speaker on sustainable technology. Angel investor in green tech companies.")
 olivia_id=$(create_person "Olivia" "Martinez" "F" "1982-12-18" "" "San Francisco, CA" "Veterinarian")
 
 add_child "$elizabeth_family" "$sophia_id"
@@ -190,8 +197,8 @@ echo ""
 echo "📅 GENERATION 4 (1990s-2010s) - The Great-Grandchildren"
 # Thomas & Amanda have 3 children
 echo "Creating children of Gen 3 families..."
-ethan_id=$(create_person "Ethan" "Smith" "M" "1991-05-12" "" "Boston, MA" "")
-emma_id=$(create_person "Emma" "Smith" "F" "1993-08-20" "" "Boston, MA" "")
+ethan_id=$(create_person "Ethan" "Smith" "M" "1991-05-12" "" "Boston, MA" "" "Recent college graduate. Works in digital marketing. Passionate about environmental activism and rock climbing.")
+emma_id=$(create_person "Emma" "Smith" "F" "1993-08-20" "" "Boston, MA" "" "Graduate student studying marine biology. Scuba diving instructor. Dreams of working to protect coral reefs.")
 noah_id=$(create_person "Noah" "Smith" "M" "1996-11-15" "" "Boston, MA" "")
 add_child "$thomas_family" "$ethan_id"
 add_child "$thomas_family" "$emma_id"
@@ -204,9 +211,9 @@ add_child "$sarah_family" "$ava_id"
 add_child "$sarah_family" "$liam_id"
 
 # Daniel & Lisa have 4 children
-isabella_id=$(create_person "Isabella" "Smith" "F" "1996-09-14" "" "Boston, MA" "")
+isabella_id=$(create_person "Isabella" "Smith" "F" "1996-09-14" "" "Boston, MA" "" "Medical student following in great-grandfather Robert's footsteps. Volunteers at community health clinics.")
 mason_id=$(create_person "Mason" "Smith" "M" "1998-12-20" "" "Boston, MA" "")
-mia_id=$(create_person "Mia" "Smith" "F" "2001-04-18" "" "Boston, MA" "")
+mia_id=$(create_person "Mia" "Smith" "F" "2001-04-18" "" "Boston, MA" "" "College student majoring in computer science. Develops mobile apps in her spare time. Gaming enthusiast.")
 lucas_id=$(create_person "Lucas" "Smith" "M" "2003-07-22" "" "Boston, MA" "")
 add_child "$daniel_family" "$isabella_id"
 add_child "$daniel_family" "$mason_id"
@@ -286,10 +293,10 @@ echo "📅 GENERATION 5 (2010s-2020s) - The Great-Great-Grandchildren"
 echo "Creating Gen 5 (youngest generation)..."
 
 # Ethan Smith has 2 children (with spouse)
-hannah_id=$(create_person "Hannah" "Green" "F" "1992-03-15" "" "Boston, MA" "Graphic Designer")
+hannah_id=$(create_person "Hannah" "Green" "F" "1992-03-15" "" "Boston, MA" "Graphic Designer" "Freelance designer specializing in brand identity. Passionate about sustainable fashion and eco-friendly design.")
 ethan_family=$(create_family "$ethan_id" "$hannah_id" "2014-06-20" "Boston, MA")
-jack_id=$(create_person "Jack" "Smith" "M" "2015-08-12" "" "Boston, MA" "")
-sophie_id=$(create_person "Sophie" "Smith" "F" "2018-10-25" "" "Boston, MA" "")
+jack_id=$(create_person "Jack" "Smith" "M" "2015-08-12" "" "Boston, MA" "" "Elementary school student. Loves dinosaurs and building with Lego. Takes piano lessons like his great-great-uncle Andrew.")
+sophie_id=$(create_person "Sophie" "Smith" "F" "2018-10-25" "" "Boston, MA" "" "Kindergarten student. Enjoys painting and storytelling. Already showing artistic talent like her great-aunt Emily.")
 add_child "$ethan_family" "$jack_id"
 add_child "$ethan_family" "$sophie_id"
 
@@ -308,11 +315,11 @@ add_child "$ava_family" "$mila_id"
 add_child "$ava_family" "$leo_id"
 
 # Isabella Smith has 3 children (with spouse)
-daniel2_id=$(create_person "Daniel" "Scott" "M" "1995-06-18" "" "Boston, MA" "Business Analyst")
+daniel2_id=$(create_person "Daniel" "Scott" "M" "1995-06-18" "" "Boston, MA" "Business Analyst" "Data analytics specialist. Marathon runner and fitness enthusiast. Mentors young professionals in tech.")
 isabella_family=$(create_family "$daniel2_id" "$isabella_id" "2017-08-22" "Boston, MA")
-aurora_id=$(create_person "Aurora" "Scott" "F" "2018-11-10" "" "Boston, MA" "")
-finn_id=$(create_person "Finn" "Scott" "M" "2020-03-25" "" "Boston, MA" "")
-luna_id=$(create_person "Luna" "Scott" "F" "2022-09-08" "" "Boston, MA" "")
+aurora_id=$(create_person "Aurora" "Scott" "F" "2018-11-10" "" "Boston, MA" "" "Preschooler who loves animals. Wants to be a veterinarian like her great-aunt Olivia. Has two pet rabbits.")
+finn_id=$(create_person "Finn" "Scott" "M" "2020-03-25" "" "Boston, MA" "" "Toddler with boundless energy. Enjoys playing with trucks and trains. Learning to swim.")
+luna_id=$(create_person "Luna" "Scott" "F" "2022-09-08" "" "Boston, MA" "" "The youngest member of the Smith family. Born during the pandemic. Happy and curious baby.")
 add_child "$isabella_family" "$aurora_id"
 add_child "$isabella_family" "$finn_id"
 add_child "$isabella_family" "$luna_id"

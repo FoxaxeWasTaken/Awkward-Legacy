@@ -165,14 +165,23 @@
       <div class="tooltip-content">
         <div class="tooltip-name">{{ tooltip.person?.first_name }} {{ tooltip.person?.last_name }}</div>
         <div class="tooltip-details">
+          <div v-if="tooltip.person?.sex">
+            <strong>Gender:</strong> {{ tooltip.person.sex === 'M' ? 'Male' : tooltip.person.sex === 'F' ? 'Female' : 'Unknown' }}
+          </div>
           <div v-if="tooltip.person?.birth_date">
             <strong>Born:</strong> {{ formatDate(tooltip.person.birth_date) }}
+          </div>
+          <div v-if="tooltip.person?.birth_place">
+            <strong>Birth Place:</strong> {{ tooltip.person.birth_place }}
           </div>
           <div v-if="tooltip.person?.death_date">
             <strong>Died:</strong> {{ formatDate(tooltip.person.death_date) }}
           </div>
-          <div v-if="tooltip.person?.sex">
-            <strong>Gender:</strong> {{ tooltip.person.sex === 'M' ? 'Male' : 'Female' }}
+          <div v-if="tooltip.person?.death_place">
+            <strong>Death Place:</strong> {{ tooltip.person.death_place }}
+          </div>
+          <div v-if="tooltip.person?.occupation">
+            <strong>Occupation:</strong> {{ tooltip.person.occupation }}
           </div>
           <div v-if="tooltip.person?.notes">
             <strong>Notes:</strong> {{ tooltip.person.notes }}
@@ -1132,7 +1141,7 @@ watch(() => props.familyId, () => {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   pointer-events: none;
   z-index: 1000;
-  max-width: 250px;
+  max-width: 350px;
   line-height: 1.4;
 }
 

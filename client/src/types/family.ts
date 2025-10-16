@@ -2,9 +2,12 @@ export interface Person {
   id: string;
   first_name: string;
   last_name: string;
-  sex: 'M' | 'F';
+  sex: 'M' | 'F' | 'U';
   birth_date?: string;
   death_date?: string;
+  birth_place?: string;
+  death_place?: string;
+  occupation?: string;
   notes?: string;
   has_own_family?: boolean;
   own_families?: OwnFamily[];

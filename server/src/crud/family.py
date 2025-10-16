@@ -3,7 +3,7 @@
 from typing import List, Optional
 from uuid import UUID
 
-from sqlmodel import Session, select, or_
+from sqlmodel import Session, select, or_, and_
 
 from ..models.family import Family, FamilyCreate, FamilyUpdate, FamilySearchResult, FamilyDetailResult
 
@@ -118,17 +118,24 @@ class FamilyCRUD:
             )]
         
         if query:
-            # Search by spouse names
-            query_lower = query.lower()
+            # Search by spouse names - split query into words for multi-word searches
+            query_words = query.lower().split()
+            
+            # Build conditions for each word
+            conditions = []
+            for word in query_words:
+                conditions.append(
+                    or_(
+                        Person.first_name.ilike(f"%{word}%"),
+                        Person.last_name.ilike(f"%{word}%")
+                    )
+                )
+            
             statement = (
                 select(Family)
                 .join(Person, or_(Family.husband_id == Person.id, Family.wife_id == Person.id), isouter=True)
-                .where(
-                    or_(
-                        Person.first_name.ilike(f"%{query_lower}%"),
-                        Person.last_name.ilike(f"%{query_lower}%")
-                    )
-                )
+                .where(and_(*conditions) if len(conditions) > 1 else conditions[0])
+                .distinct()
                 .limit(limit)
             )
         else:
