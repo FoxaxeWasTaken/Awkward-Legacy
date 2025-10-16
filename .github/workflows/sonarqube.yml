@@ -72,4 +72,5 @@ jobs:
             -Dsonar.tests=server/tests,client/src/__tests__
             -Dsonar.python.coverage.reportPaths=server/coverage.xml
             -Dsonar.javascript.lcov.reportPaths=client/coverage/lcov.info
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/__pycache__/**
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/__pycache__/**,**/__tests__/**,**/*.spec.ts,**/*.test.ts
+            -Dsonar.test.inclusions=**/__tests__/**/*,**/*.spec.ts,**/*.test.ts
