@@ -60,7 +60,7 @@ jobs:
 
       - name: Run frontend tests with coverage
         working-directory: client
-        run: test:unit:coverage
+        run: npm run test:unit:coverage
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
