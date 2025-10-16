@@ -1,0 +1,1707 @@
+{
+  "families": [
+    {
+      "raw_header": "Galichet Jean_Pierre #occu Marchand_de_bois #src déjà_décédés_au_mariage_de_sa_fille_Thérèse_Eugénie 0 <1849 + Loche Marie_Elisabeth #src déjà_décédés_au_mariage_de_sa_fille_Thérèse_Eugénie 0 <1849",
+      "husband": {
+        "raw": "Galichet Jean_Pierre #occu Marchand_de_bois #src déjà_décédés_au_mariage_de_sa_fille_Thérèse_Eugénie 0 <1849",
+        "name": "Galichet Jean_Pierre",
+        "display_name": "Galichet Jean Pierre",
+        "tags": {
+          "occu": [
+            "Marchand de bois"
+          ],
+          "src": [
+            "déjà décédés au mariage de sa fille Thérèse Eugénie 0 <1849"
+          ]
+        },
+        "dates": []
+      },
+      "wife": {
+        "raw": "Loche Marie_Elisabeth #src déjà_décédés_au_mariage_de_sa_fille_Thérèse_Eugénie 0 <1849",
+        "name": "Loche Marie_Elisabeth",
+        "display_name": "Loche Marie Elisabeth",
+        "tags": {
+          "src": [
+            "déjà décédés au mariage de sa fille Thérèse Eugénie 0 <1849"
+          ]
+        },
+        "dates": []
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr",
+          "notes": [
+            "Rajout de notes avec retour à la ligne avec des tag html",
+            "<br>1880 - Habitent Yzernay naissance d'une fille",
+            "<br>1886 - Habitent la Verdelière (6 enfants) - Recensement Moulins: - Vue 23",
+            "<br>1891 - N'habitent plus Moulins, recensés au Temple (79) * Vue 7"
+          ]
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Jean_Charles #occu Négociant #src témoin_au_mariage_de_sa_soeur_Thérèse_Eugénie 1813 #bs 1849-36ans od",
+          "gender": "male",
+          "person": {
+            "raw": "Jean_Charles #occu Négociant #src témoin_au_mariage_de_sa_soeur_Thérèse_Eugénie 1813 #bs 1849-36ans od",
+            "name": "Jean_Charles",
+            "display_name": "Jean Charles",
+            "tags": {
+              "occu": [
+                "Négociant"
+              ],
+              "src": [
+                "témoin au mariage de sa soeur Thérèse Eugénie 1813"
+              ],
+              "bs": [
+                "1849-36ans od"
+              ]
+            },
+            "dates": []
+          }
+        },
+        {
+          "raw": "h Pierre 1814 1/1/1835",
+          "gender": "male",
+          "person": {
+            "raw": "Pierre 1814 1/1/1835",
+            "name": "Pierre",
+            "display_name": "Pierre",
+            "tags": {},
+            "dates": [
+              {
+                "raw": "1814",
+                "value": "1814"
+              },
+              {
+                "raw": "1/1/1835",
+                "value": "1/1/1835"
+              }
+            ]
+          }
+        },
+        {
+          "raw": "h Paul 1816 1/1/1886",
+          "gender": "male",
+          "person": {
+            "raw": "Paul 1816 1/1/1886",
+            "name": "Paul",
+            "display_name": "Paul",
+            "tags": {},
+            "dates": [
+              {
+                "raw": "1816",
+                "value": "1816"
+              },
+              {
+                "raw": "1/1/1886",
+                "value": "1/1/1886"
+              }
+            ]
+          }
+        },
+        {
+          "raw": "h lolo #src inventé 1818 od",
+          "gender": "male",
+          "person": {
+            "raw": "lolo #src inventé 1818 od",
+            "name": "lolo",
+            "display_name": "lolo",
+            "tags": {
+              "src": [
+                "inventé 1818 od"
+              ]
+            },
+            "dates": []
+          }
+        },
+        {
+          "raw": "f Thérèse_Eugénie #src inscription_des_hypothèques_du_23_février_1874_au_profit_de_dame_thérèse_eugènie_Galichet;_voir_ses_ascendants_dans_la_base_<a_href=\"https://gw.geneanet.org/mout?lang=fr&p=therese+eugenie&n=galichet\">mout</a> 7/9/1830 #bp _[Châlons-sur-Marne]_-_Châlons-en-Champagne,51,Marne,Champagne-Ardenne,France #bs acte_de_mariage od",
+          "gender": "female",
+          "person": {
+            "raw": "Thérèse_Eugénie #src inscription_des_hypothèques_du_23_février_1874_au_profit_de_dame_thérèse_eugènie_Galichet;_voir_ses_ascendants_dans_la_base_<a_href=\"https://gw.geneanet.org/mout?lang=fr&p=therese+eugenie&n=galichet\">mout</a> 7/9/1830 #bp _[Châlons-sur-Marne]_-_Châlons-en-Champagne,51,Marne,Champagne-Ardenne,France #bs acte_de_mariage od",
+            "name": "Thérèse_Eugénie",
+            "display_name": "Thérèse Eugénie",
+            "tags": {
+              "src": [
+                "inscription des hypothèques du 23 février 1874 au profit de dame thérèse eugènie Galichet; voir ses ascendants dans la base <a href=\"https://gw.geneanet.org/mout?lang=fr&p=therese+eugenie&n=galichet\">mout</a> 7/9/1830"
+              ],
+              "bp": [
+                "[Châlons-sur-Marne] - Châlons-en-Champagne,51,Marne,Champagne-Ardenne,France"
+              ],
+              "bs": [
+                "acte de mariage od"
+              ]
+            },
+            "dates": []
+          }
+        }
+      ],
+      "sources": {
+        "family_source": [
+          "déjà_décédés_au_mariage_de_sa_fille_Thérèse_Eugénie"
+        ],
+        "children_source": [
+          "rajout_de_2_enfants_pour_test"
+        ]
+      }
+    },
+    {
+      "raw_header": "Galichet Paul +3/3/1835 Marty Florence #src archives 1/1/1815 1875",
+      "husband": {
+        "raw": "Galichet Paul",
+        "name": "Galichet Paul",
+        "display_name": "Galichet Paul",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "3/3/1835 Marty Florence #src archives 1/1/1815 1875",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "src": [
+            "archives 1/1/1815 1875"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "3/3/1835",
+            "value": "3/3/1835"
+          }
+        ],
+        "other": [
+          "Marty",
+          "Florence"
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 3/3/1835",
+          "date": {
+            "raw": "3/3/1835",
+            "value": "3/3/1835"
+          }
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Jean-Paul 2/2/1836 od",
+          "gender": "male",
+          "person": {
+            "raw": "Jean-Paul 2/2/1836 od",
+            "name": "Jean-Paul",
+            "display_name": "Jean-Paul",
+            "tags": {},
+            "dates": [
+              {
+                "raw": "2/2/1836",
+                "value": "2/2/1836"
+              }
+            ],
+            "other": [
+              "od"
+            ]
+          }
+        },
+        {
+          "raw": "f Laure 1839 od",
+          "gender": "female",
+          "person": {
+            "raw": "Laure 1839 od",
+            "name": "Laure",
+            "display_name": "Laure",
+            "tags": {},
+            "dates": [
+              {
+                "raw": "1839",
+                "value": "1839"
+              }
+            ],
+            "other": [
+              "od"
+            ]
+          }
+        }
+      ],
+      "sources": {
+        "family_source": [
+          "archives"
+        ],
+        "children_source": [
+          "archives"
+        ]
+      }
+    },
+    {
+      "raw_header": "Galichet lolo +1840 #mp Brisbane,Queensland,Australie #ms inventé femme1 prenom1 #src inventé 1818 od",
+      "husband": {
+        "raw": "Galichet lolo",
+        "name": "Galichet lolo",
+        "display_name": "Galichet lolo",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "1840 #mp Brisbane,Queensland,Australie #ms inventé femme1 prenom1 #src inventé 1818 od",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "Brisbane,Queensland,Australie"
+          ],
+          "ms": [
+            "inventé femme1 prenom1"
+          ],
+          "src": [
+            "inventé 1818 od"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "1840",
+            "value": "1840"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 1840 #p Brisbane,Queensland,Australie #s inventé",
+          "date": {
+            "raw": "1840",
+            "value": "1840"
+          },
+          "place_raw": "Brisbane,Queensland,Australie",
+          "source": [
+            "inventé"
+          ]
+        },
+        {
+          "type": "divorce",
+          "raw": "#div 1844 #s inventé",
+          "date": {
+            "raw": "1844",
+            "value": "1844"
+          },
+          "source": [
+            "inventé"
+          ]
+        }
+      ],
+      "children": [],
+      "sources": {}
+    },
+    {
+      "raw_header": "Galichet lolo +1845 #mp Sydney,Nouvelle-Galles\\_du\\_Sud,Australie #ms inventé femme2 prenom2 #src inventé 1825 od",
+      "husband": {
+        "raw": "Galichet lolo",
+        "name": "Galichet lolo",
+        "display_name": "Galichet lolo",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "1845 #mp Sydney,Nouvelle-Galles\\_du\\_Sud,Australie #ms inventé femme2 prenom2 #src inventé 1825 od",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "Sydney,Nouvelle-Galles\\ du\\ Sud,Australie"
+          ],
+          "ms": [
+            "inventé femme2 prenom2"
+          ],
+          "src": [
+            "inventé 1825 od"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "1845",
+            "value": "1845"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 1845 #p Sydney,Nouvelle-Galles\\_du\\_Sud,Australie #s inventé",
+          "date": {
+            "raw": "1845",
+            "value": "1845"
+          },
+          "place_raw": "Sydney,Nouvelle-Galles\\_du\\_Sud,Australie",
+          "source": [
+            "inventé"
+          ]
+        }
+      ],
+      "children": [],
+      "sources": {}
+    },
+    {
+      "raw_header": "Sutaine Louis.1 0 +1570 #mp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France Galichet Nicole 0",
+      "husband": {
+        "raw": "Sutaine Louis.1 0",
+        "name": "Sutaine Louis.1",
+        "display_name": "Sutaine Louis.1",
+        "tags": {},
+        "dates": [
+          {
+            "raw": "0",
+            "value": "0"
+          }
+        ]
+      },
+      "wife": {
+        "raw": "1570 #mp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France Galichet Nicole 0",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France Galichet Nicole 0"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "1570",
+            "value": "1570"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 1570 #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "1570",
+            "value": "1570"
+          },
+          "place_raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Louis 1575 0",
+          "gender": "male",
+          "person": {
+            "raw": "Louis 1575 0",
+            "name": "Louis",
+            "display_name": "Louis",
+            "tags": {},
+            "dates": [
+              {
+                "raw": "1575",
+                "value": "1575"
+              },
+              {
+                "raw": "0",
+                "value": "0"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Sutaine Louis + #mp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France Petizon Claude 0",
+      "husband": {
+        "raw": "Sutaine Louis",
+        "name": "Sutaine Louis",
+        "display_name": "Sutaine Louis",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "#mp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France Petizon Claude 0",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France Petizon Claude 0"
+          ]
+        },
+        "dates": []
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr  #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "value": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+          }
+        }
+      ],
+      "children": [
+        {
+          "raw": "f Perrette 1600 11/4/1684 #dp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "gender": "female",
+          "person": {
+            "raw": "Perrette 1600 11/4/1684 #dp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "name": "Perrette",
+            "display_name": "Perrette",
+            "tags": {
+              "dp": [
+                "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France"
+              ]
+            },
+            "dates": [
+              {
+                "raw": "1600",
+                "value": "1600"
+              },
+              {
+                "raw": "11/4/1684",
+                "value": "11/4/1684"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Jayot Jean 1604 8/11/1674 #dp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France + Sutaine Perrette",
+      "husband": {
+        "raw": "Jayot Jean 1604 8/11/1674 #dp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+        "name": "Jayot Jean",
+        "display_name": "Jayot Jean",
+        "tags": {
+          "dp": [
+            "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "1604",
+            "value": "1604"
+          },
+          {
+            "raw": "8/11/1674",
+            "value": "8/11/1674"
+          }
+        ]
+      },
+      "wife": {
+        "raw": "Sutaine Perrette",
+        "name": "Sutaine Perrette",
+        "display_name": "Sutaine Perrette",
+        "tags": {},
+        "dates": []
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr"
+        }
+      ],
+      "children": [
+        {
+          "raw": "f Claude 27/6/1633 11/4/1697 #dp _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "gender": "female",
+          "person": {
+            "raw": "Claude 27/6/1633 11/4/1697 #dp _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "name": "Claude",
+            "display_name": "Claude",
+            "tags": {
+              "dp": [
+                "[Saint-Hilaire] - Reims,51,Marne,Champagne-Ardenne,France"
+              ]
+            },
+            "dates": [
+              {
+                "raw": "27/6/1633",
+                "value": "27/6/1633"
+              },
+              {
+                "raw": "11/4/1697",
+                "value": "11/4/1697"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Boizot Jean.1234 #occu Menuisier 1618 22/3/1702 #dp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France + Jayot Claude",
+      "husband": {
+        "raw": "Boizot Jean.1234 #occu Menuisier 1618 22/3/1702 #dp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+        "name": "Boizot Jean.1234",
+        "display_name": "Boizot Jean.1234",
+        "tags": {
+          "occu": [
+            "Menuisier 1618 22/3/1702"
+          ],
+          "dp": [
+            "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France"
+          ]
+        },
+        "dates": []
+      },
+      "wife": {
+        "raw": "Jayot Claude",
+        "name": "Jayot Claude",
+        "display_name": "Jayot Claude",
+        "tags": {},
+        "dates": []
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr"
+        }
+      ],
+      "children": [
+        {
+          "raw": "f Jeanne.1 27/2/1671 #bp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France 22/4/1748 #dp _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "gender": "female",
+          "person": {
+            "raw": "Jeanne.1 27/2/1671 #bp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France 22/4/1748 #dp _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "name": "Jeanne.1",
+            "display_name": "Jeanne.1",
+            "tags": {
+              "bp": [
+                "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France 22/4/1748"
+              ],
+              "dp": [
+                "[Saint-Hilaire] - Reims,51,Marne,Champagne-Ardenne,France"
+              ]
+            },
+            "dates": [
+              {
+                "raw": "27/2/1671",
+                "value": "27/2/1671"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Anthoine.1 #occu Menuisier_à_Paris_(Paroisse_St_Roch) 1640 17/1/1709 #dp _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France + Bouquet Louise 0",
+      "husband": {
+        "raw": "Geruzet Anthoine.1 #occu Menuisier_à_Paris_(Paroisse_St_Roch) 1640 17/1/1709 #dp _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+        "name": "Geruzet Anthoine.1",
+        "display_name": "Geruzet Anthoine.1",
+        "tags": {
+          "occu": [
+            "Menuisier à Paris (Paroisse St Roch) 1640 17/1/1709"
+          ],
+          "dp": [
+            "[Saint-Hilaire] - Reims,51,Marne,Champagne-Ardenne,France"
+          ]
+        },
+        "dates": []
+      },
+      "wife": {
+        "raw": "Bouquet Louise 0",
+        "name": "Bouquet Louise",
+        "display_name": "Bouquet Louise",
+        "tags": {},
+        "dates": [
+          {
+            "raw": "0",
+            "value": "0"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr"
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Anthoine #occu Maître_Menuisier_reçu_le_25.01.1695_à_Reims 1667 #bp _[Saint-Roch]_-_Paris,75,Ville-de-Paris,Ile-de-France,France 16/2/1755 #dp _[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "gender": "male",
+          "person": {
+            "raw": "Anthoine #occu Maître_Menuisier_reçu_le_25.01.1695_à_Reims 1667 #bp _[Saint-Roch]_-_Paris,75,Ville-de-Paris,Ile-de-France,France 16/2/1755 #dp _[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "name": "Anthoine",
+            "display_name": "Anthoine",
+            "tags": {
+              "occu": [
+                "Maître Menuisier reçu le 25.01.1695 à Reims 1667"
+              ],
+              "bp": [
+                "[Saint-Roch] - Paris,75,Ville-de-Paris,Ile-de-France,France 16/2/1755"
+              ],
+              "dp": [
+                "[Saint-Symphorien] - Reims,51,Marne,Champagne-Ardenne,France"
+              ]
+            },
+            "dates": []
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Anthoine +17/1/1695 #mp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France Boizot Jeanne.1",
+      "husband": {
+        "raw": "Geruzet Anthoine",
+        "name": "Geruzet Anthoine",
+        "display_name": "Geruzet Anthoine",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "17/1/1695 #mp _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France Boizot Jeanne.1",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "[Saint-Jacques] - Reims,51,Marne,Champagne-Ardenne,France Boizot Jeanne.1"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "17/1/1695",
+            "value": "17/1/1695"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 17/1/1695 #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "17/1/1695",
+            "value": "17/1/1695"
+          },
+          "place_raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Jacques #occu Marchand 4/2/1705 #bp _[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France 10/3/1774 #dp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "gender": "male",
+          "person": {
+            "raw": "Jacques #occu Marchand 4/2/1705 #bp _[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France 10/3/1774 #dp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "name": "Jacques",
+            "display_name": "Jacques",
+            "tags": {
+              "occu": [
+                "Marchand 4/2/1705"
+              ],
+              "bp": [
+                "[Saint-Symphorien] - Reims,51,Marne,Champagne-Ardenne,France 10/3/1774"
+              ],
+              "dp": [
+                "[Saint Pierre] - Reims,51,Marne,Champagne-Ardenne,France"
+              ]
+            },
+            "dates": []
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Jacques +2/8/1728 #mp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France Pierquin Jeanne 0",
+      "husband": {
+        "raw": "Geruzet Jacques",
+        "name": "Geruzet Jacques",
+        "display_name": "Geruzet Jacques",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "2/8/1728 #mp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France Pierquin Jeanne 0",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "[Saint Pierre] - Reims,51,Marne,Champagne-Ardenne,France Pierquin Jeanne 0"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "2/8/1728",
+            "value": "2/8/1728"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 2/8/1728 #p _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "2/8/1728",
+            "value": "2/8/1728"
+          },
+          "place_raw": "_[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Laurent #occu Marchand_Drapier,_Changeur_du_Roy 25/9/1738 #bp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France 1812 #dp Laon,02,Aisne,Picardie,France",
+          "gender": "male",
+          "person": {
+            "raw": "Laurent #occu Marchand_Drapier,_Changeur_du_Roy 25/9/1738 #bp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France 1812 #dp Laon,02,Aisne,Picardie,France",
+            "name": "Laurent",
+            "display_name": "Laurent",
+            "tags": {
+              "occu": [
+                "Marchand Drapier, Changeur du Roy 25/9/1738"
+              ],
+              "bp": [
+                "[Saint Pierre] - Reims,51,Marne,Champagne-Ardenne,France 1812"
+              ],
+              "dp": [
+                "Laon,02,Aisne,Picardie,France"
+              ]
+            },
+            "dates": []
+          }
+        },
+        {
+          "raw": "f Marie-Jeanne 31/12/1751 #pp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France 8/1/1830 #dp Soissons,02,Aisne,Picardie,France",
+          "gender": "female",
+          "person": {
+            "raw": "Marie-Jeanne 31/12/1751 #pp _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France 8/1/1830 #dp Soissons,02,Aisne,Picardie,France",
+            "name": "Marie-Jeanne",
+            "display_name": "Marie-Jeanne",
+            "tags": {
+              "pp": [
+                "[Saint Pierre] - Reims,51,Marne,Champagne-Ardenne,France 8/1/1830"
+              ],
+              "dp": [
+                "Soissons,02,Aisne,Picardie,France"
+              ]
+            },
+            "dates": [
+              {
+                "raw": "31/12/1751",
+                "value": "31/12/1751"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Laurent +28/12/1763 #mp _[Eglise_St_Rémi]_-_Laon,02,Aisne,Picardie,France Dupond Marie 1736 #bp Laon,02,Aisne,Picardie,France #bs base_michelbonnet 25/11/1784 #dp Laon,02,Aisne,Picardie,France #ds base_michelbonnet",
+      "husband": {
+        "raw": "Geruzet Laurent",
+        "name": "Geruzet Laurent",
+        "display_name": "Geruzet Laurent",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "28/12/1763 #mp _[Eglise_St_Rémi]_-_Laon,02,Aisne,Picardie,France Dupond Marie 1736 #bp Laon,02,Aisne,Picardie,France #bs base_michelbonnet 25/11/1784 #dp Laon,02,Aisne,Picardie,France #ds base_michelbonnet",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "[Eglise St Rémi] - Laon,02,Aisne,Picardie,France Dupond Marie 1736"
+          ],
+          "bp": [
+            "Laon,02,Aisne,Picardie,France"
+          ],
+          "bs": [
+            "base michelbonnet 25/11/1784"
+          ],
+          "dp": [
+            "Laon,02,Aisne,Picardie,France"
+          ],
+          "ds": [
+            "base michelbonnet"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "28/12/1763",
+            "value": "28/12/1763"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 28/12/1763 #p _[Eglise_St_Rémi]_-_Laon,02,Aisne,Picardie,France",
+          "date": {
+            "raw": "28/12/1763",
+            "value": "28/12/1763"
+          },
+          "place_raw": "_[Eglise_St_Rémi]_-_Laon,02,Aisne,Picardie,France"
+        }
+      ],
+      "children": [
+        {
+          "raw": "h Jean-Baptiste {Jean-Baptiste_Laurent} #occu Officier_d'infanterie,_marchand_teinturier 23/9/1768 #bp Laon,02,Aisne,Picardie,France 20/5/1846 #dp Laon,02,Aisne,Picardie,France",
+          "gender": "male",
+          "person": {
+            "raw": "Jean-Baptiste {Jean-Baptiste_Laurent} #occu Officier_d'infanterie,_marchand_teinturier 23/9/1768 #bp Laon,02,Aisne,Picardie,France 20/5/1846 #dp Laon,02,Aisne,Picardie,France",
+            "name": "Jean-Baptiste {Jean-Baptiste_Laurent}",
+            "display_name": "Jean-Baptiste {Jean-Baptiste Laurent}",
+            "tags": {
+              "occu": [
+                "Officier d'infanterie, marchand teinturier 23/9/1768"
+              ],
+              "bp": [
+                "Laon,02,Aisne,Picardie,France 20/5/1846"
+              ],
+              "dp": [
+                "Laon,02,Aisne,Picardie,France"
+              ]
+            },
+            "dates": []
+          }
+        }
+      ],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Laurent +25/3/1786 #mp Reims,51,Marne,Champagne-Ardenne,France #ms base_michelbonnet Laramee Charlotte #src base_michelbonnet 1766 14/6/1789",
+      "husband": {
+        "raw": "Geruzet Laurent",
+        "name": "Geruzet Laurent",
+        "display_name": "Geruzet Laurent",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "25/3/1786 #mp Reims,51,Marne,Champagne-Ardenne,France #ms base_michelbonnet Laramee Charlotte #src base_michelbonnet 1766 14/6/1789",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "Reims,51,Marne,Champagne-Ardenne,France"
+          ],
+          "ms": [
+            "base michelbonnet Laramee Charlotte"
+          ],
+          "src": [
+            "base michelbonnet 1766 14/6/1789"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "25/3/1786",
+            "value": "25/3/1786"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 25/3/1786 #p Reims,51,Marne,Champagne-Ardenne,France #s base_michelbonnet",
+          "date": {
+            "raw": "25/3/1786",
+            "value": "25/3/1786"
+          },
+          "place_raw": "Reims,51,Marne,Champagne-Ardenne,France",
+          "source": [
+            "base_michelbonnet"
+          ]
+        }
+      ],
+      "children": [],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Laurent +30/10/1794 #mp Paris,75000,Ville-de-Paris,Ile-de-France,France #ms base_michelbonnet Fache Jeanne #src base_michelbonnetg ~1750 od",
+      "husband": {
+        "raw": "Geruzet Laurent",
+        "name": "Geruzet Laurent",
+        "display_name": "Geruzet Laurent",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "30/10/1794 #mp Paris,75000,Ville-de-Paris,Ile-de-France,France #ms base_michelbonnet Fache Jeanne #src base_michelbonnetg ~1750 od",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "Paris,75000,Ville-de-Paris,Ile-de-France,France"
+          ],
+          "ms": [
+            "base michelbonnet Fache Jeanne"
+          ],
+          "src": [
+            "base michelbonnetg ~1750 od"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "30/10/1794",
+            "value": "30/10/1794"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 30/10/1794 #p Paris,75000,Ville-de-Paris,Ile-de-France,France #s base_michelbonnet",
+          "date": {
+            "raw": "30/10/1794",
+            "value": "30/10/1794"
+          },
+          "place_raw": "Paris,75000,Ville-de-Paris,Ile-de-France,France",
+          "source": [
+            "base_michelbonnet"
+          ]
+        }
+      ],
+      "children": [],
+      "sources": {}
+    },
+    {
+      "raw_header": "Geruzet Jean-Baptiste +21/12/2F #mp _[Mairie]_-_Reims,51,Marne,Champagne-Ardenne,France Biemont Marie 0",
+      "husband": {
+        "raw": "Geruzet Jean-Baptiste",
+        "name": "Geruzet Jean-Baptiste",
+        "display_name": "Geruzet Jean-Baptiste",
+        "tags": {},
+        "dates": []
+      },
+      "wife": {
+        "raw": "21/12/2F #mp _[Mairie]_-_Reims,51,Marne,Champagne-Ardenne,France Biemont Marie 0",
+        "name": "",
+        "display_name": null,
+        "tags": {
+          "mp": [
+            "[Mairie] - Reims,51,Marne,Champagne-Ardenne,France Biemont Marie 0"
+          ]
+        },
+        "dates": [
+          {
+            "raw": "21/12/2F",
+            "value": "21/12/2F"
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "marriage",
+          "raw": "#marr 21/12/2F #p _[Mairie]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "21/12/2F",
+            "value": "21/12/2F"
+          },
+          "place_raw": "_[Mairie]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ],
+      "children": [
+        {
+          "raw": "f Laurence 23/1/1802 #bp Nonancourt,27,Eure,Normandie,France 18/4/1866 #dp Amiens,80,Somme,Picardie,France",
+          "gender": "female",
+          "person": {
+            "raw": "Laurence 23/1/1802 #bp Nonancourt,27,Eure,Normandie,France 18/4/1866 #dp Amiens,80,Somme,Picardie,France",
+            "name": "Laurence",
+            "display_name": "Laurence",
+            "tags": {
+              "bp": [
+                "Nonancourt,27,Eure,Normandie,France 18/4/1866"
+              ],
+              "dp": [
+                "Amiens,80,Somme,Picardie,France"
+              ]
+            },
+            "dates": [
+              {
+                "raw": "23/1/1802",
+                "value": "23/1/1802"
+              }
+            ]
+          }
+        }
+      ],
+      "sources": {}
+    }
+  ],
+  "people": [
+    {
+      "person": "Galichet Jean_Charles",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1813 #s 1849-36ans",
+          "date": {
+            "raw": "1813",
+            "value": "1813"
+          },
+          "source": [
+            "1849-36ans"
+          ]
+        },
+        {
+          "type": "death",
+          "raw": "#deat"
+        }
+      ]
+    },
+    {
+      "person": "Galichet Pierre",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1814",
+          "date": {
+            "raw": "1814",
+            "value": "1814"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 1/1/1835",
+          "date": {
+            "raw": "1/1/1835",
+            "value": "1/1/1835"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Galichet Paul",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1816",
+          "date": {
+            "raw": "1816",
+            "value": "1816"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 1/1/1886",
+          "date": {
+            "raw": "1/1/1886",
+            "value": "1/1/1886"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Galichet lolo",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1818",
+          "date": {
+            "raw": "1818",
+            "value": "1818"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat"
+        }
+      ]
+    },
+    {
+      "person": "Galichet Thérèse_Eugénie",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 7/9/1830 #p _[Châlons-sur-Marne]_-_Châlons-en-Champagne,51,Marne,Champagne-Ardenne,France #s acte_de_mariage",
+          "date": {
+            "raw": "7/9/1830",
+            "value": "7/9/1830"
+          },
+          "place_raw": "_[Châlons-sur-Marne]_-_Châlons-en-Champagne,51,Marne,Champagne-Ardenne,France",
+          "source": [
+            "acte_de_mariage"
+          ]
+        },
+        {
+          "type": "death",
+          "raw": "#deat"
+        }
+      ]
+    },
+    {
+      "person": "Loche Marie_Elisabeth",
+      "events": [
+        {
+          "type": "death",
+          "raw": "#deat <1849",
+          "date": {
+            "raw": "<1849",
+            "qualifier": "before",
+            "value": "1849"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Galichet Jean_Pierre",
+      "events": [
+        {
+          "type": "death",
+          "raw": "#deat <1849",
+          "date": {
+            "raw": "<1849",
+            "qualifier": "before",
+            "value": "1849"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Galichet Jean-Paul",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 2/2/1836",
+          "date": {
+            "raw": "2/2/1836",
+            "value": "2/2/1836"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Galichet Laure",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1839",
+          "date": {
+            "raw": "1839",
+            "value": "1839"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Marty Florence",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1/1/1815",
+          "date": {
+            "raw": "1/1/1815",
+            "value": "1/1/1815"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 1875",
+          "date": {
+            "raw": "1875",
+            "value": "1875"
+          }
+        }
+      ]
+    },
+    {
+      "person": "femme1 prenom1",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1818",
+          "date": {
+            "raw": "1818",
+            "value": "1818"
+          }
+        }
+      ]
+    },
+    {
+      "person": "femme2 prenom2",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1825",
+          "date": {
+            "raw": "1825",
+            "value": "1825"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Sutaine Louis",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1575",
+          "date": {
+            "raw": "1575",
+            "value": "1575"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat"
+        }
+      ]
+    },
+    {
+      "person": "Sutaine Perrette",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1600",
+          "date": {
+            "raw": "1600",
+            "value": "1600"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 11/4/1684 #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "11/4/1684",
+            "value": "11/4/1684"
+          },
+          "place_raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Jayot Claude",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 27/6/1633",
+          "date": {
+            "raw": "27/6/1633",
+            "value": "27/6/1633"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 11/4/1697 #p _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "11/4/1697",
+            "value": "11/4/1697"
+          },
+          "place_raw": "_[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Jayot Jean",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1604",
+          "date": {
+            "raw": "1604",
+            "value": "1604"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 8/11/1674 #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "8/11/1674",
+            "value": "8/11/1674"
+          },
+          "place_raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Boizot Jeanne.1",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 27/2/1671 #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "27/2/1671",
+            "value": "27/2/1671"
+          },
+          "place_raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        },
+        {
+          "type": "death",
+          "raw": "#deat 22/4/1748 #p _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "22/4/1748",
+            "value": "22/4/1748"
+          },
+          "place_raw": "_[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Boizot Jean.1234",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1618",
+          "date": {
+            "raw": "1618",
+            "value": "1618"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 22/3/1702 #p _[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "22/3/1702",
+            "value": "22/3/1702"
+          },
+          "place_raw": "_[Saint-Jacques]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Anthoine",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1667 #p _[Saint-Roch]_-_Paris,75,Ville-de-Paris,Ile-de-France,France",
+          "date": {
+            "raw": "1667",
+            "value": "1667"
+          },
+          "place_raw": "_[Saint-Roch]_-_Paris,75,Ville-de-Paris,Ile-de-France,France"
+        },
+        {
+          "type": "death",
+          "raw": "#deat 16/2/1755 #p _[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "16/2/1755",
+            "value": "16/2/1755"
+          },
+          "place_raw": "_[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Anthoine.1",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1640",
+          "date": {
+            "raw": "1640",
+            "value": "1640"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 17/1/1709 #p _[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "17/1/1709",
+            "value": "17/1/1709"
+          },
+          "place_raw": "_[Saint-Hilaire]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Jacques",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 4/2/1705 #p _[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "4/2/1705",
+            "value": "4/2/1705"
+          },
+          "place_raw": "_[Saint-Symphorien]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        },
+        {
+          "type": "death",
+          "raw": "#deat 10/3/1774 #p _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "10/3/1774",
+            "value": "10/3/1774"
+          },
+          "place_raw": "_[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Laurent",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 25/9/1738 #p _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "25/9/1738",
+            "value": "25/9/1738"
+          },
+          "place_raw": "_[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France"
+        },
+        {
+          "type": "death",
+          "raw": "#deat 1812 #p Laon,02,Aisne,Picardie,France",
+          "date": {
+            "raw": "1812",
+            "value": "1812"
+          },
+          "place_raw": "Laon,02,Aisne,Picardie,France"
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Marie-Jeanne",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 31/12/1751",
+          "date": {
+            "raw": "31/12/1751",
+            "value": "31/12/1751"
+          }
+        },
+        {
+          "type": "baptism",
+          "raw": "#bapt  #p _[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+          "date": {
+            "raw": "_[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France",
+            "value": "_[Saint_Pierre]_-_Reims,51,Marne,Champagne-Ardenne,France"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 8/1/1830 #p Soissons,02,Aisne,Picardie,France",
+          "date": {
+            "raw": "8/1/1830",
+            "value": "8/1/1830"
+          },
+          "place_raw": "Soissons,02,Aisne,Picardie,France"
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Jean-Baptiste",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 23/9/1768 #p Laon,02,Aisne,Picardie,France",
+          "date": {
+            "raw": "23/9/1768",
+            "value": "23/9/1768"
+          },
+          "place_raw": "Laon,02,Aisne,Picardie,France"
+        },
+        {
+          "type": "death",
+          "raw": "#deat 20/5/1846 #p Laon,02,Aisne,Picardie,France",
+          "date": {
+            "raw": "20/5/1846",
+            "value": "20/5/1846"
+          },
+          "place_raw": "Laon,02,Aisne,Picardie,France"
+        }
+      ]
+    },
+    {
+      "person": "Dupond Marie",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1736 #p Laon,02,Aisne,Picardie,France #s base_michelbonnet",
+          "date": {
+            "raw": "1736",
+            "value": "1736"
+          },
+          "place_raw": "Laon,02,Aisne,Picardie,France",
+          "source": [
+            "base_michelbonnet"
+          ]
+        },
+        {
+          "type": "death",
+          "raw": "#deat 25/11/1784 #p Laon,02,Aisne,Picardie,France #s base_michelbonnet",
+          "date": {
+            "raw": "25/11/1784",
+            "value": "25/11/1784"
+          },
+          "place_raw": "Laon,02,Aisne,Picardie,France",
+          "source": [
+            "base_michelbonnet"
+          ]
+        }
+      ]
+    },
+    {
+      "person": "Laramee Charlotte",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 1766",
+          "date": {
+            "raw": "1766",
+            "value": "1766"
+          }
+        },
+        {
+          "type": "death",
+          "raw": "#deat 14/6/1789",
+          "date": {
+            "raw": "14/6/1789",
+            "value": "14/6/1789"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Fache Jeanne",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt ~1750",
+          "date": {
+            "raw": "~1750",
+            "qualifier": "approx",
+            "value": "1750"
+          }
+        }
+      ]
+    },
+    {
+      "person": "Geruzet Laurence",
+      "events": [
+        {
+          "type": "birth",
+          "raw": "#birt 23/1/1802 #p Nonancourt,27,Eure,Normandie,France",
+          "date": {
+            "raw": "23/1/1802",
+            "value": "23/1/1802"
+          },
+          "place_raw": "Nonancourt,27,Eure,Normandie,France"
+        },
+        {
+          "type": "death",
+          "raw": "#deat 18/4/1866 #p Amiens,80,Somme,Picardie,France",
+          "date": {
+            "raw": "18/4/1866",
+            "value": "18/4/1866"
+          },
+          "place_raw": "Amiens,80,Somme,Picardie,France"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "person": "Galichet Jean_Charles",
+      "text": "What about [[[Chantal]]]  notes,\nand [[[Andre]]] as second creation ?\nand [[[Gallery]]] for full test",
+      "raw_lines": [
+        "What about [[[Chantal]]]  notes,",
+        "and [[[Andre]]] as second creation ?",
+        "and [[[Gallery]]] for full test"
+      ]
+    },
+    {
+      "person": "Galichet lolo",
+      "text": "* je le crée de façon arbitraire, avec deux mariages, le 1er avec divorce.",
+      "raw_lines": [
+        "* je le crée de façon arbitraire, avec deux mariages, le 1er avec divorce."
+      ]
+    },
+    {
+      "person": "Galichet Thérèse_Eugénie",
+      "text": "almost empty",
+      "raw_lines": [
+        "almost empty"
+      ]
+    },
+    {
+      "person": "Loche Marie_Elisabeth",
+      "text": "* j'utilise la même image dans les notes du mari et de la femme\n* avec un texte alternatif sans apostrophe pour le mari [[Jean Pierre/Galichet]]\n\n* et un texte alternatif '''avec''' apostrophe pour la femme\n<br><img src=\"%sm=IM;s=jean_pierre.0.galichet.jpg\" width=50% alt=\"retour d'etat\">\n\n* les vues individuelles sont correctes,\nmais la vue sous forme de table des ascendants est incorrecte à cause de cette apostrophe.",
+      "raw_lines": [
+        "* j'utilise la même image dans les notes du mari et de la femme",
+        "* avec un texte alternatif sans apostrophe pour le mari [[Jean Pierre/Galichet]]",
+        "",
+        "* et un texte alternatif '''avec''' apostrophe pour la femme",
+        "<br><img src=\"%sm=IM;s=jean_pierre.0.galichet.jpg\" width=50% alt=\"retour d'etat\">",
+        "",
+        "* les vues individuelles sont correctes,",
+        "mais la vue sous forme de table des ascendants est incorrecte à cause de cette apostrophe."
+      ]
+    },
+    {
+      "person": "Galichet Jean_Pierre",
+      "text": "* j'utilise la même image dans les notes du mari et de la femme\n* avec un texte alternatif sans apostrophe pour le mari\n<br><img src=\"%sm=IM;s=jean_pierre.0.galichet.jpg\" width=50% alt=\"texte alternatif sans apostrophe\">\n\n* et un texte alternatif '''avec''' apostrophe pour la femme [[Marie Elisabeth/Loche]]\n\n* les vues individuelles sont correctes, mais la vue sous forme de table des ascendants est incorrecte à cause de cette apostrophe.",
+      "raw_lines": [
+        "* j'utilise la même image dans les notes du mari et de la femme",
+        "* avec un texte alternatif sans apostrophe pour le mari",
+        "<br><img src=\"%sm=IM;s=jean_pierre.0.galichet.jpg\" width=50% alt=\"texte alternatif sans apostrophe\">",
+        "",
+        "* et un texte alternatif '''avec''' apostrophe pour la femme [[Marie Elisabeth/Loche]]",
+        "",
+        "* les vues individuelles sont correctes, mais la vue sous forme de table des ascendants est incorrecte à cause de cette apostrophe."
+      ]
+    },
+    {
+      "person": "Galichet Nicole",
+      "text": "* Elle n'est pas liée aux autres Galichet",
+      "raw_lines": [
+        "* Elle n'est pas liée aux autres Galichet"
+      ]
+    },
+    {
+      "person": "Geruzet Laurent",
+      "text": "* is is mandatory to have at least a three brackets delimited link\n  to be able to access a miscellaneous note ?\n* so a pointer to [[[Chantal]]] note.",
+      "raw_lines": [
+        "* is is mandatory to have at least a three brackets delimited link",
+        "  to be able to access a miscellaneous note ?",
+        "* so a pointer to [[[Chantal]]] note."
+      ]
+    }
+  ],
+  "extended_pages": [
+    {
+      "name": "Andre",
+      "title": "title line, is first line",
+      "type": null,
+      "content": "and next is text\n  * with wiki syntax\n  * this note created from note of [[Jean Charles/Galichet]]"
+    },
+    {
+      "name": "Chantal",
+      "title": "la 1ere ligne correspond au titre",
+      "type": null,
+      "content": "* et j'utilise une syntax wiki pour le reste\n  * avec un lien vers [[Laurent/Geruzet]]"
+    },
+    {
+      "name": "Gallery",
+      "title": "la 1ere ligne correspond au titre",
+      "type": "gallery",
+      "content": {
+        "title": "Gallery test",
+        "desc": "test",
+        "path": "doc",
+        "img": "jean_pierre.0.galichet.jpg",
+        "map": []
+      }
+    }
+  ],
+  "database_notes": {
+    "text": "TITLE=Ceci est une base de test.\n\n  * initialement créée pour investiguer le pb #1334\n  (https://github.com/geneweb/geneweb/issues/1334)\n  et valider la correction avec le script gwu_test.sh\n\n  * test la présence d'une apostrophe dans le texte alternate d'une image,\n  (https://github.com/geneweb/geneweb/issues/1558)\n  <br>voir les notes du couple [[Jean Pierre/Galichet]] et [[Marie Elisabeth/Loche]]",
+    "raw_lines": [
+      "  TITLE=Ceci est une base de test.",
+      "",
+      "  * initialement créée pour investiguer le pb #1334",
+      "  (https://github.com/geneweb/geneweb/issues/1334)",
+      "  et valider la correction avec le script gwu_test.sh",
+      "",
+      "  * test la présence d'une apostrophe dans le texte alternate d'une image,",
+      "  (https://github.com/geneweb/geneweb/issues/1558)",
+      "  <br>voir les notes du couple [[Jean Pierre/Galichet]] et [[Marie Elisabeth/Loche]]"
+    ]
+  },
+  "raw_header": {
+    "encoding": "utf-8",
+    "gwplus": true
+  },
+  "raw_header_extra": [
+    "# extended page \"Andre\" used by:",
+    "#  - person \"Jean Charles.0 Galichet\"",
+    "# extended page \"Chantal\" used by:",
+    "#  - person \"Jean Charles.0 Galichet\"",
+    "#  - person \"Laurent.0 Geruzet\"",
+    "# extended page \"Gallery\" used by:",
+    "#  - person \"Jean Charles.0 Galichet\""
+  ]
+}
