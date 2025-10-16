@@ -426,3 +426,187 @@ class TestFamilyEdgeCases:
             or "after" in response.json()["detail"].lower()
             or "deceased" in response.json()["detail"].lower()
         )
+
+
+class TestFamilySearch:
+    """Test family search functionality via API endpoint."""
+
+    def test_search_families_by_name_success(self, client, sample_family_data):
+        """Test searching families by spouse name."""
+        client.post("/api/v1/families", json=sample_family_data)
+        
+        # Search by first name
+        response = client.get("/api/v1/families/search?q=John")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) > 0
+        assert any("John" in result["summary"] for result in data)
+        
+        # Search by last name
+        response = client.get("/api/v1/families/search?q=Smith")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) > 0
+        assert any("Smith" in result["summary"] for result in data)
+
+    def test_search_families_by_family_id(self, client, sample_family_data):
+        """Test searching families by specific family ID."""
+        create_response = client.post("/api/v1/families", json=sample_family_data)
+        family_id = create_response.json()["id"]
+        
+        response = client.get(f"/api/v1/families/search?family_id={family_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["id"] == family_id
+        assert "John" in data[0]["summary"]
+        assert "Smith" in data[0]["summary"]
+
+    def test_search_families_no_results(self, client):
+        """Test searching families with no matching results."""
+        response = client.get("/api/v1/families/search?q=NonexistentName")
+        assert response.status_code == 404
+        assert "No families found" in response.json()["detail"]
+
+    def test_search_families_invalid_family_id(self, client):
+        """Test searching with non-existent family ID."""
+        non_existent_id = str(uuid4())
+        response = client.get(f"/api/v1/families/search?family_id={non_existent_id}")
+        assert response.status_code == 404
+        assert "No families found" in response.json()["detail"]
+
+    def test_search_families_missing_parameters(self, client):
+        """Test searching families without required parameters."""
+        response = client.get("/api/v1/families/search")
+        assert response.status_code == 400
+        assert "Either 'q' or 'family_id' parameter is required" in response.json()["detail"]
+
+    def test_search_families_with_limit(self, client, sample_persons):
+        """Test searching families with limit parameter."""
+        # Create multiple families
+        for i in range(5):
+            client.post(
+                "/api/v1/families", 
+                json={"husband_id": sample_persons["husband"]["id"]}
+            )
+        
+        response = client.get("/api/v1/families/search?q=John&limit=3")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) <= 3
+
+    def test_search_families_case_insensitive(self, client, sample_family_data):
+        """Test that family search is case insensitive."""
+        client.post("/api/v1/families", json=sample_family_data)
+        
+        # Test lowercase search
+        response = client.get("/api/v1/families/search?q=john")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) > 0
+        
+        # Test uppercase search
+        response = client.get("/api/v1/families/search?q=JOHN")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) > 0
+
+    def test_search_families_partial_match(self, client, sample_family_data):
+        """Test searching families with partial name matches."""
+        client.post("/api/v1/families", json=sample_family_data)
+        
+        # Test partial first name
+        response = client.get("/api/v1/families/search?q=Jo")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) > 0
+        
+        # Test partial last name
+        response = client.get("/api/v1/families/search?q=Smi")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) > 0
+
+    def test_search_families_all_families(self, client, sample_persons):
+        """Test getting all families without search query."""
+        # Create multiple families
+        for i in range(3):
+            client.post(
+                "/api/v1/families", 
+                json={"husband_id": sample_persons["husband"]["id"]}
+            )
+        
+        response = client.get("/api/v1/families/search?q=")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 3
+
+
+class TestFamilyDetail:
+    """Test family detail endpoint."""
+
+    def test_get_family_detail_success(self, client, sample_family_data):
+        """Test getting detailed family information."""
+        create_response = client.post("/api/v1/families", json=sample_family_data)
+        family_id = create_response.json()["id"]
+        
+        response = client.get(f"/api/v1/families/{family_id}/detail")
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Check basic family info
+        assert data["id"] == family_id
+        assert data["husband_id"] == sample_family_data["husband_id"]
+        assert data["wife_id"] == sample_family_data["wife_id"]
+        
+        # Check related data structure
+        assert "husband" in data
+        assert "wife" in data
+        assert "children" in data
+        assert "events" in data
+        
+        # Check spouse details
+        assert data["husband"]["first_name"] == "John"
+        assert data["wife"]["first_name"] == "Jane"
+
+    def test_get_family_detail_not_found(self, client):
+        """Test getting detail for non-existent family."""
+        non_existent_id = str(uuid4())
+        response = client.get(f"/api/v1/families/{non_existent_id}/detail")
+        assert response.status_code == 404
+        assert "Family not found" in response.json()["detail"]
+
+    def test_get_family_detail_invalid_uuid(self, client):
+        """Test getting family detail with invalid UUID."""
+        response = client.get("/api/v1/families/invalid-uuid/detail")
+        assert response.status_code == 422
+
+    def test_get_family_detail_with_children(self, client, sample_family_data):
+        """Test getting family detail with children."""
+        create_response = client.post("/api/v1/families", json=sample_family_data)
+        family_id = create_response.json()["id"]
+        
+        # Add a child to the family
+        child = client.post(
+            "/api/v1/persons",
+            json={
+                "first_name": "Child",
+                "last_name": "Doe",
+                "sex": "M",
+                "birth_date": "2010-01-01",
+            },
+        ).json()
+        
+        client.post(
+            "/api/v1/children",
+            json={
+                "family_id": family_id,
+                "person_id": child["id"],
+            },
+        )
+        
+        response = client.get(f"/api/v1/families/{family_id}/detail")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["children"]) == 1
+        assert data["children"][0]["person_id"] == child["id"]
