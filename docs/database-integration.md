@@ -103,7 +103,8 @@ Create a `.env` file in the project root (copy from `env.example`):
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://genealogy_user:genealogy_password@localhost:5432/genealogy_db
+DATABASE_PROD_URL=postgresql://genealogy_user:genealogy_password@postgres-prod:5432/genealogy_db
+DATABASE_DEV_URL= postgresql://genealogy_user:genealogy_password@postgres-dev:5432/genealogy_db
 
 # PostgreSQL Configuration
 POSTGRES_DB=genealogy_db

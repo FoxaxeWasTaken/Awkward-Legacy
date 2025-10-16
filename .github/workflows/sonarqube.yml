@@ -35,13 +35,22 @@ jobs:
         with:
           python-version: '3.11'  # or your version
 
-      - name: Install dependencies
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r server/requirements-dev.txt
           pip install pytest pytest-cov
 
-      - name: Run tests with coverage
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Run backend tests with coverage
         working-directory: server
         env:
           DATABASE_URL: postgresql://sonarqube:sonarqube@localhost:5432/sonarqube_db
@@ -49,12 +58,19 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)/src
           pytest --cov=src --cov-report=xml:coverage.xml
 
+      - name: Run frontend tests with coverage
+        working-directory: client
+        run: npm run test:unit:coverage
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.sources=server/src
-            -Dsonar.tests=server/tests
+            -Dsonar.sources=server/src,client/src
+            -Dsonar.tests=server/tests,client/src/__tests__
             -Dsonar.python.coverage.reportPaths=server/coverage.xml
+            -Dsonar.javascript.lcov.reportPaths=client/coverage/lcov.info
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/__pycache__/**,**/__tests__/**,**/*.spec.ts,**/*.test.ts
+            -Dsonar.test.inclusions=**/__tests__/**/*,**/*.spec.ts,**/*.test.ts
