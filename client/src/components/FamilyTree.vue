@@ -178,6 +178,7 @@ const error = ref('');
 const familyData = ref<FamilyDetailResult | null>(null);
 const familyTitle = ref('Family Tree');
 const selectedPerson = ref<Person | null>(null);
+const crossFamilyChildren = ref<Map<string, Person[]>>(new Map());
 
 // Template refs
 const treeContainer = ref<HTMLElement>();
@@ -226,7 +227,7 @@ const familyGenerations = computed((): FamilyGeneration[] => {
             id: ownFamily.id,
             husband: child.person?.sex === 'M' ? child.person : undefined,
             wife: child.person?.sex === 'F' ? child.person : undefined,
-            children: [], // We don't have children data for cross-families in current API
+            children: crossFamilyChildren.value.get(ownFamily.id) || [],
             marriageDate: ownFamily.marriage_date,
             marriagePlace: ownFamily.marriage_place
           };
@@ -285,12 +286,35 @@ const loadFamilyData = async () => {
     }
     familyTitle.value = parts.length > 0 ? parts.join(' & ') : 'Family Tree';
     
+    // Fetch children data for cross-family relationships
+    await loadCrossFamilyChildren(data);
+    
   } catch (err: any) {
     console.error('Error loading family data:', err);
     error.value = err.response?.data?.detail || 'Failed to load family tree. Please try again.';
   } finally {
     isLoading.value = false;
   }
+};
+
+const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
+  const childrenMap = new Map<string, Person[]>();
+  
+  for (const child of data.children) {
+    if (child.person?.has_own_family && child.person.own_families) {
+      for (const ownFamily of child.person.own_families) {
+        try {
+          const familyDetail = await apiService.getFamilyDetail(ownFamily.id);
+          const children = familyDetail.children.map(c => c.person).filter(Boolean) as Person[];
+          childrenMap.set(ownFamily.id, children);
+        } catch (err) {
+          console.error(`Error loading children for family ${ownFamily.id}:`, err);
+        }
+      }
+    }
+  }
+  
+  crossFamilyChildren.value = childrenMap;
 };
 
 const selectPerson = (person: Person) => {
