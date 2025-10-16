@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 try:
     from .parsing.models import ParserResult
@@ -160,7 +160,7 @@ class GWParser:
 
     # ===== FAMILY BLOCK =====
 
-    def _parse_family(self) -> FamilyDict:
+    def _parse_family(self) -> Dict[str, Any]:
         """Parse a family block starting at current position."""
         family_parser = FamilyParser(self.lines, self.pos)
         family, new_pos = family_parser.parse_family()
@@ -169,7 +169,7 @@ class GWParser:
 
     # ===== PERSON EVENTS =====
 
-    def _parse_pevt(self) -> PersonDict:
+    def _parse_pevt(self) -> Dict[str, Any]:
         """Parse pevt block."""
         block_parser = BlockParser(self.lines, self.pos)
         data, new_pos = block_parser.parse_pevt()

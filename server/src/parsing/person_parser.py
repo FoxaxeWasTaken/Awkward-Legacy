@@ -4,7 +4,7 @@ Person parsing utilities for GeneWeb parser.
 Handles parsing of person segments and related data.
 """
 
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, List, Optional
 from .models import PersonDict
 from .token_parser import (
     tokenize_preserving_braces,
@@ -73,10 +73,9 @@ def _determine_sex_from_tags(tags: Dict[str, List[str]]) -> Optional[str]:
     g = gender_tag[0].upper()
     if g == "F":
         return "female"
-    elif g == "M":
+    if g == "M":
         return "male"
-    else:
-        return "Unknown"
+    return "Unknown"
 
 
 def _process_tags(tags: Dict[str, List[str]]) -> Dict[str, List[str]]:

@@ -77,7 +77,6 @@ def _get_child_prefix(gender: str) -> str:
     """Get the appropriate prefix for a child based on gender."""
     if gender == "male":
         return "h"
-    elif gender == "female":
+    if gender == "female":
         return "f"
-    else:
-        return gender
+    return gender

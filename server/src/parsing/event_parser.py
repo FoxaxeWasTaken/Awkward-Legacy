@@ -5,7 +5,7 @@ Handles parsing of events and related data.
 """
 
 import re
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from .models import EventDict
 from .date_parser import parse_date_token, DATE_TOKEN_PATTERN
 

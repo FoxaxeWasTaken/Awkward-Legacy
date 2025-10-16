@@ -17,6 +17,18 @@ class HeaderParser:
         self.length = len(lines)
 
     def parse_headers(self) -> tuple[Dict[str, Any], int]:
+        """Parse headers at the top of the file."""
+        return self._parse_headers()
+
+    def get_position(self) -> int:
+        """Get current parsing position."""
+        return self.pos
+
+    def set_position(self, pos: int) -> None:
+        """Set parsing position."""
+        self.pos = pos
+
+    def _parse_headers(self) -> tuple[Dict[str, Any], int]:
         """
         Parse headers at the top of the file.
 
@@ -42,12 +54,12 @@ class HeaderParser:
 
         return headers, current_pos
 
-    def _parse_encoding_header(self, line: str, headers: Dict[str, Any]) -> None:
+    def parse_encoding_header(self, line: str, headers: Dict[str, Any]) -> None:
         """Parse an encoding header line."""
         encoding = line.split(":", 1)[-1].strip()
         headers["encoding"] = encoding
 
-    def _parse_gwplus_header(self, _: str, headers: Dict[str, Any]) -> None:
+    def parse_gwplus_header(self, _: str, headers: Dict[str, Any]) -> None:
         """Parse gwplus header line."""
         headers["gwplus"] = True
 
@@ -60,8 +72,8 @@ def _should_parse_line(line: str) -> bool:
 def _find_matching_parser(line: str, parser_instance) -> Optional[callable]:
     """Return the parser for a matching header line, or None."""
     header_parsers = {
-        "encoding:": parser_instance._parse_encoding_header,
-        "gwplus": parser_instance._parse_gwplus_header,
+        "encoding:": parser_instance.parse_encoding_header,
+        "gwplus": parser_instance.parse_gwplus_header,
     }
 
     for prefix, parser in header_parsers.items():

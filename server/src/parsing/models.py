@@ -77,6 +77,8 @@ PersonEventTag = Literal[
 
 # Date representation type
 class DateDict(TypedDict, total=False):
+    """Date dictionary type for GeneWeb parser."""
+
     raw: str
     qualifier: str
     value: str
@@ -87,6 +89,8 @@ class DateDict(TypedDict, total=False):
 
 # Event representation type
 class EventDict(TypedDict, total=False):
+    """Event dictionary type for GeneWeb parser."""
+
     type: str
     date: DateDict
     place_raw: str
@@ -97,6 +101,8 @@ class EventDict(TypedDict, total=False):
 
 # Person representation type
 class PersonDict(TypedDict, total=False):
+    """Person dictionary type for GeneWeb parser."""
+
     name: str
     first_name: str
     last_name: str
@@ -108,6 +114,8 @@ class PersonDict(TypedDict, total=False):
 
 # Family representation type
 class FamilyDict(TypedDict, total=False):
+    """Family dictionary type for GeneWeb parser."""
+
     husband: PersonDict
     wife: PersonDict
     children: List[PersonDict]

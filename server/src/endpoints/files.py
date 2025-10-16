@@ -1,12 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
-from ..geneweb_converter import (
-    convert_to_json_serializable,
-    db_to_json,
-    extract_entities,
-    json_to_db,
-    normalize_db_json,
-)
+from ..geneweb_converter import db_to_json, json_to_db
+from ..converter.json_normalizer import convert_to_json_serializable, normalize_db_json
+from ..converter.entity_extractor import extract_entities
 from sqlmodel import Session
 from uuid import UUID
 import tempfile

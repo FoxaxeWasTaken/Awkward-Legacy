@@ -13,7 +13,7 @@ Functions:
     - serialize_person_events: Serializes a person's events into GeneWeb `.gw` format
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 from .event_serializer import serialize_event
 from .utils import serialize_tags, serialize_dates

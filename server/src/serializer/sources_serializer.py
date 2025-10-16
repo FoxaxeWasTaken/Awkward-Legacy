@@ -25,7 +25,8 @@ def serialize_sources(sources: Dict[str, List[str]]) -> str:
         csources <source_name> → children source references
 
     Args:
-        sources (Dict[str, List[str]]): Dictionary with keys 'family_source' and/or 'children_source'.
+        sources (Dict[str, List[str]]): Dictionary with keys 'family_source' and/or
+            'children_source'.
 
     Returns:
         str: GeneWeb-formatted source block string.

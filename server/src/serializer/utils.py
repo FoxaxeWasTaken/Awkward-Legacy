@@ -69,6 +69,6 @@ def gender_prefix(gender: str) -> str:
     gender = gender.lower()
     if gender in ["m", "male", "man", "homme", "h"]:
         return "h"
-    elif gender in ["f", "female", "woman", "femme"]:
+    if gender in ["f", "female", "woman", "femme"]:
         return "f"
     return "h"

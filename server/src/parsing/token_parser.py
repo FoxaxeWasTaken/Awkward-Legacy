@@ -4,10 +4,9 @@ Token parsing utilities for GeneWeb parser.
 Handles tokenization and parsing of text segments.
 """
 
-import re
 from typing import List, Tuple
 from .models import TagsDict
-from .date_parser import DATE_TOKEN_PATTERN, normalize_underscores
+from .date_parser import DATE_TOKEN_PATTERN
 
 
 def tokenize_preserving_braces(text: str) -> List[str]:
@@ -122,9 +121,8 @@ def split_name_into_parts(full_name: str) -> Tuple[str, str]:
 
     if len(name_parts) == 0:
         return "", ""
-    elif len(name_parts) == 1:
+    if len(name_parts) == 1:
         return name_parts[0], ""
-    else:
-        first_name = name_parts[0]
-        last_name = " ".join(name_parts[1:])
-        return first_name, last_name
+    first_name = name_parts[0]
+    last_name = " ".join(name_parts[1:])
+    return first_name, last_name

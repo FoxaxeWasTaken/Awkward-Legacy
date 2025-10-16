@@ -1,15 +1,14 @@
+"""GeneWeb converter module.
+
+Handles conversion between JSON data and database entities.
+"""
+
 from typing import Dict, Any
 from sqlmodel import Session
-from src.models import Person, Family, Event, Child
 from src.crud.person import person_crud
 from src.crud.family import family_crud
 from src.crud.event import event_crud
 from src.crud.child import child_crud
-from src.converter.entity_extractor import extract_entities
-from src.converter.json_normalizer import (
-    convert_to_json_serializable,
-    normalize_db_json,
-)
 
 
 def json_to_db(data: Dict[str, Any], session: Session):
@@ -19,13 +18,33 @@ def json_to_db(data: Dict[str, Any], session: Session):
     events = data.get("events", [])
     children = data.get("children", [])
 
-    person_map = {}
-    family_map = {}
+    person_map = _create_persons(session, persons)
+    family_map = _create_families(session, families, person_map)
+    _create_events(session, events)
+    created_children = _create_children(session, children, family_map, person_map)
 
+    return {
+        "persons": len(persons),
+        "families": len(families),
+        "events": len(events),
+        "children": created_children,
+    }
+
+
+def _create_persons(session: Session, persons: list) -> Dict[str, int]:
+    """Create persons and return mapping of original ID to database ID."""
+    person_map = {}
     for person_data in persons:
         created = person_crud.create(session, person_data)
         person_map[person_data.get("id")] = created.id
+    return person_map
 
+
+def _create_families(
+    session: Session, families: list, person_map: Dict[str, int]
+) -> Dict[str, int]:
+    """Create families and return mapping of original ID to database ID."""
+    family_map = {}
     for family_data in families:
         husband_id = person_map.get(family_data.get("husband_id"))
         wife_id = person_map.get(family_data.get("wife_id"))
@@ -33,10 +52,22 @@ def json_to_db(data: Dict[str, Any], session: Session):
         family_data["wife_id"] = wife_id
         created = family_crud.create(session, family_data)
         family_map[family_data.get("id")] = created.id
+    return family_map
 
+
+def _create_events(session: Session, events: list) -> None:
+    """Create events in the database."""
     for event_data in events:
         event_crud.create(session, event_data)
 
+
+def _create_children(
+    session: Session,
+    children: list,
+    family_map: Dict[str, int],
+    person_map: Dict[str, int],
+) -> int:
+    """Create children and return count of successfully created children."""
     created_children = 0
     for child_data in children:
         family_id = family_map.get(child_data.get("family_id"))
@@ -46,13 +77,7 @@ def json_to_db(data: Dict[str, Any], session: Session):
             child_data["child_id"] = child_id
             child_crud.create(session, child_data)
             created_children += 1
-
-    return {
-        "persons": len(persons),
-        "families": len(families),
-        "events": len(events),
-        "children": created_children,
-    }
+    return created_children
 
 
 def db_to_json(session: Session) -> Dict[str, Any]:

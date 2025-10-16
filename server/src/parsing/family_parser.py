@@ -5,10 +5,10 @@ Handles parsing of family blocks and related structures.
 """
 
 from typing import Dict, Any, List, Optional, Tuple
-from .event_parser import parse_event_line, parse_note_line
 from .person_parser import parse_person_segment
-from .family_utils import split_family_header, should_skip_empty_line
+from .family_utils import split_family_header
 from .models import FEVT_MAP, FamilyDict, EventDict
+from .event_block_utils import parse_event_block
 
 
 class FamilyParser:
@@ -64,6 +64,14 @@ class FamilyParser:
 
         return family, current_pos
 
+    def get_position(self) -> int:
+        """Get current parsing position."""
+        return self.pos
+
+    def set_position(self, pos: int) -> None:
+        """Set parsing position."""
+        self.pos = pos
+
     def _parse_family_sources(self, family: FamilyDict, line: str) -> bool:
         """Parse family source lines."""
         source_map = {
@@ -94,48 +102,7 @@ class FamilyParser:
     def _parse_fevt(self, start_pos: int) -> List[EventDict]:
         """Parse fevt ... end fevt block."""
         assert self.lines[start_pos].strip() == "fevt"
-        return self._parse_event_block(start_pos + 1, "end fevt", FEVT_MAP)
-
-    def _parse_event_block(
-        self, start_pos: int, end_marker: str, event_map: Dict[str, str]
-    ) -> List[EventDict]:
-        """Common logic to parse events in fevt and pevt blocks."""
-        events: List[EventDict] = []
-        current_pos = start_pos
-
-        while current_pos < self.length:
-            line = self.lines[current_pos].rstrip()
-            if should_skip_empty_line(line):
-                current_pos += 1
-                continue
-            if line.startswith(end_marker):
-                current_pos += 1
-                break
-
-            self._process_event_line(line, event_map, events)
-            current_pos += 1
-
-        return events
-
-    def _process_event_line(
-        self, line: str, event_map: Dict[str, str], events: List[EventDict]
-    ) -> None:
-        """Process a single event line and add to events list."""
-        if line.startswith("#"):
-            events.append(parse_event_line(line, event_map))
-        elif line.startswith("note "):
-            self._handle_note_line(line, events)
-        else:
-            events.append({"type": "raw", "raw": line})
-
-    def _handle_note_line(self, line: str, events: List[EventDict]) -> None:
-        """Handle note line by either creating new note event or adding to last event."""
-        note = parse_note_line(line)
-
-        if not events:
-            events.append({"type": "note", "notes": [note]})
-        else:
-            events[-1].setdefault("notes", []).append(note)
+        return parse_event_block(self.lines, start_pos + 1, "end fevt", FEVT_MAP)
 
     def _parse_beg(self, start_pos: int) -> List[Dict[str, Any]]:
         """Parse beg ... end block containing children."""
