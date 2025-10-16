@@ -30,7 +30,13 @@
       <button @click="loadFamilyData" class="retry-button">Retry</button>
     </div>
     
-    <div v-else class="tree-container" ref="treeContainer">
+    <div 
+      v-else 
+      class="tree-container" 
+      ref="treeContainer"
+      @mousedown="startDrag"
+      @wheel="handleWheel"
+    >
         <div 
           class="tree-content" 
           ref="treeContent"
@@ -39,8 +45,6 @@
             transformOrigin: '0 0',
             transition: isDragging ? 'none' : 'transform 0.3s ease'
           }"
-          @mousedown="startDrag"
-          @wheel="handleWheel"
         >
           <div class="family-generation" v-for="(generation, index) in familyGenerations" :key="index">
             <div class="generation-label" v-if="index > 0">Generation {{ index + 1 }}</div>
@@ -412,17 +416,10 @@ const formatDate = (dateString: string): string => {
 };
 
 const startDrag = (e: MouseEvent) => {
-  // Don't start drag if clicking on interactive elements
-  const target = e.target as HTMLElement;
-  if (target.closest('.person-node') || target.closest('.child-node')) {
-    return;
-  }
-  
+  // Allow drag from anywhere
   isDragging.value = true;
   dragStart.value = { x: e.clientX, y: e.clientY };
   panStart.value = { x: panX.value, y: panY.value };
-  
-  e.preventDefault();
 };
 
 const handleDrag = (e: MouseEvent) => {
@@ -431,8 +428,12 @@ const handleDrag = (e: MouseEvent) => {
   const dx = e.clientX - dragStart.value.x;
   const dy = e.clientY - dragStart.value.y;
   
-  panX.value = panStart.value.x + dx;
-  panY.value = panStart.value.y + dy;
+  // Only start panning if moved more than 3 pixels (to allow clicks)
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  if (distance > 3) {
+    panX.value = panStart.value.x + dx;
+    panY.value = panStart.value.y + dy;
+  }
 };
 
 const stopDrag = () => {
