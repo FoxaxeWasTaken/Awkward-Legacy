@@ -112,8 +112,10 @@
                 :key="`children-${couple.id}`"
                 class="children-group"
               >
-                <div v-if="couple.children.length > 0" class="children-connection">
-                  <div class="connection-line"></div>
+                <div v-if="couple.children.length > 0" class="children-wrapper">
+                  <div class="children-connection">
+                    <div class="connection-line"></div>
+                  </div>
                   <div class="children-container">
                     <div 
                       v-for="child in couple.children" 
@@ -244,52 +246,68 @@ const familyGenerations = computed((): FamilyGeneration[] => {
     couples: [mainCouple]
   });
   
-  // Process children who have their own families
-  const childCouples: Couple[] = [];
+  // Recursively process all generations
+  let currentGenCouples = [mainCouple];
   
-  data.children.forEach(child => {
-    if (child.person?.has_own_family && child.person.own_families) {
-      child.person.own_families.forEach(ownFamily => {
-        if (ownFamily.spouse) {
-          const childCouple: Couple = {
-            id: ownFamily.id,
-            husband: child.person?.sex === 'M' ? child.person : undefined,
-            wife: child.person?.sex === 'F' ? child.person : undefined,
-            children: crossFamilyChildren.value.get(ownFamily.id) || [],
-            marriageDate: ownFamily.marriage_date,
-            marriagePlace: ownFamily.marriage_place
-          };
-          
-          // Add spouse
-          if (child.person?.sex === 'M') {
-            childCouple.wife = {
-              id: ownFamily.spouse.id,
-              first_name: ownFamily.spouse.name.split(' ')[0],
-              last_name: ownFamily.spouse.name.split(' ').slice(1).join(' '),
-              sex: ownFamily.spouse.sex,
-              has_own_family: false
-            };
-          } else {
-            childCouple.husband = {
-              id: ownFamily.spouse.id,
-              first_name: ownFamily.spouse.name.split(' ')[0],
-              last_name: ownFamily.spouse.name.split(' ').slice(1).join(' '),
-              sex: ownFamily.spouse.sex,
-              has_own_family: false
-            };
-          }
-          
-          childCouples.push(childCouple);
+  while (currentGenCouples.length > 0) {
+    const nextGenCouples: Couple[] = [];
+    
+    // For each couple in the current generation, find their children who have families
+    currentGenCouples.forEach(couple => {
+      const coupleChildren = couple.children;
+      
+      coupleChildren.forEach(child => {
+        if (child.has_own_family && child.own_families) {
+          child.own_families.forEach(ownFamily => {
+            const childFamilyData = crossFamilyChildren.value.get(ownFamily.id);
+            
+            if (ownFamily.spouse || childFamilyData) {
+              const childCouple: Couple = {
+                id: ownFamily.id,
+                husband: child.sex === 'M' ? child : undefined,
+                wife: child.sex === 'F' ? child : undefined,
+                children: childFamilyData || [],
+                marriageDate: ownFamily.marriage_date,
+                marriagePlace: ownFamily.marriage_place
+              };
+              
+              // Add spouse
+              if (ownFamily.spouse) {
+                if (child.sex === 'M') {
+                  childCouple.wife = {
+                    id: ownFamily.spouse.id,
+                    first_name: ownFamily.spouse.name.split(' ')[0],
+                    last_name: ownFamily.spouse.name.split(' ').slice(1).join(' '),
+                    sex: ownFamily.spouse.sex,
+                    has_own_family: false
+                  };
+                } else {
+                  childCouple.husband = {
+                    id: ownFamily.spouse.id,
+                    first_name: ownFamily.spouse.name.split(' ')[0],
+                    last_name: ownFamily.spouse.name.split(' ').slice(1).join(' '),
+                    sex: ownFamily.spouse.sex,
+                    has_own_family: false
+                  };
+                }
+              }
+              
+              nextGenCouples.push(childCouple);
+            }
+          });
         }
       });
-    }
-  });
-  
-  // Add child couples as second generation
-  if (childCouples.length > 0) {
-    generations.push({
-      couples: childCouples
     });
+    
+    // Add next generation if it exists
+    if (nextGenCouples.length > 0) {
+      generations.push({
+        couples: nextGenCouples
+      });
+      currentGenCouples = nextGenCouples;
+    } else {
+      break;
+    }
   }
   
   return generations;
@@ -327,20 +345,36 @@ const loadFamilyData = async () => {
 
 const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
   const childrenMap = new Map<string, Person[]>();
+  const processedFamilies = new Set<string>([data.id]); // Track processed families to avoid infinite loops
   
-  for (const child of data.children) {
-    if (child.person?.has_own_family && child.person.own_families) {
-      for (const ownFamily of child.person.own_families) {
-        try {
-          const familyDetail = await apiService.getFamilyDetail(ownFamily.id);
-          const children = familyDetail.children.map(c => c.person).filter(Boolean) as Person[];
-          childrenMap.set(ownFamily.id, children);
-        } catch (err) {
-          console.error(`Error loading children for family ${ownFamily.id}:`, err);
+  // Recursive function to load all descendant families
+  const loadDescendantFamilies = async (children: any[]) => {
+    for (const child of children) {
+      if (child.person?.has_own_family && child.person.own_families) {
+        for (const ownFamily of child.person.own_families) {
+          // Skip if already processed
+          if (processedFamilies.has(ownFamily.id)) continue;
+          processedFamilies.add(ownFamily.id);
+          
+          try {
+            const familyDetail = await apiService.getFamilyDetail(ownFamily.id);
+            const familyChildren = familyDetail.children.map(c => c.person).filter(Boolean) as Person[];
+            childrenMap.set(ownFamily.id, familyChildren);
+            
+            // Recursively load grandchildren families
+            if (familyChildren.length > 0) {
+              await loadDescendantFamilies(familyDetail.children);
+            }
+          } catch (err) {
+            console.error(`Error loading children for family ${ownFamily.id}:`, err);
+          }
         }
       }
     }
-  }
+  };
+  
+  // Start loading from the root family's children
+  await loadDescendantFamilies(data.children);
   
   crossFamilyChildren.value = childrenMap;
 };
@@ -697,10 +731,10 @@ watch(() => props.familyId, () => {
 
 .couples-row {
   display: flex;
-  flex-wrap: wrap;
   gap: 3rem;
   justify-content: center;
   align-items: flex-start;
+  padding: 0 2rem;
 }
 
 .couple-container {
@@ -809,7 +843,7 @@ watch(() => props.familyId, () => {
   justify-content: center;
   align-items: flex-start;
   margin-top: 2rem;
-  width: 100%;
+  padding: 0 2rem;
 }
 
 .children-group {
@@ -817,15 +851,22 @@ watch(() => props.familyId, () => {
   flex-direction: column;
   align-items: center;
   width: 500px;
+  min-height: 50px;
+}
+
+.children-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .children-connection {
   position: relative;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .connection-line {
@@ -833,7 +874,6 @@ watch(() => props.familyId, () => {
   height: 40px;
   background: linear-gradient(180deg, #95a5a6, #bdc3c7);
   border-radius: 2px;
-  margin-bottom: 1rem;
 }
 
 .children-container {
@@ -843,6 +883,7 @@ watch(() => props.familyId, () => {
   justify-content: center;
   align-items: flex-start;
   width: 100%;
+  min-width: 500px;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 16px;
