@@ -59,6 +59,21 @@
         >
           <div class="generation-label" v-if="index > 0">Generation {{ index + 1 }}</div>
 
+          <!-- Marriage Information for the main couple -->
+          <div v-if="index === 0 && generation.couples[0]" class="marriage-info">
+            <div
+              v-if="generation.couples[0].marriageDate || generation.couples[0].marriagePlace"
+              class="marriage-details"
+            >
+              <div v-if="generation.couples[0].marriageDate" class="marriage-date">
+                <strong>Married:</strong> {{ formatDate(generation.couples[0].marriageDate) }}
+              </div>
+              <div v-if="generation.couples[0].marriagePlace" class="marriage-place">
+                <strong>Place:</strong> {{ generation.couples[0].marriagePlace }}
+              </div>
+            </div>
+          </div>
+
           <!-- All couples of this generation on the same horizontal level -->
           <div class="couples-row">
             <div
@@ -468,16 +483,16 @@ const familyGenerations = computed((): FamilyGeneration[] => {
 const analyzeRelationshipEvents = (events: Event[], marriageDate?: string) => {
   const marriageEvents = events.filter(
     (event) =>
-      event.type.toLowerCase().includes('marriage') ||
-      event.type.toLowerCase().includes('wedding') ||
-      event.type.toLowerCase().includes('marry'),
+      (event.type && event.type.toLowerCase().includes('marriage')) ||
+      (event.type && event.type.toLowerCase().includes('wedding')) ||
+      (event.type && event.type.toLowerCase().includes('marry')),
   )
 
   const divorceEvents = events.filter(
     (event) =>
-      event.type.toLowerCase().includes('divorce') ||
-      event.type.toLowerCase().includes('separation') ||
-      event.type.toLowerCase().includes('annulment'),
+      (event.type && event.type.toLowerCase().includes('divorce')) ||
+      (event.type && event.type.toLowerCase().includes('separation')) ||
+      (event.type && event.type.toLowerCase().includes('annulment')),
   )
 
   // Consider a couple married if they have marriage events OR a marriage date
@@ -1082,6 +1097,33 @@ watch(
   display: block;
   width: fit-content;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.marriage-info {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.marriage-details {
+  display: inline-flex;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+.marriage-date,
+.marriage-place {
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.marriage-date strong,
+.marriage-place strong {
+  color: #3498db;
+  margin-right: 0.5rem;
 }
 
 .couples-row {

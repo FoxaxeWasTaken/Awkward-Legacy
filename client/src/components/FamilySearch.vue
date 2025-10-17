@@ -106,6 +106,49 @@ const isLoading = ref(false)
 const error = ref('')
 const hasSearched = ref(false)
 
+// Restore search state from sessionStorage on mount
+const restoreSearchState = () => {
+  try {
+    const savedQuery = sessionStorage.getItem('familySearchQuery')
+    const savedResults = sessionStorage.getItem('familySearchResults')
+    const savedHasSearched = sessionStorage.getItem('familySearchHasSearched')
+
+    if (savedQuery) {
+      searchQuery.value = savedQuery
+    }
+    if (savedResults) {
+      searchResults.value = JSON.parse(savedResults)
+    }
+    if (savedHasSearched === 'true') {
+      hasSearched.value = true
+    }
+  } catch (error) {
+    console.warn('Failed to restore search state:', error)
+  }
+}
+
+// Save search state to sessionStorage
+const saveSearchState = () => {
+  try {
+    sessionStorage.setItem('familySearchQuery', searchQuery.value)
+    sessionStorage.setItem('familySearchResults', JSON.stringify(searchResults.value))
+    sessionStorage.setItem('familySearchHasSearched', hasSearched.value.toString())
+  } catch (error) {
+    console.warn('Failed to save search state:', error)
+  }
+}
+
+// Clear search state from sessionStorage
+const clearSearchState = () => {
+  try {
+    sessionStorage.removeItem('familySearchQuery')
+    sessionStorage.removeItem('familySearchResults')
+    sessionStorage.removeItem('familySearchHasSearched')
+  } catch (error) {
+    console.warn('Failed to clear search state:', error)
+  }
+}
+
 // Methods
 const handleSearch = async () => {
   if (!searchQuery.value.trim()) {
@@ -124,6 +167,7 @@ const handleSearch = async () => {
 
     const results = await apiService.searchFamilies(params)
     searchResults.value = results
+    saveSearchState() // Save state after successful search
   } catch (err: unknown) {
     console.error('Search error:', err)
     const errorMessage =
@@ -142,6 +186,7 @@ const handleInputChange = () => {
   if (hasSearched.value && searchResults.value.length > 0) {
     searchResults.value = []
     hasSearched.value = false
+    clearSearchState() // Clear saved state when starting new search
   }
 }
 
@@ -152,10 +197,14 @@ const handleViewDetails = (familyId: string) => {
 const clearError = () => {
   error.value = ''
   hasSearched.value = false
+  clearSearchState() // Clear saved state when clearing error
 }
 
 // Check API health on mount
 onMounted(async () => {
+  // Restore search state first
+  restoreSearchState()
+
   const isHealthy = await apiService.healthCheck()
   if (!isHealthy) {
     error.value = 'Unable to connect to the server. Please check your connection.'

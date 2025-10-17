@@ -34,10 +34,10 @@ export interface Child {
 export interface Event {
   id: string
   family_id: string
-  event_type: string
+  type: string
   date?: string
   place?: string
-  notes?: string
+  description?: string
 }
 
 export interface FamilySearchResult {
