@@ -1,0 +1,76 @@
+/* Main CSS file - imports all styles */
+
+/* Import CSS variables first */
+@import './variables.css';
+
+/* Import base styles */
+@import './base.css';
+
+/* Import component styles */
+@import './components/tree.css';
+@import './components/person-node.css';
+@import './components/child-node.css';
+@import './components/marriage-line.css';
+@import './components/tooltips.css';
+@import './components/tree-controls.css';
+@import './components/family-search.css';
+@import './components/family-card.css';
+@import './components/loading-spinner.css';
+
+/* Global styles */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-dark);
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .tree-controls,
+  .back-button {
+    display: none !important;
+  }
+
+  .family-tree {
+    background: white !important;
+  }
+
+  .person-node,
+  .child-node {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}

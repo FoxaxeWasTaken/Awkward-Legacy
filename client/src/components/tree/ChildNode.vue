@@ -1,0 +1,59 @@
+<template>
+  <div
+    class="child-node person-node child"
+    :class="highlightClass"
+    @click="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
+    <div class="child-avatar">
+      <div class="avatar-circle">
+        <span class="gender-icon">{{ genderIcon }}</span>
+      </div>
+    </div>
+    <div class="child-info">
+      <div class="child-name">{{ fullName }}</div>
+      <div class="child-dates" v-if="child.birth_date">{{ dateRange }}</div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { Person } from '../../types/family'
+import { getChildGenderIcon } from '../../utils/familyUtils'
+import { getDateRange } from '../../utils/dateUtils'
+
+interface Props {
+  child: Person
+  highlightClass: string
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  click: [person: Person]
+  mouseenter: [event: MouseEvent, person: Person]
+  mouseleave: []
+}>()
+
+const fullName = computed(() => `${props.child.first_name} ${props.child.last_name}`)
+
+const dateRange = computed(() => getDateRange(props.child.birth_date, props.child.death_date))
+
+const genderIcon = computed(() => getChildGenderIcon(props.child.sex))
+
+const handleClick = () => {
+  emit('click', props.child)
+}
+
+const handleMouseEnter = (event: MouseEvent) => {
+  emit('mouseenter', event, props.child)
+}
+
+const handleMouseLeave = () => {
+  emit('mouseleave')
+}
+</script>
+
+<!-- CSS is now imported from external files -->
