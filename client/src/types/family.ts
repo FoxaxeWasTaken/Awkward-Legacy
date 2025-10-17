@@ -22,6 +22,7 @@ export interface OwnFamily {
     name: string
     sex: 'M' | 'F'
   }
+  events?: Event[]
 }
 
 export interface Child {

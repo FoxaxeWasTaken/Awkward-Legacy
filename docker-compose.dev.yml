@@ -22,8 +22,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
       - DATABASE_URL=${DATABASE_DEV_URL:-postgresql://genealogy_user:genealogy_password@postgres-dev:5432/genealogy_db}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://client-prod:5173,http://localhost:80}
     volumes:
       - ./server/src:/app/src
       - ./server/tests:/app/tests

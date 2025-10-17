@@ -561,8 +561,8 @@ const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
   // Recursive function to load all descendant families
   const loadDescendantFamilies = async (children: Person[]) => {
     for (const child of children) {
-      if (child.person?.has_own_family && child.person.own_families) {
-        for (const ownFamily of child.person.own_families) {
+      if (child.has_own_family && child.own_families) {
+        for (const ownFamily of child.own_families) {
           // Skip if already processed
           if (processedFamilies.has(ownFamily.id)) continue
           processedFamilies.add(ownFamily.id)
@@ -576,7 +576,7 @@ const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
 
             // Recursively load grandchildren families
             if (familyChildren.length > 0) {
-              await loadDescendantFamilies(familyDetail.children)
+              await loadDescendantFamilies(familyChildren)
             }
           } catch (err) {
             console.error(`Error loading children for family ${ownFamily.id}:`, err)
@@ -587,7 +587,8 @@ const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
   }
 
   // Start loading from the root family's children
-  await loadDescendantFamilies(data.children)
+  const rootChildren = data.children.map((c) => c.person).filter(Boolean) as Person[]
+  await loadDescendantFamilies(rootChildren)
 
   crossFamilyChildren.value = childrenMap
 }

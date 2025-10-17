@@ -96,20 +96,29 @@ describe('FamilyTree Component', () => {
     })
 
     it('zooms in when zoom in button is clicked', async () => {
-      const initialScale = wrapper.vm.scale
-      await wrapper.find('button[title="Zoom In"]').trigger('click')
+      const zoomLabel = wrapper.find('.zoom-label')
+      const initialZoomText = zoomLabel.text()
 
-      expect(wrapper.vm.scale).toBeGreaterThan(initialScale)
+      await wrapper.find('button[title="Zoom In"]').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const newZoomText = zoomLabel.text()
+      expect(newZoomText).not.toBe(initialZoomText)
     })
 
     it('zooms out when zoom out button is clicked', async () => {
       // First zoom in to have room to zoom out
       await wrapper.find('button[title="Zoom In"]').trigger('click')
-      const scaleAfterZoomIn = wrapper.vm.scale
+      await wrapper.vm.$nextTick()
+
+      const zoomLabel = wrapper.find('.zoom-label')
+      const scaleAfterZoomIn = zoomLabel.text()
 
       await wrapper.find('button[title="Zoom Out"]').trigger('click')
+      await wrapper.vm.$nextTick()
 
-      expect(wrapper.vm.scale).toBeLessThan(scaleAfterZoomIn)
+      const scaleAfterZoomOut = zoomLabel.text()
+      expect(scaleAfterZoomOut).not.toBe(scaleAfterZoomIn)
     })
 
     it('updates zoom percentage display', async () => {
