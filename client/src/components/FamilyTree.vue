@@ -522,6 +522,11 @@ const loadFamilyData = async () => {
 
   try {
     const data = await apiService.getFamilyDetail(props.familyId)
+
+    if (!data) {
+      throw new Error('No family data received')
+    }
+
     familyData.value = data
 
     // Create family title
