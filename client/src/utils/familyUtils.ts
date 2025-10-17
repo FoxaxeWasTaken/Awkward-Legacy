@@ -41,7 +41,7 @@ export const analyzeRelationshipEvents = (events: Event[], marriageDate?: string
   const isDivorced = divorceEvents.length > 0
 
   // Get the most recent divorce event
-  const sortedDivorceEvents = divorceEvents.toSorted((a, b) => {
+  const sortedDivorceEvents = [...divorceEvents].sort((a: Event, b: Event) => {
     if (!a.date || !b.date) return 0
     return new Date(b.date).getTime() - new Date(a.date).getTime()
   })
