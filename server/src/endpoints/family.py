@@ -136,6 +136,11 @@ def create_family(
 ):
     """Create a new family."""
     _validate_family_relationships_and_dates(session, family)
+    # Prevent duplicate couple (order-indifferent) when both spouses provided
+    if family.husband_id and family.wife_id and family_crud.exists_same_couple(
+        session, family.husband_id, family.wife_id
+    ):
+        raise HTTPException(status_code=409, detail="Family with same spouses already exists")
     return family_crud.create(session, family)
 
 
