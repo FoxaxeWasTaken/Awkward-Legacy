@@ -85,6 +85,7 @@ describe('FamilyTree Component', () => {
   const mockEvents: Event[] = [
     {
       id: 'e1',
+      family_id: mockFamilyId,
       type: 'Marriage',
       date: '2005-06-20',
       place: 'Boston, MA',
@@ -103,8 +104,10 @@ describe('FamilyTree Component', () => {
     wife: mockWife,
     children: [
       {
+        id: 'c1',
+        family_id: mockFamilyId,
+        person_id: 'c123',
         person: mockChild,
-        relationship: 'child',
       },
     ],
     events: mockEvents,
@@ -585,11 +588,13 @@ describe('FamilyTree Component', () => {
         ...mockFamilyDetail,
         children: [
           {
+            id: 'c1',
+            family_id: mockFamilyId,
+            person_id: 'c123',
             person: {
               ...mockChild,
-              sex: 'F',
+              sex: 'F' as const,
             },
-            relationship: 'child',
           },
         ],
       }

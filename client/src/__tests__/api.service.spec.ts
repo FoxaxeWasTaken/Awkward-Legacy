@@ -124,10 +124,9 @@ describe('API Service', () => {
       if (!mockAxiosInstance) return
 
       const searchParams: FamilySearchParams = {
-        husband_name: 'John',
-        wife_name: 'Jane',
-        marriage_date: '2005',
-        marriage_place: 'Boston',
+        q: 'John Jane',
+        family_id: 'test-family-id',
+        limit: 10,
       }
 
       mockAxiosInstance.get.mockResolvedValue({ data: mockFamilySearchResult })
@@ -143,7 +142,7 @@ describe('API Service', () => {
     it('should handle search families error', async () => {
       if (!mockAxiosInstance) return
 
-      const searchParams: FamilySearchParams = { husband_name: 'John' }
+      const searchParams: FamilySearchParams = { q: 'John' }
       const error = new Error('Search failed')
 
       mockAxiosInstance.get.mockRejectedValue(error)
