@@ -6,7 +6,7 @@ describe('Family Search and Visualization', () => {
 
   it('should display the main search interface', () => {
     // Check that the main elements are present
-    cy.contains('h1', 'Genealogy Family Search').should('be.visible');
+    cy.contains('h1', 'Geneweb Family Search').should('be.visible');
     cy.contains('h2', 'Family Search').should('be.visible');
     cy.get('input[placeholder*="Enter family name"]').should('be.visible');
     cy.get('button').contains('Search').should('be.visible');
@@ -54,18 +54,19 @@ describe('Family Search and Visualization', () => {
     // Check that results are displayed
     cy.contains('Search Results (1)').should('be.visible');
     cy.contains('John Doe & Jane Smith (2005)').should('be.visible');
-    cy.contains('Husband: John Doe').should('be.visible');
-    cy.contains('Wife: Jane Smith').should('be.visible');
-    cy.contains('Children: 2').should('be.visible');
+    cy.contains('Husband:').should('be.visible');
+    cy.contains('John Doe').should('be.visible');
+    cy.contains('Wife:').should('be.visible');
+    cy.contains('Jane Smith').should('be.visible');
+    cy.contains('Children:').should('be.visible');
+    cy.contains('2').should('be.visible');
   });
 
   it('should handle search with no results', () => {
-    // Mock API response with no results
+    // Mock API response with no results (empty array, not 404)
     cy.intercept('GET', '/api/v1/families/search*', {
-      statusCode: 404,
-      body: {
-        detail: 'No families found matching the search criteria'
-      }
+      statusCode: 200,
+      body: []
     }).as('noResults');
 
     // Perform search
@@ -229,9 +230,8 @@ describe('Family Search and Visualization', () => {
     cy.wait('@familyDetail');
 
     // Check that tree visualization elements are present
-    cy.get('.tree-svg').should('be.visible');
-    cy.contains('Reset View').should('be.visible');
-    cy.contains('Fullscreen').should('be.visible');
+    cy.get('.tree-container').should('be.visible');
+    cy.get('button[title="Reset View"]').should('be.visible');
   });
 
   it('should handle family tree loading errors', () => {

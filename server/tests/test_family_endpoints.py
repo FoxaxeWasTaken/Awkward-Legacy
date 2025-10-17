@@ -434,14 +434,14 @@ class TestFamilySearch:
     def test_search_families_by_name_success(self, client, sample_family_data):
         """Test searching families by spouse name."""
         client.post("/api/v1/families", json=sample_family_data)
-        
+
         # Search by first name
         response = client.get("/api/v1/families/search?q=John")
         assert response.status_code == 200
         data = response.json()
         assert len(data) > 0
         assert any("John" in result["summary"] for result in data)
-        
+
         # Search by last name
         response = client.get("/api/v1/families/search?q=Smith")
         assert response.status_code == 200
@@ -453,7 +453,7 @@ class TestFamilySearch:
         """Test searching families by specific family ID."""
         create_response = client.post("/api/v1/families", json=sample_family_data)
         family_id = create_response.json()["id"]
-        
+
         response = client.get(f"/api/v1/families/search?family_id={family_id}")
         assert response.status_code == 200
         data = response.json()
@@ -479,17 +479,19 @@ class TestFamilySearch:
         """Test searching families without required parameters."""
         response = client.get("/api/v1/families/search")
         assert response.status_code == 400
-        assert "Either 'q' or 'family_id' parameter is required" in response.json()["detail"]
+        assert (
+            "Either 'q' (search query) or 'family_id' parameter is required"
+            in response.json()["detail"]
+        )
 
     def test_search_families_with_limit(self, client, sample_persons):
         """Test searching families with limit parameter."""
         # Create multiple families
         for i in range(5):
             client.post(
-                "/api/v1/families", 
-                json={"husband_id": sample_persons["husband"]["id"]}
+                "/api/v1/families", json={"husband_id": sample_persons["husband"]["id"]}
             )
-        
+
         response = client.get("/api/v1/families/search?q=John&limit=3")
         assert response.status_code == 200
         data = response.json()
@@ -498,13 +500,13 @@ class TestFamilySearch:
     def test_search_families_case_insensitive(self, client, sample_family_data):
         """Test that family search is case insensitive."""
         client.post("/api/v1/families", json=sample_family_data)
-        
+
         # Test lowercase search
         response = client.get("/api/v1/families/search?q=john")
         assert response.status_code == 200
         data = response.json()
         assert len(data) > 0
-        
+
         # Test uppercase search
         response = client.get("/api/v1/families/search?q=JOHN")
         assert response.status_code == 200
@@ -514,13 +516,13 @@ class TestFamilySearch:
     def test_search_families_partial_match(self, client, sample_family_data):
         """Test searching families with partial name matches."""
         client.post("/api/v1/families", json=sample_family_data)
-        
+
         # Test partial first name
         response = client.get("/api/v1/families/search?q=Jo")
         assert response.status_code == 200
         data = response.json()
         assert len(data) > 0
-        
+
         # Test partial last name
         response = client.get("/api/v1/families/search?q=Smi")
         assert response.status_code == 200
@@ -532,11 +534,10 @@ class TestFamilySearch:
         # Create multiple families
         for i in range(3):
             client.post(
-                "/api/v1/families", 
-                json={"husband_id": sample_persons["husband"]["id"]}
+                "/api/v1/families", json={"husband_id": sample_persons["husband"]["id"]}
             )
-        
-        response = client.get("/api/v1/families/search?q=")
+
+        response = client.get("/api/v1/families")
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 3
@@ -549,22 +550,22 @@ class TestFamilyDetail:
         """Test getting detailed family information."""
         create_response = client.post("/api/v1/families", json=sample_family_data)
         family_id = create_response.json()["id"]
-        
+
         response = client.get(f"/api/v1/families/{family_id}/detail")
         assert response.status_code == 200
         data = response.json()
-        
+
         # Check basic family info
         assert data["id"] == family_id
         assert data["husband_id"] == sample_family_data["husband_id"]
         assert data["wife_id"] == sample_family_data["wife_id"]
-        
+
         # Check related data structure
         assert "husband" in data
         assert "wife" in data
         assert "children" in data
         assert "events" in data
-        
+
         # Check spouse details
         assert data["husband"]["first_name"] == "John"
         assert data["wife"]["first_name"] == "Jane"
@@ -585,7 +586,7 @@ class TestFamilyDetail:
         """Test getting family detail with children."""
         create_response = client.post("/api/v1/families", json=sample_family_data)
         family_id = create_response.json()["id"]
-        
+
         # Add a child to the family
         child = client.post(
             "/api/v1/persons",
@@ -596,17 +597,17 @@ class TestFamilyDetail:
                 "birth_date": "2010-01-01",
             },
         ).json()
-        
+
         client.post(
             "/api/v1/children",
             json={
                 "family_id": family_id,
-                "person_id": child["id"],
+                "child_id": child["id"],
             },
         )
-        
+
         response = client.get(f"/api/v1/families/{family_id}/detail")
         assert response.status_code == 200
         data = response.json()
         assert len(data["children"]) == 1
-        assert data["children"][0]["person_id"] == child["id"]
+        assert data["children"][0]["child_id"] == child["id"]

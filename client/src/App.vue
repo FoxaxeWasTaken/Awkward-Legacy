@@ -1,30 +1,30 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const _router = useRouter()
 
 onMounted(() => {
   // Initialize the app
-  console.log('Genealogy Family Search App initialized');
-});
+  console.log('Geneweb Family Search App initialized')
+})
 </script>
 
 <template>
   <div id="app">
     <header class="app-header">
       <div class="header-content">
-        <h1 class="app-title">🏛️ Genealogy Family Search</h1>
+        <h1 class="app-title">🏛️ Geneweb Family Search</h1>
         <p class="app-subtitle">Explore family trees and genealogical data</p>
       </div>
     </header>
-    
+
     <main class="app-main">
       <RouterView />
     </main>
-    
+
     <footer class="app-footer">
-      <p>&copy; 2024 Genealogy Family Search. Built with Vue.js and FastAPI.</p>
+      <p>&copy; 2024 Geneweb Family Search. Built with Vue.js and FastAPI.</p>
     </footer>
   </div>
 </template>
@@ -37,7 +37,8 @@ onMounted(() => {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.6;
   color: #333;
 }
@@ -93,11 +94,11 @@ body {
   .app-title {
     font-size: 2rem;
   }
-  
+
   .app-subtitle {
     font-size: 1rem;
   }
-  
+
   .header-content {
     padding: 0 1rem;
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="loading-spinner" :class="{ 'fullscreen': fullscreen }">
+  <div class="loading-spinner" :class="{ fullscreen: fullscreen }">
     <div class="spinner"></div>
     <p v-if="message" class="loading-message">{{ message }}</p>
   </div>
@@ -7,11 +7,11 @@
 
 <script setup lang="ts">
 interface Props {
-  message?: string;
-  fullscreen?: boolean;
+  message?: string
+  fullscreen?: boolean
 }
 
-defineProps<Props>();
+defineProps<Props>()
 </script>
 
 <style scoped>
@@ -44,8 +44,12 @@ defineProps<Props>();
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-message {

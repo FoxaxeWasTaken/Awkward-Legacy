@@ -1,4 +1,4 @@
-# Genealogy API Documentation
+# Geneweb API Documentation
 
 A modern genealogy application API built with FastAPI and PostgreSQL, providing comprehensive endpoints for managing persons, families, children relationships, and events.
 
@@ -793,7 +793,7 @@ Get basic information about the API.
 ```json
 {
   "Hello": "World",
-  "message": "Genealogy API is running!",
+  "message": "Geneweb API is running!",
   "docs": "/docs",
   "health": "/health"
 }

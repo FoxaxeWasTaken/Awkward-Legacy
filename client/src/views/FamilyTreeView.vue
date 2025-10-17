@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-import FamilyTree from '../components/FamilyTree.vue';
+import { useRoute } from 'vue-router'
+import FamilyTree from '../components/FamilyTree.vue'
 
-const route = useRoute();
-const familyId = route.params.id as string;
+const route = useRoute()
+const familyId = route.params.id as string
 </script>
 
 <style scoped>

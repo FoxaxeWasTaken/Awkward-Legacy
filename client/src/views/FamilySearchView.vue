@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import FamilySearch from '../components/FamilySearch.vue';
+import FamilySearch from '../components/FamilySearch.vue'
 </script>
 
 <style scoped>

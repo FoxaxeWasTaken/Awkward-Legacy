@@ -7,7 +7,14 @@ from sqlmodel import Session
 from ..constants import FAMILY_NOT_FOUND
 from ..crud.family import family_crud
 from ..db import get_session
-from ..models.family import Family, FamilyCreate, FamilyRead, FamilyUpdate, FamilySearchResult, FamilyDetailResult
+from ..models.family import (
+    Family,
+    FamilyCreate,
+    FamilyRead,
+    FamilyUpdate,
+    FamilySearchResult,
+    FamilyDetailResult,
+)
 
 router = APIRouter(prefix="/api/v1/families", tags=["families"])
 
@@ -135,33 +142,36 @@ def create_family(
 @router.get("/search", response_model=List[FamilySearchResult])
 def search_families(
     q: Optional[str] = Query(None, description="Search query for family names"),
-    family_id: Optional[UUID] = Query(None, description="Specific family ID to retrieve"),
+    family_id: Optional[UUID] = Query(
+        None, description="Specific family ID to retrieve"
+    ),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of results"),
     session: Session = Depends(get_session),
 ):
     """
     Search families by name or get a specific family by ID.
-    
+
     - **q**: Search query to find families by spouse names (fuzzy search)
     - **family_id**: Get a specific family by its ID
     - **limit**: Maximum number of results to return (1-100)
-    
+
     Returns a list of family summaries with basic information.
     """
-    if not q and not family_id:
+    if (not q or not q.strip()) and not family_id:
         raise HTTPException(
-            status_code=400, 
-            detail="Either 'q' (search query) or 'family_id' parameter is required"
+            status_code=400,
+            detail="Either 'q' (search query) or 'family_id' parameter is required",
         )
-    
-    results = family_crud.search_families(session, query=q, family_id=family_id, limit=limit)
-    
+
+    results = family_crud.search_families(
+        session, query=q, family_id=family_id, limit=limit
+    )
+
     if not results:
         raise HTTPException(
-            status_code=404, 
-            detail="No families found matching the search criteria"
+            status_code=404, detail="No families found matching the search criteria"
         )
-    
+
     return results
 
 
@@ -266,11 +276,11 @@ def get_family_detail(
 ):
     """
     Get detailed information about a family including spouses, children, and events.
-    
+
     Returns complete family data with all related information.
     """
     family_detail = family_crud.get_family_detail(session, family_id)
     if not family_detail:
         raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
-    
+
     return family_detail

@@ -12,140 +12,157 @@
         <div class="zoom-info">
           <span class="zoom-label">{{ Math.round(scale * 100) }}%</span>
         </div>
-        <button @click="zoomOut" class="control-button control-button-small" title="Zoom Out">−</button>
-        <button @click="zoomIn" class="control-button control-button-small" title="Zoom In">+</button>
-        <button @click="resetZoom" class="control-button control-button-small" title="Reset View">⟲</button>
+        <button @click="zoomOut" class="control-button control-button-small" title="Zoom Out">
+          −
+        </button>
+        <button @click="zoomIn" class="control-button control-button-small" title="Zoom In">
+          +
+        </button>
+        <button @click="resetZoom" class="control-button control-button-small" title="Reset View">
+          ⟲
+        </button>
       </div>
     </div>
-    
+
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Loading family tree...</p>
     </div>
-    
+
     <div v-else-if="error" class="error-state">
       <div class="error-icon">⚠️</div>
       <h3>Error Loading Family Tree</h3>
       <p>{{ error }}</p>
       <button @click="loadFamilyData" class="retry-button">Retry</button>
     </div>
-    
-    <div 
-      v-else 
-      class="tree-container" 
+
+    <div
+      v-else
+      class="tree-container"
       ref="treeContainer"
       @mousedown="startDrag"
       @wheel="handleWheel"
     >
-        <div 
-          class="tree-content" 
-          ref="treeContent"
-          :style="{
-            transform: `translate(${panX}px, ${panY}px) scale(${scale})`,
-            transformOrigin: '0 0',
-            transition: isDragging ? 'none' : 'transform 0.3s ease'
-          }"
+      <div
+        class="tree-content"
+        ref="treeContent"
+        :style="{
+          transform: `translate(${panX}px, ${panY}px) scale(${scale})`,
+          transformOrigin: '0 0',
+          transition: isDragging ? 'none' : 'transform 0.3s ease',
+        }"
+      >
+        <div
+          class="family-generation"
+          v-for="(generation, index) in familyGenerations"
+          :key="index"
         >
-          <div class="family-generation" v-for="(generation, index) in familyGenerations" :key="index">
-            <div class="generation-label" v-if="index > 0">Generation {{ index + 1 }}</div>
-            
-            <!-- All couples of this generation on the same horizontal level -->
-            <div class="couples-row">
-              <div 
-                v-for="couple in generation.couples" 
-                :key="couple.id" 
-                class="couple-container"
-                :class="{ 'has-children': couple.children.length > 0 }"
-              >
-                <!-- Spouses Row - Husband and Wife side by side -->
-                <div class="spouses-row">
-                  <!-- Husband -->
-                  <div 
-                    v-if="couple.husband" 
-                    class="person-node husband"
-                    :class="[
-                      { 'has-spouse': couple.wife },
-                      getPersonHighlightClass(couple.husband)
-                    ]"
-                    @click="selectPerson(couple.husband)"
-                    @mouseenter="handlePersonHover(couple.husband); showTooltip($event, couple.husband)"
-                    @mouseleave="handlePersonLeave(); hideTooltip()"
-                  >
-                    <div class="person-avatar">
-                      <div class="avatar-circle">
-                        <span class="gender-icon">👨</span>
-                      </div>
-                    </div>
-                    <div class="person-info">
-                      <div class="person-name">{{ couple.husband.first_name }} {{ couple.husband.last_name }}</div>
-                      <div class="person-dates" v-if="couple.husband.birth_date">
-                        {{ formatDate(couple.husband.birth_date) }} - {{ couple.husband.death_date ? formatDate(couple.husband.death_date) : 'Present' }}
-                      </div>
+          <div class="generation-label" v-if="index > 0">Generation {{ index + 1 }}</div>
+
+          <!-- All couples of this generation on the same horizontal level -->
+          <div class="couples-row">
+            <div
+              v-for="couple in generation.couples"
+              :key="couple.id"
+              class="couple-container"
+              :class="{ 'has-children': couple.children.length > 0 }"
+            >
+              <!-- Spouses Row - Husband and Wife side by side -->
+              <div class="spouses-row">
+                <!-- Husband -->
+                <div
+                  v-if="couple.husband"
+                  class="person-node husband"
+                  :class="[{ 'has-spouse': couple.wife }, getPersonHighlightClass(couple.husband)]"
+                  @click="selectPerson(couple.husband)"
+                  @mouseenter="handlePersonHoverAndShowTooltip($event, couple.husband)"
+                  @mouseleave="handlePersonLeaveAndHideTooltip()"
+                >
+                  <div class="person-avatar">
+                    <div class="avatar-circle">
+                      <span class="gender-icon">👨</span>
                     </div>
                   </div>
-                  
-                  <!-- Marriage Line -->
-                  <div class="marriage-line" v-if="couple.husband && couple.wife"></div>
-                  
-                  <!-- Wife -->
-                  <div 
-                    v-if="couple.wife" 
-                    class="person-node wife"
-                    :class="[
-                      { 'has-spouse': couple.husband },
-                      getPersonHighlightClass(couple.wife)
-                    ]"
-                    @click="selectPerson(couple.wife)"
-                    @mouseenter="handlePersonHover(couple.wife); showTooltip($event, couple.wife)"
-                    @mouseleave="handlePersonLeave(); hideTooltip()"
-                  >
-                    <div class="person-avatar">
-                      <div class="avatar-circle">
-                        <span class="gender-icon">👩</span>
-                      </div>
+                  <div class="person-info">
+                    <div class="person-name">
+                      {{ couple.husband.first_name }} {{ couple.husband.last_name }}
                     </div>
-                    <div class="person-info">
-                      <div class="person-name">{{ couple.wife.first_name }} {{ couple.wife.last_name }}</div>
-                      <div class="person-dates" v-if="couple.wife.birth_date">
-                        {{ formatDate(couple.wife.birth_date) }} - {{ couple.wife.death_date ? formatDate(couple.wife.death_date) : 'Present' }}
-                      </div>
+                    <div class="person-dates" v-if="couple.husband.birth_date">
+                      {{ formatDate(couple.husband.birth_date) }} -
+                      {{
+                        couple.husband.death_date
+                          ? formatDate(couple.husband.death_date)
+                          : 'Present'
+                      }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Marriage Line -->
+                <div class="marriage-line" v-if="couple.husband && couple.wife"></div>
+
+                <!-- Wife -->
+                <div
+                  v-if="couple.wife"
+                  class="person-node wife"
+                  :class="[{ 'has-spouse': couple.husband }, getPersonHighlightClass(couple.wife)]"
+                  @click="selectPerson(couple.wife)"
+                  @mouseenter="handlePersonHoverAndShowTooltip($event, couple.wife)"
+                  @mouseleave="handlePersonLeaveAndHideTooltip()"
+                >
+                  <div class="person-avatar">
+                    <div class="avatar-circle">
+                      <span class="gender-icon">👩</span>
+                    </div>
+                  </div>
+                  <div class="person-info">
+                    <div class="person-name">
+                      {{ couple.wife.first_name }} {{ couple.wife.last_name }}
+                    </div>
+                    <div class="person-dates" v-if="couple.wife.birth_date">
+                      {{ formatDate(couple.wife.birth_date) }} -
+                      {{ couple.wife.death_date ? formatDate(couple.wife.death_date) : 'Present' }}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <!-- All children of this generation below their parents -->
-            <div v-if="generation.couples.some(c => c.children.length > 0)" class="generation-children-row">
-              <div 
-                v-for="couple in generation.couples" 
-                :key="`children-${couple.id}`"
-                class="children-group"
-              >
-                <div v-if="couple.children.length > 0" class="children-wrapper">
-                  <div class="children-connection">
-                    <div class="connection-line"></div>
-                  </div>
-                  <div class="children-container">
-                    <div 
-                      v-for="child in couple.children" 
-                      :key="child.id"
-                      class="child-node"
-                      :class="getPersonHighlightClass(child)"
-                      @click="selectPerson(child)"
-                      @mouseenter="handlePersonHover(child); showTooltip($event, child)"
-                      @mouseleave="handlePersonLeave(); hideTooltip()"
-                    >
-                      <div class="child-avatar">
-                        <div class="avatar-circle">
-                          <span class="gender-icon">{{ child.sex === 'M' ? '👦' : '👧' }}</span>
-                        </div>
+          </div>
+
+          <!-- All children of this generation below their parents -->
+          <div
+            v-if="generation.couples.some((c) => c.children.length > 0)"
+            class="generation-children-row"
+          >
+            <div
+              v-for="couple in generation.couples"
+              :key="`children-${couple.id}`"
+              class="children-group"
+            >
+              <div v-if="couple.children.length > 0" class="children-wrapper">
+                <div class="children-connection">
+                  <div class="connection-line"></div>
+                </div>
+                <div class="children-container">
+                  <div
+                    v-for="child in couple.children"
+                    :key="child.id"
+                    class="child-node"
+                    :class="getPersonHighlightClass(child)"
+                    @click="selectPerson(child)"
+                    @mouseenter="handlePersonHoverAndShowTooltip($event, child)"
+                    @mouseleave="handlePersonLeaveAndHideTooltip()"
+                  >
+                    <div class="child-avatar">
+                      <div class="avatar-circle">
+                        <span class="gender-icon">{{ child.sex === 'M' ? '👦' : '👧' }}</span>
                       </div>
-                      <div class="child-info">
-                        <div class="child-name">{{ child.first_name }} {{ child.last_name }}</div>
-                        <div class="child-dates" v-if="child.birth_date">
-                          {{ formatDate(child.birth_date) }} - {{ child.death_date ? formatDate(child.death_date) : 'Present' }}
-                        </div>
+                    </div>
+                    <div class="child-info">
+                      <div class="child-name">{{ child.first_name }} {{ child.last_name }}</div>
+                      <div class="child-dates" v-if="child.birth_date">
+                        {{ formatDate(child.birth_date) }} -
+                        {{ child.death_date ? formatDate(child.death_date) : 'Present' }}
                       </div>
                     </div>
                   </div>
@@ -154,19 +171,29 @@
             </div>
           </div>
         </div>
+      </div>
     </div>
-    
+
     <!-- Tooltip -->
-    <div 
-      v-if="tooltip.visible" 
+    <div
+      v-if="tooltip.visible"
       class="person-tooltip"
       :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
     >
       <div class="tooltip-content">
-        <div class="tooltip-name">{{ tooltip.person?.first_name }} {{ tooltip.person?.last_name }}</div>
+        <div class="tooltip-name">
+          {{ tooltip.person?.first_name }} {{ tooltip.person?.last_name }}
+        </div>
         <div class="tooltip-details">
           <div v-if="tooltip.person?.sex">
-            <strong>Gender:</strong> {{ tooltip.person.sex === 'M' ? 'Male' : tooltip.person.sex === 'F' ? 'Female' : 'Unknown' }}
+            <strong>Gender:</strong>
+            {{
+              tooltip.person.sex === 'M'
+                ? 'Male'
+                : tooltip.person.sex === 'F'
+                  ? 'Female'
+                  : 'Unknown'
+            }}
           </div>
           <div v-if="tooltip.person?.birth_date">
             <strong>Born:</strong> {{ formatDate(tooltip.person.birth_date) }}
@@ -183,9 +210,7 @@
           <div v-if="tooltip.person?.occupation">
             <strong>Occupation:</strong> {{ tooltip.person.occupation }}
           </div>
-          <div v-if="tooltip.person?.notes">
-            <strong>Notes:</strong> {{ tooltip.person.notes }}
-          </div>
+          <div v-if="tooltip.person?.notes"><strong>Notes:</strong> {{ tooltip.person.notes }}</div>
         </div>
       </div>
     </div>
@@ -193,101 +218,101 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue';
-import apiService from '../services/api';
-import type { FamilyDetailResult, Person, Child } from '../types/family';
+import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
+import apiService from '../services/api'
+import type { FamilyDetailResult, Person } from '../types/family'
 
 interface Props {
-  familyId: string;
+  familyId: string
 }
 
 interface Couple {
-  id: string;
-  husband?: Person;
-  wife?: Person;
-  children: Person[];
-  marriageDate?: string;
-  marriagePlace?: string;
+  id: string
+  husband?: Person
+  wife?: Person
+  children: Person[]
+  marriageDate?: string
+  marriagePlace?: string
 }
 
 interface FamilyGeneration {
-  couples: Couple[];
+  couples: Couple[]
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 // Reactive state
-const isLoading = ref(true);
-const error = ref('');
-const familyData = ref<FamilyDetailResult | null>(null);
-const familyTitle = ref('Family Tree');
-const selectedPerson = ref<Person | null>(null);
-const crossFamilyChildren = ref<Map<string, Person[]>>(new Map());
+const isLoading = ref(true)
+const error = ref('')
+const familyData = ref<FamilyDetailResult | null>(null)
+const familyTitle = ref('Family Tree')
+const selectedPerson = ref<Person | null>(null)
+const crossFamilyChildren = ref<Map<string, Person[]>>(new Map())
 
 // Template refs
-const treeContainer = ref<HTMLElement>();
-const treeContent = ref<HTMLElement>();
+const treeContainer = ref<HTMLElement>()
+const treeContent = ref<HTMLElement>()
 
 // Tooltip state
 const tooltip = ref({
   visible: false,
   x: 0,
   y: 0,
-  person: null as Person | null
-});
+  person: null as Person | null,
+})
 
 // Highlight state
-const hoveredPerson = ref<Person | null>(null);
-const clickedPerson = ref<Person | null>(null);
-const highlightedParents = ref<Set<string>>(new Set());
-const highlightedChildren = ref<Set<string>>(new Set());
-const highlightedSpouse = ref<string | null>(null);
+const hoveredPerson = ref<Person | null>(null)
+const clickedPerson = ref<Person | null>(null)
+const highlightedParents = ref<Set<string>>(new Set())
+const highlightedChildren = ref<Set<string>>(new Set())
+const highlightedSpouse = ref<string | null>(null)
 
 // Pan and zoom state
-const panX = ref(0);
-const panY = ref(0);
-const scale = ref(1);
-const isDragging = ref(false);
-const dragStart = ref({ x: 0, y: 0 });
-const panStart = ref({ x: 0, y: 0 });
+const panX = ref(0)
+const panY = ref(0)
+const scale = ref(1)
+const isDragging = ref(false)
+const dragStart = ref({ x: 0, y: 0 })
+const panStart = ref({ x: 0, y: 0 })
 
 // Computed property for family generations
 const familyGenerations = computed((): FamilyGeneration[] => {
-  if (!familyData.value) return [];
-  
-  const data = familyData.value;
-  const generations: FamilyGeneration[] = [];
-  
+  if (!familyData.value) return []
+
+  const data = familyData.value
+  const generations: FamilyGeneration[] = []
+
   // Create the main couple (current family)
   const mainCouple: Couple = {
     id: data.id,
     husband: data.husband || undefined,
     wife: data.wife || undefined,
-    children: data.children.map(child => child.person).filter(Boolean) as Person[],
+    children: data.children.map((child) => child.person).filter(Boolean) as Person[],
     marriageDate: data.marriage_date,
-    marriagePlace: data.marriage_place
-  };
-  
+    marriagePlace: data.marriage_place,
+  }
+
   // Add main couple to first generation
   generations.push({
-    couples: [mainCouple]
-  });
-  
+    couples: [mainCouple],
+  })
+
   // Recursively process all generations
-  let currentGenCouples = [mainCouple];
-  
+  let currentGenCouples = [mainCouple]
+
   while (currentGenCouples.length > 0) {
-    const nextGenCouples: Couple[] = [];
-    
+    const nextGenCouples: Couple[] = []
+
     // For each couple in the current generation, find their children who have families
-    currentGenCouples.forEach(couple => {
-      const coupleChildren = couple.children;
-      
-      coupleChildren.forEach(child => {
+    currentGenCouples.forEach((couple) => {
+      const coupleChildren = couple.children
+
+      coupleChildren.forEach((child) => {
         if (child.has_own_family && child.own_families) {
-          child.own_families.forEach(ownFamily => {
-            const childFamilyData = crossFamilyChildren.value.get(ownFamily.id);
-            
+          child.own_families.forEach((ownFamily) => {
+            const childFamilyData = crossFamilyChildren.value.get(ownFamily.id)
+
             if (ownFamily.spouse || childFamilyData) {
               const childCouple: Couple = {
                 id: ownFamily.id,
@@ -295,9 +320,9 @@ const familyGenerations = computed((): FamilyGeneration[] => {
                 wife: child.sex === 'F' ? child : undefined,
                 children: childFamilyData || [],
                 marriageDate: ownFamily.marriage_date,
-                marriagePlace: ownFamily.marriage_place
-              };
-              
+                marriagePlace: ownFamily.marriage_place,
+              }
+
               // Add spouse
               if (ownFamily.spouse) {
                 if (child.sex === 'M') {
@@ -306,384 +331,402 @@ const familyGenerations = computed((): FamilyGeneration[] => {
                     first_name: ownFamily.spouse.name.split(' ')[0],
                     last_name: ownFamily.spouse.name.split(' ').slice(1).join(' '),
                     sex: ownFamily.spouse.sex,
-                    has_own_family: false
-                  };
+                    has_own_family: false,
+                  }
                 } else {
                   childCouple.husband = {
                     id: ownFamily.spouse.id,
                     first_name: ownFamily.spouse.name.split(' ')[0],
                     last_name: ownFamily.spouse.name.split(' ').slice(1).join(' '),
                     sex: ownFamily.spouse.sex,
-                    has_own_family: false
-                  };
+                    has_own_family: false,
+                  }
                 }
               }
-              
-              nextGenCouples.push(childCouple);
+
+              nextGenCouples.push(childCouple)
             }
-          });
+          })
         }
-      });
-    });
-    
+      })
+    })
+
     // Add next generation if it exists
     if (nextGenCouples.length > 0) {
       generations.push({
-        couples: nextGenCouples
-      });
-      currentGenCouples = nextGenCouples;
+        couples: nextGenCouples,
+      })
+      currentGenCouples = nextGenCouples
     } else {
-      break;
+      break
     }
   }
-  
-  return generations;
-});
+
+  return generations
+})
 
 // Methods
 const loadFamilyData = async () => {
-  isLoading.value = true;
-  error.value = '';
-  
+  isLoading.value = true
+  error.value = ''
+
   try {
-    const data = await apiService.getFamilyDetail(props.familyId);
-    familyData.value = data;
-    
+    const data = await apiService.getFamilyDetail(props.familyId)
+    familyData.value = data
+
     // Create family title
-    const parts = [];
+    const parts = []
     if (data.husband) {
-      parts.push(`${data.husband.first_name} ${data.husband.last_name}`);
+      parts.push(`${data.husband.first_name} ${data.husband.last_name}`)
     }
     if (data.wife) {
-      parts.push(`${data.wife.first_name} ${data.wife.last_name}`);
+      parts.push(`${data.wife.first_name} ${data.wife.last_name}`)
     }
-    familyTitle.value = parts.length > 0 ? parts.join(' & ') : 'Family Tree';
-    
+    familyTitle.value = parts.length > 0 ? parts.join(' & ') : 'Family Tree'
+
     // Fetch children data for cross-family relationships
-    await loadCrossFamilyChildren(data);
-    
+    await loadCrossFamilyChildren(data)
+
     // Fit tree to view after data is loaded
-    await nextTick();
+    await nextTick()
     setTimeout(() => {
-      fitTreeToView();
-    }, 100); // Small delay to ensure DOM is fully rendered
-    
-  } catch (err: any) {
-    console.error('Error loading family data:', err);
-    error.value = err.response?.data?.detail || 'Failed to load family tree. Please try again.';
+      fitTreeToView()
+    }, 100) // Small delay to ensure DOM is fully rendered
+  } catch (err: unknown) {
+    console.error('Error loading family data:', err)
+    const errorMessage =
+      err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : 'Failed to load family tree. Please try again.'
+    error.value = errorMessage || 'Failed to load family tree. Please try again.'
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
 const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
-  const childrenMap = new Map<string, Person[]>();
-  const processedFamilies = new Set<string>([data.id]); // Track processed families to avoid infinite loops
-  
+  const childrenMap = new Map<string, Person[]>()
+  const processedFamilies = new Set<string>([data.id]) // Track processed families to avoid infinite loops
+
   // Recursive function to load all descendant families
-  const loadDescendantFamilies = async (children: any[]) => {
+  const loadDescendantFamilies = async (children: Person[]) => {
     for (const child of children) {
       if (child.person?.has_own_family && child.person.own_families) {
         for (const ownFamily of child.person.own_families) {
           // Skip if already processed
-          if (processedFamilies.has(ownFamily.id)) continue;
-          processedFamilies.add(ownFamily.id);
-          
+          if (processedFamilies.has(ownFamily.id)) continue
+          processedFamilies.add(ownFamily.id)
+
           try {
-            const familyDetail = await apiService.getFamilyDetail(ownFamily.id);
-            const familyChildren = familyDetail.children.map(c => c.person).filter(Boolean) as Person[];
-            childrenMap.set(ownFamily.id, familyChildren);
-            
+            const familyDetail = await apiService.getFamilyDetail(ownFamily.id)
+            const familyChildren = familyDetail.children
+              .map((c) => c.person)
+              .filter(Boolean) as Person[]
+            childrenMap.set(ownFamily.id, familyChildren)
+
             // Recursively load grandchildren families
             if (familyChildren.length > 0) {
-              await loadDescendantFamilies(familyDetail.children);
+              await loadDescendantFamilies(familyDetail.children)
             }
           } catch (err) {
-            console.error(`Error loading children for family ${ownFamily.id}:`, err);
+            console.error(`Error loading children for family ${ownFamily.id}:`, err)
           }
         }
       }
     }
-  };
-  
+  }
+
   // Start loading from the root family's children
-  await loadDescendantFamilies(data.children);
-  
-  crossFamilyChildren.value = childrenMap;
-};
+  await loadDescendantFamilies(data.children)
+
+  crossFamilyChildren.value = childrenMap
+}
 
 const selectPerson = (person: Person) => {
   // Toggle off if clicking the same person
   if (clickedPerson.value?.id === person.id) {
-    clickedPerson.value = null;
-    clearHighlights();
-      } else {
-    clickedPerson.value = person;
-    selectedPerson.value = person;
-    updateHighlights(person);
+    clickedPerson.value = null
+    clearHighlights()
+  } else {
+    clickedPerson.value = person
+    selectedPerson.value = person
+    updateHighlights(person)
   }
-};
+}
 
 const handlePersonHover = (person: Person) => {
   if (!clickedPerson.value) {
-    hoveredPerson.value = person;
-    updateHighlights(person);
+    hoveredPerson.value = person
+    updateHighlights(person)
   }
-};
+}
+
+const handlePersonHoverAndShowTooltip = (event: MouseEvent, person: Person) => {
+  handlePersonHover(person)
+  showTooltip(event, person)
+}
+
+const handlePersonLeaveAndHideTooltip = () => {
+  handlePersonLeave()
+  hideTooltip()
+}
 
 const handlePersonLeave = () => {
   if (!clickedPerson.value) {
-    hoveredPerson.value = null;
-    clearHighlights();
+    hoveredPerson.value = null
+    clearHighlights()
   }
-};
+}
 
 const clearHighlights = () => {
-  highlightedParents.value = new Set();
-  highlightedChildren.value = new Set();
-  highlightedSpouse.value = null;
-};
+  highlightedParents.value = new Set()
+  highlightedChildren.value = new Set()
+  highlightedSpouse.value = null
+}
 
 const updateHighlights = (person: Person) => {
-  clearHighlights();
-  
-  if (!familyData.value) return;
-  
-  const parents = new Set<string>();
-  const children = new Set<string>();
-  let spouse: string | null = null;
-  
+  clearHighlights()
+
+  if (!familyData.value) return
+
+  const parents = new Set<string>()
+  const children = new Set<string>()
+  let spouse: string | null = null
+
   // Find parents (check if person is a child in the main family or any sub-family)
   const findParents = (data: FamilyDetailResult) => {
-    data.children.forEach(child => {
+    data.children.forEach((child) => {
       if (child.person?.id === person.id) {
-        if (data.husband?.id) parents.add(data.husband.id);
-        if (data.wife?.id) parents.add(data.wife.id);
+        if (data.husband?.id) parents.add(data.husband.id)
+        if (data.wife?.id) parents.add(data.wife.id)
       }
-    });
-  };
-  
+    })
+  }
+
   // Check main family
-  findParents(familyData.value);
-  
+  findParents(familyData.value)
+
   // Check all cross-families
-  familyGenerations.value.forEach(generation => {
-    generation.couples.forEach(couple => {
-      couple.children.forEach(child => {
+  familyGenerations.value.forEach((generation) => {
+    generation.couples.forEach((couple) => {
+      couple.children.forEach((child) => {
         if (child.id === person.id) {
-          if (couple.husband?.id) parents.add(couple.husband.id);
-          if (couple.wife?.id) parents.add(couple.wife.id);
+          if (couple.husband?.id) parents.add(couple.husband.id)
+          if (couple.wife?.id) parents.add(couple.wife.id)
         }
-      });
-    });
-  });
-  
+      })
+    })
+  })
+
   // Find spouse (check if person is part of a couple)
-  familyGenerations.value.forEach(generation => {
-    generation.couples.forEach(couple => {
+  familyGenerations.value.forEach((generation) => {
+    generation.couples.forEach((couple) => {
       if (couple.husband?.id === person.id && couple.wife?.id) {
-        spouse = couple.wife.id;
+        spouse = couple.wife.id
       } else if (couple.wife?.id === person.id && couple.husband?.id) {
-        spouse = couple.husband.id;
+        spouse = couple.husband.id
       }
-    });
-  });
-  
+    })
+  })
+
   // Recursively find all descendants (children, grandchildren, etc.)
   const findAllDescendants = (personToCheck: Person) => {
     if (personToCheck.has_own_family && personToCheck.own_families) {
-      personToCheck.own_families.forEach(ownFamily => {
-        const familyChildren = crossFamilyChildren.value.get(ownFamily.id) || [];
-        familyChildren.forEach(child => {
+      personToCheck.own_families.forEach((ownFamily) => {
+        const familyChildren = crossFamilyChildren.value.get(ownFamily.id) || []
+        familyChildren.forEach((child) => {
           if (child.id && !children.has(child.id)) {
-            children.add(child.id);
+            children.add(child.id)
             // Recursively find this child's descendants
-            findAllDescendants(child);
+            findAllDescendants(child)
           }
-        });
-      });
+        })
+      })
     }
-  };
-  
+  }
+
   // Start recursive search from the selected person
-  findAllDescendants(person);
-  
-  highlightedParents.value = parents;
-  highlightedChildren.value = children;
-  highlightedSpouse.value = spouse;
-};
+  findAllDescendants(person)
+
+  highlightedParents.value = parents
+  highlightedChildren.value = children
+  highlightedSpouse.value = spouse
+}
 
 const getPersonHighlightClass = (person: Person): string => {
-  const activePerson = clickedPerson.value || hoveredPerson.value;
-  if (!activePerson) return '';
-  
-  if (person.id === activePerson.id) return 'highlight-self';
-  if (highlightedParents.value.has(person.id)) return 'highlight-parent';
-  if (highlightedChildren.value.has(person.id)) return 'highlight-child';
-  if (highlightedSpouse.value === person.id) return 'highlight-spouse';
-  
-  return '';
-};
+  const activePerson = clickedPerson.value || hoveredPerson.value
+  if (!activePerson) return ''
+
+  if (person.id === activePerson.id) return 'highlight-self'
+  if (highlightedParents.value.has(person.id)) return 'highlight-parent'
+  if (highlightedChildren.value.has(person.id)) return 'highlight-child'
+  if (highlightedSpouse.value === person.id) return 'highlight-spouse'
+
+  return ''
+}
 
 const showTooltip = (event: MouseEvent, person: Person) => {
   tooltip.value = {
     visible: true,
     x: event.pageX + 10,
     y: event.pageY - 10,
-    person: person
-  };
-};
+    person: person,
+  }
+}
 
 const hideTooltip = () => {
-  tooltip.value.visible = false;
-};
+  tooltip.value.visible = false
+}
 
 const formatDate = (dateString: string): string => {
   try {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
-    });
-  } catch (error) {
-    return dateString;
+      day: 'numeric',
+    })
+  } catch (_error) {
+    return dateString
   }
-};
+}
 
 const startDrag = (e: MouseEvent) => {
   // Allow drag from anywhere
-  isDragging.value = true;
-  dragStart.value = { x: e.clientX, y: e.clientY };
-  panStart.value = { x: panX.value, y: panY.value };
-};
+  isDragging.value = true
+  dragStart.value = { x: e.clientX, y: e.clientY }
+  panStart.value = { x: panX.value, y: panY.value }
+}
 
 const handleDrag = (e: MouseEvent) => {
-  if (!isDragging.value) return;
-  
-  const dx = e.clientX - dragStart.value.x;
-  const dy = e.clientY - dragStart.value.y;
-  
+  if (!isDragging.value) return
+
+  const dx = e.clientX - dragStart.value.x
+  const dy = e.clientY - dragStart.value.y
+
   // Only start panning if moved more than 3 pixels (to allow clicks)
-  const distance = Math.sqrt(dx * dx + dy * dy);
+  const distance = Math.sqrt(dx * dx + dy * dy)
   if (distance > 3) {
-    panX.value = panStart.value.x + dx;
-    panY.value = panStart.value.y + dy;
+    panX.value = panStart.value.x + dx
+    panY.value = panStart.value.y + dy
   }
-};
+}
 
 const stopDrag = () => {
-  isDragging.value = false;
-};
+  isDragging.value = false
+}
 
 const handleWheel = (e: WheelEvent) => {
-  e.preventDefault();
-  
-  const delta = e.deltaY > 0 ? 0.9 : 1.1;
-  const newScale = Math.min(Math.max(0.1, scale.value * delta), 3);
-  
+  e.preventDefault()
+
+  const delta = e.deltaY > 0 ? 0.9 : 1.1
+  const newScale = Math.min(Math.max(0.1, scale.value * delta), 3)
+
   // Zoom towards mouse position
   if (treeContainer.value) {
-    const rect = treeContainer.value.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
+    const rect = treeContainer.value.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+
     // Calculate the point in the content that's under the mouse
-    const contentX = (mouseX - panX.value) / scale.value;
-    const contentY = (mouseY - panY.value) / scale.value;
-    
+    const contentX = (mouseX - panX.value) / scale.value
+    const contentY = (mouseY - panY.value) / scale.value
+
     // Update pan to keep that point under the mouse after zoom
-    panX.value = mouseX - contentX * newScale;
-    panY.value = mouseY - contentY * newScale;
+    panX.value = mouseX - contentX * newScale
+    panY.value = mouseY - contentY * newScale
   }
-  
-  scale.value = newScale;
-};
+
+  scale.value = newScale
+}
 
 const zoomIn = () => {
-  const newScale = Math.min(scale.value * 1.2, 3);
-  
+  const newScale = Math.min(scale.value * 1.2, 3)
+
   // Zoom towards center
   if (treeContainer.value) {
-    const rect = treeContainer.value.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const contentX = (centerX - panX.value) / scale.value;
-    const contentY = (centerY - panY.value) / scale.value;
-    
-    panX.value = centerX - contentX * newScale;
-    panY.value = centerY - contentY * newScale;
+    const rect = treeContainer.value.getBoundingClientRect()
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+
+    const contentX = (centerX - panX.value) / scale.value
+    const contentY = (centerY - panY.value) / scale.value
+
+    panX.value = centerX - contentX * newScale
+    panY.value = centerY - contentY * newScale
   }
-  
-  scale.value = newScale;
-};
+
+  scale.value = newScale
+}
 
 const zoomOut = () => {
-  const newScale = Math.max(scale.value / 1.2, 0.1);
-  
+  const newScale = Math.max(scale.value / 1.2, 0.1)
+
   // Zoom towards center
   if (treeContainer.value) {
-    const rect = treeContainer.value.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const contentX = (centerX - panX.value) / scale.value;
-    const contentY = (centerY - panY.value) / scale.value;
-    
-    panX.value = centerX - contentX * newScale;
-    panY.value = centerY - contentY * newScale;
+    const rect = treeContainer.value.getBoundingClientRect()
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+
+    const contentX = (centerX - panX.value) / scale.value
+    const contentY = (centerY - panY.value) / scale.value
+
+    panX.value = centerX - contentX * newScale
+    panY.value = centerY - contentY * newScale
   }
-  
-  scale.value = newScale;
-};
+
+  scale.value = newScale
+}
 
 const resetZoom = () => {
-  fitTreeToView();
-};
+  fitTreeToView()
+}
 
 const fitTreeToView = async () => {
   // Wait for next tick to ensure DOM is updated
-  await nextTick();
-  
-  if (!treeContainer.value || !treeContent.value) return;
-  
-  const containerRect = treeContainer.value.getBoundingClientRect();
-  const contentRect = treeContent.value.getBoundingClientRect();
-  
+  await nextTick()
+
+  if (!treeContainer.value || !treeContent.value) return
+
+  const containerRect = treeContainer.value.getBoundingClientRect()
+  const contentRect = treeContent.value.getBoundingClientRect()
+
   // Calculate scale to fit content with some padding (90% of container)
-  const scaleX = (containerRect.width * 0.9) / contentRect.width;
-  const scaleY = (containerRect.height * 0.9) / contentRect.height;
-  const newScale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
-  
+  const scaleX = (containerRect.width * 0.9) / contentRect.width
+  const scaleY = (containerRect.height * 0.9) / contentRect.height
+  const newScale = Math.min(scaleX, scaleY, 1) // Don't zoom in beyond 100%
+
   // Calculate pan to center the content
-  const scaledWidth = contentRect.width * newScale;
-  const scaledHeight = contentRect.height * newScale;
-  
-  panX.value = (containerRect.width - scaledWidth) / 2;
-  panY.value = (containerRect.height - scaledHeight) / 2 + 50; // Add offset for header
-  scale.value = newScale;
-};
+  const scaledWidth = contentRect.width * newScale
+  const scaledHeight = contentRect.height * newScale
+
+  panX.value = (containerRect.width - scaledWidth) / 2
+  panY.value = (containerRect.height - scaledHeight) / 2 + 50 // Add offset for header
+  scale.value = newScale
+}
 
 // Lifecycle
 onMounted(() => {
-  loadFamilyData();
-  
+  loadFamilyData()
+
   // Add global mouse event listeners for drag
-  window.addEventListener('mousemove', handleDrag);
-  window.addEventListener('mouseup', stopDrag);
-});
+  window.addEventListener('mousemove', handleDrag)
+  window.addEventListener('mouseup', stopDrag)
+})
 
 onUnmounted(() => {
   // Clean up event listeners
-  window.removeEventListener('mousemove', handleDrag);
-  window.removeEventListener('mouseup', stopDrag);
-});
+  window.removeEventListener('mousemove', handleDrag)
+  window.removeEventListener('mouseup', stopDrag)
+})
 
 // Watch for family ID changes
-watch(() => props.familyId, () => {
-  loadFamilyData();
-});
+watch(
+  () => props.familyId,
+  () => {
+    loadFamilyData()
+  },
+)
 </script>
 
 <style scoped>
@@ -702,7 +745,7 @@ watch(() => props.familyId, () => {
   padding: 1.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-bottom: none;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 10;
 }
@@ -734,7 +777,7 @@ watch(() => props.familyId, () => {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .back-icon {
@@ -747,7 +790,7 @@ watch(() => props.familyId, () => {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .tree-controls {
@@ -798,7 +841,7 @@ watch(() => props.familyId, () => {
   background: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .loading-state,
@@ -822,8 +865,12 @@ watch(() => props.familyId, () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-state {
@@ -849,7 +896,7 @@ watch(() => props.familyId, () => {
   flex: 1;
   overflow: hidden;
   position: relative;
-  background: 
+  background:
     linear-gradient(90deg, rgba(200, 200, 200, 0.1) 1px, transparent 1px),
     linear-gradient(rgba(200, 200, 200, 0.1) 1px, transparent 1px);
   background-size: 50px 50px;
@@ -884,7 +931,7 @@ watch(() => props.familyId, () => {
   border-radius: 20px;
   display: block;
   width: fit-content;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .couples-row {
@@ -914,7 +961,7 @@ watch(() => props.familyId, () => {
   background: rgba(255, 255, 255, 0.4);
   border-radius: 16px;
   border: 2px solid rgba(150, 150, 200, 0.3);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .marriage-line {
@@ -922,7 +969,7 @@ watch(() => props.familyId, () => {
   height: 3px;
   background: linear-gradient(90deg, #e74c3c, #f39c12);
   border-radius: 2px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
 }
 
@@ -933,7 +980,7 @@ watch(() => props.familyId, () => {
   padding: 1.5rem;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -944,7 +991,7 @@ watch(() => props.familyId, () => {
 
 .person-node:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
 .person-node.husband {
@@ -1001,7 +1048,7 @@ watch(() => props.familyId, () => {
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .person-node.husband .avatar-circle {
@@ -1080,7 +1127,7 @@ watch(() => props.familyId, () => {
   background: rgba(255, 255, 255, 0.5);
   border-radius: 16px;
   border: 2px dashed rgba(100, 180, 100, 0.4);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .child-node {
@@ -1090,7 +1137,7 @@ watch(() => props.familyId, () => {
   padding: 1rem;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   cursor: pointer;
   min-width: 150px;
@@ -1099,7 +1146,7 @@ watch(() => props.familyId, () => {
 
 .child-node:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
 }
 
 .child-avatar {
@@ -1137,8 +1184,11 @@ watch(() => props.familyId, () => {
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 14px;
-  font-family: system-ui, -apple-system, sans-serif;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   pointer-events: none;
   z-index: 1000;
   max-width: 350px;
@@ -1172,42 +1222,42 @@ watch(() => props.familyId, () => {
     gap: 1rem;
     align-items: stretch;
   }
-  
+
   .tree-controls {
     justify-content: center;
   }
-  
+
   .couples-row {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .couple-container {
     width: 320px;
   }
-  
+
   .spouses-row {
     flex-direction: column;
     gap: 0.5rem;
     padding: 1rem;
   }
-  
+
   .marriage-line {
     width: 3px;
     height: 30px;
     background: linear-gradient(180deg, #e74c3c, #f39c12);
   }
-  
+
   .generation-children-row {
     flex-direction: column;
     align-items: center;
     gap: 2rem;
   }
-  
+
   .children-group {
     width: 320px;
   }
-  
+
   .children-container {
     flex-direction: column;
     align-items: center;

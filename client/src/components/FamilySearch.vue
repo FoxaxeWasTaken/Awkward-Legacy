@@ -15,8 +15,8 @@
           @keyup.enter="handleSearch"
           @input="handleInputChange"
         />
-        <button 
-          @click="handleSearch" 
+        <button
+          @click="handleSearch"
           :disabled="isLoading || !searchQuery.trim()"
           class="search-button"
         >
@@ -24,7 +24,7 @@
           <span v-else>Search</span>
         </button>
       </div>
-      
+
       <div class="search-options">
         <label class="limit-label">
           Results limit:
@@ -76,7 +76,7 @@
     <div v-else class="welcome-state">
       <div class="welcome-icon">👨‍👩‍👧‍👦</div>
       <h3>Welcome to Family Search</h3>
-      <p>Enter a family name above to search for families in the genealogy database.</p>
+      <p>Enter a family name above to search for families in the Geneweb database.</p>
       <div class="search-examples">
         <h4>Search Examples:</h4>
         <ul>
@@ -90,73 +90,77 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import apiService from '../services/api';
-import type { FamilySearchResult, FamilySearchParams } from '../types/family';
-import FamilyCard from './FamilyCard.vue';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import apiService from '../services/api'
+import type { FamilySearchResult, FamilySearchParams } from '../types/family'
+import FamilyCard from './FamilyCard.vue'
 
-const router = useRouter();
+const router = useRouter()
 
 // Reactive state
-const searchQuery = ref('');
-const searchLimit = ref(20);
-const searchResults = ref<FamilySearchResult[]>([]);
-const isLoading = ref(false);
-const error = ref('');
-const hasSearched = ref(false);
+const searchQuery = ref('')
+const searchLimit = ref(20)
+const searchResults = ref<FamilySearchResult[]>([])
+const isLoading = ref(false)
+const error = ref('')
+const hasSearched = ref(false)
 
 // Methods
 const handleSearch = async () => {
   if (!searchQuery.value.trim()) {
-    return;
+    return
   }
 
-  isLoading.value = true;
-  error.value = '';
-  hasSearched.value = true;
+  isLoading.value = true
+  error.value = ''
+  hasSearched.value = true
 
   try {
     const params: FamilySearchParams = {
       q: searchQuery.value.trim(),
       limit: searchLimit.value,
-    };
+    }
 
-    const results = await apiService.searchFamilies(params);
-    searchResults.value = results;
-  } catch (err: any) {
-    console.error('Search error:', err);
-    error.value = err.response?.data?.detail || 'Failed to search families. Please try again.';
-    searchResults.value = [];
+    const results = await apiService.searchFamilies(params)
+    searchResults.value = results
+  } catch (err: unknown) {
+    console.error('Search error:', err)
+    const errorMessage =
+      err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : 'Failed to search families. Please try again.'
+    error.value = errorMessage || 'Failed to search families. Please try again.'
+    searchResults.value = []
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
 const handleInputChange = () => {
   // Clear results when user starts typing a new search
   if (hasSearched.value && searchResults.value.length > 0) {
-    searchResults.value = [];
-    hasSearched.value = false;
+    searchResults.value = []
+    hasSearched.value = false
   }
-};
+}
 
 const handleViewDetails = (familyId: string) => {
-  router.push(`/family/${familyId}`);
-};
+  router.push(`/family/${familyId}`)
+}
 
 const clearError = () => {
-  error.value = '';
-  hasSearched.value = false;
-};
+  error.value = ''
+  hasSearched.value = false
+}
 
 // Check API health on mount
 onMounted(async () => {
-  const isHealthy = await apiService.healthCheck();
+  const isHealthy = await apiService.healthCheck()
   if (!isHealthy) {
-    error.value = 'Unable to connect to the server. Please check your connection.';
+    error.value = 'Unable to connect to the server. Please check your connection.'
   }
-});
+})
 </script>
 
 <style scoped>
@@ -265,8 +269,12 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */
@@ -358,11 +366,11 @@ onMounted(async () => {
   .family-search {
     padding: 1rem;
   }
-  
+
   .search-input-group {
     flex-direction: column;
   }
-  
+
   .results-grid {
     grid-template-columns: 1fr;
   }

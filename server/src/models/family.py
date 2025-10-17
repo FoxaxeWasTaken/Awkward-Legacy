@@ -71,7 +71,7 @@ class FamilyUpdate(SQLModel):
 
 class FamilySearchResult(SQLModel):
     """Family model for search results."""
-    
+
     id: UUID
     husband_name: Optional[str] = None
     wife_name: Optional[str] = None
@@ -83,7 +83,7 @@ class FamilySearchResult(SQLModel):
 
 class FamilyDetailResult(FamilyRead):
     """Family model for detailed responses with related data."""
-    
+
     husband: Optional[dict] = None
     wife: Optional[dict] = None
     children: List[dict] = []

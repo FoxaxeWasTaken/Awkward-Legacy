@@ -1,10 +1,12 @@
 # Docker Compose configuration
-COMPOSE_DEV = docker compose -f docker-compose.dev.yml
-COMPOSE_PROD = docker compose -f docker-compose.prod.yml
-VITE_API_URL = http://server-dev:8000
 
 -include .env
 export
+
+COMPOSE_DEV = docker compose -f docker-compose.dev.yml
+COMPOSE_PROD = docker compose -f docker-compose.prod.yml
+VITE_API_URL_E2E = http://server-dev:8000
+
 
 # Default target - start development environment
 all: up-dev
@@ -59,7 +61,7 @@ test-client:
 
 test-client-e2e:
 	@echo "Restarting server and client for e2e tests..."
-	VITE_API_URL=$(VITE_API_URL) $(COMPOSE_DEV) up -d server-dev client-dev
+	VITE_API_URL=$(VITE_API_URL_E2E) $(COMPOSE_DEV) up -d server-dev client-dev
 	@echo "Waiting for services to be ready..."
 	@sleep 3
 	@echo "Running client e2e tests..."
@@ -67,7 +69,7 @@ test-client-e2e:
 
 test-client-e2e-record:
 	@echo "Restarting server and client for e2e tests..."
-	VITE_API_URL=$(VITE_API_URL) $(COMPOSE_DEV) up -d server-dev client-dev
+	VITE_API_URL=$(VITE_API_URL_E2E) $(COMPOSE_DEV) up -d server-dev client-dev
 	@echo "Waiting for services to be ready..."
 	@sleep 3
 	@echo "Running client e2e tests with recording..."
@@ -75,7 +77,7 @@ test-client-e2e-record:
 
 test-client-e2e-parallel:
 	@echo "Restarting server and client for e2e tests..."
-	VITE_API_URL=$(VITE_API_URL) $(COMPOSE_DEV) up -d server-dev client-dev
+	VITE_API_URL=$(VITE_API_URL_E2E) $(COMPOSE_DEV) up -d server-dev client-dev
 	@echo "Waiting for services to be ready..."
 	@sleep 3
 	@echo "Running client e2e tests in parallel (shard $(shard)/$(total-shards))..."
