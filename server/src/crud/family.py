@@ -48,10 +48,16 @@ class FamilyCRUD:
 
     def get_by_spouse(self, db: Session, spouse_id: UUID) -> List[Family]:
         """Get families by spouse ID (either husband or wife)."""
-        statement = select(Family).where(
-            (Family.husband_id == spouse_id) | (Family.wife_id == spouse_id)
+        statement = (
+            select(Family)
+            .where((Family.husband_id == spouse_id) | (Family.wife_id == spouse_id))
+            .options(
+                joinedload(Family.husband),
+                joinedload(Family.wife),
+                joinedload(Family.events),
+            )
         )
-        return list(db.exec(statement))
+        return list(db.exec(statement).unique())
 
     def update(
         self, db: Session, family_id: UUID, family_update: FamilyUpdate
@@ -296,6 +302,7 @@ class FamilyCRUD:
             ),
             "marriage_place": child_family.marriage_place,
             "spouse": None,
+            "events": [event.model_dump() for event in child_family.events],
         }
         self._add_spouse_info(child_family, child_person, family_info)
         return family_info

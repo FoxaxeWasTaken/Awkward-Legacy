@@ -84,6 +84,46 @@ add_child() {
         -d "{\"family_id\":\"$family_id\",\"child_id\":\"$child_id\"}" > /dev/null
 }
 
+# Helper function to create an event
+create_event() {
+    local family_id="$1"
+    local person_id="$2"
+    local event_type="$3"
+    local event_date="$4"
+    local event_place="$5"
+    local event_description="$6"
+    
+    local data="{\"type\":\"$event_type\""
+    
+    if [ -n "$family_id" ]; then
+        data="$data,\"family_id\":\"$family_id\""
+    fi
+    
+    if [ -n "$person_id" ]; then
+        data="$data,\"person_id\":\"$person_id\""
+    fi
+    
+    if [ -n "$event_date" ]; then
+        data="$data,\"date\":\"$event_date\""
+    fi
+    
+    if [ -n "$event_place" ]; then
+        data="$data,\"place\":\"$event_place\""
+    fi
+    
+    if [ -n "$event_description" ]; then
+        # Escape quotes in description for JSON
+        local escaped_description=$(echo "$event_description" | sed 's/"/\\"/g')
+        data="$data,\"description\":\"$escaped_description\""
+    fi
+    
+    data="$data}"
+    
+    curl -s -X POST "$API_URL/events/" \
+        -H "Content-Type: application/json" \
+        -d "$data" > /dev/null
+}
+
 echo "📅 GENERATION 1 (1920s) - The Founders"
 echo "Creating William and Margaret Smith..."
 william_id=$(create_person "William" "Smith" "M" "1920-03-15" "1995-12-10" "Boston, MA" "Carpenter" "Served in World War II as a combat engineer. Founded Smith Construction Company in 1950. Known for his integrity and craftsmanship.")
@@ -119,6 +159,16 @@ robert_family=$(create_family "$robert_id" "$linda_id" "1970-09-15" "Boston, MA"
 mary_family=$(create_family "$michael_id" "$mary_id" "1972-06-08" "Chicago, IL")
 elizabeth_family=$(create_family "$david_id" "$elizabeth_id" "1975-04-12" "San Francisco, CA")
 echo "✓ Created 4 Gen 2 families"
+
+# Add divorce event to James & Jennifer (Gen 2) - they divorce after 20 years
+create_event "$james_family" "" "divorce" "1985-06-15" "Boston, MA" "Divorce finalized after 20 years of marriage. Irreconcilable differences."
+echo "✓ Added divorce event to James & Jennifer Smith"
+
+# Add some marriage events to other couples for variety
+create_event "$robert_family" "" "marriage" "1970-09-15" "Boston, MA" "Beautiful ceremony at Trinity Church in Boston."
+create_event "$mary_family" "" "marriage" "1972-06-08" "Chicago, IL" "Wedding ceremony at the Chicago Cultural Center."
+echo "✓ Added marriage events to Robert & Linda, Michael & Mary"
+
 echo ""
 
 echo "📅 GENERATION 3 (1960s-1980s) - The Grandchildren"
@@ -192,6 +242,11 @@ sophia_family=$(create_family "$jason_id" "$sophia_id" "1999-11-20" "Los Angeles
 alexander_family=$(create_family "$alexander_id" "$melissa_id" "2003-06-08" "San Diego, CA")
 olivia_family=$(create_family "$brandon_id" "$olivia_id" "2006-12-15" "Phoenix, AZ")
 echo "✓ Created 12 Gen 3 families"
+
+# Add divorce event to Ryan & Jessica (Gen 3) - they divorce after 8 years
+create_event "$jessica_family" "" "divorce" "2010-11-15" "Miami, FL" "Divorce proceedings completed. Career conflicts and long-distance relationship issues."
+echo "✓ Added divorce event to Ryan & Jessica Johnson"
+
 echo ""
 
 echo "📅 GENERATION 4 (1990s-2010s) - The Great-Grandchildren"
@@ -330,6 +385,10 @@ charlotte_family=$(create_family "$joseph_id" "$charlotte_id" "2019-06-15" "Seat
 stella_id=$(create_person "Stella" "Baker" "F" "2020-08-20" "" "Seattle, WA" "")
 add_child "$charlotte_family" "$stella_id"
 
+# Add divorce event to Joseph & Charlotte (Gen 4) - they divorce after 3 years
+create_event "$charlotte_family" "" "divorce" "2022-09-10" "Seattle, WA" "Divorce finalized. Different life goals and career priorities."
+echo "✓ Added divorce event to Joseph & Charlotte Baker"
+
 # Evelyn Clark has 2 children (with spouse)
 nathan_id=$(create_person "Nathan" "Adams" "M" "1997-08-22" "" "Austin, TX" "Marketing Specialist")
 evelyn_family=$(create_family "$nathan_id" "$evelyn_id" "2018-10-30" "Austin, TX")
@@ -347,6 +406,27 @@ add_child "$aria_family" "$nova_id"
 echo "✓ Added 12 children to Gen 4 (total Gen 5)"
 echo ""
 
+# Add some personal events to make the family tree more interesting
+echo "📅 Adding personal events..."
+
+# Add birth events for some key family members
+create_event "" "$william_id" "birth" "1920-03-15" "Boston, MA" "Born during the Roaring Twenties"
+create_event "" "$margaret_id" "birth" "1922-07-22" "Boston, MA" "Born during the Jazz Age"
+create_event "" "$james_id" "birth" "1942-04-10" "Boston, MA" "Born during World War II"
+create_event "" "$emily_id" "birth" "1973-07-12" "Chicago, IL" "Born during the Watergate era"
+
+# Add death events for the deceased
+create_event "" "$william_id" "death" "1995-12-10" "Boston, MA" "Passed away peacefully at home surrounded by family"
+create_event "" "$margaret_id" "death" "2000-05-18" "Boston, MA" "Died of natural causes at age 77"
+
+# Add some occupation events
+create_event "" "$william_id" "occupation" "1950-01-01" "Boston, MA" "Founded Smith Construction Company"
+create_event "" "$james_id" "occupation" "1968-06-01" "Boston, MA" "Graduated from Harvard Law School"
+create_event "" "$emily_id" "occupation" "1995-05-15" "Chicago, IL" "First art exhibition at Chicago Gallery"
+
+echo "✓ Added personal events (birth, death, occupation)"
+
+echo ""
 echo "✅ Family tree generation complete!"
 echo ""
 echo "📊 SUMMARY:"
@@ -357,6 +437,11 @@ echo "  Generation 4: 40 people (33 children + 7 spouses)"
 echo "  Generation 5: 14 people (12 children + 2 spouses are parents from Gen 4)"
 echo "  ─────────────────────────────"
 echo "  TOTAL: 88 people across 5 generations"
+echo ""
+echo "💔 DIVORCE EVENTS ADDED:"
+echo "  • James Smith & Jennifer Davis (Gen 2) - Divorced 1985"
+echo "  • Ryan Walker & Jessica Johnson (Gen 3) - Divorced 2010"
+echo "  • Joseph Baker & Charlotte Harris (Gen 4) - Divorced 2022"
 echo ""
 echo "🔗 Root Family ID: $gen1_family"
 echo "   (William Smith & Margaret Brown)"

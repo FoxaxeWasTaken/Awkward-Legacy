@@ -161,7 +161,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
       cy.contains('Boston, MA').should('be.visible');
       cy.contains('Children:').should('be.visible');
       cy.contains('2').should('be.visible');
-      cy.contains('View Family Tree').should('be.visible');
+      cy.contains('View Details').should('be.visible');
     });
 
     it('should display multiple search results', () => {
@@ -230,7 +230,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
       
-      cy.get('button').contains('View Family Tree').click();
+      cy.get('button').contains('View Details').click();
       cy.url().should('include', `/family/${familyId}`);
     });
   });

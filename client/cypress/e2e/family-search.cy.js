@@ -169,7 +169,7 @@ describe('Family Search and Visualization', () => {
     cy.wait('@familySearch');
 
     // Click on family card to view details
-    cy.contains('View Family Tree').click();
+    cy.contains('View Details').click();
 
     // Wait for family detail API call
     cy.wait('@familyDetail');

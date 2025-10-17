@@ -98,8 +98,18 @@
                   </div>
                 </div>
 
-                <!-- Marriage Line -->
-                <div class="marriage-line" v-if="couple.husband && couple.wife"></div>
+                <!-- Marriage/Divorce Line -->
+                <div
+                  class="marriage-line"
+                  :class="{
+                    'marriage-line-married': couple.isMarried && !couple.isDivorced,
+                    'marriage-line-divorced': couple.isDivorced,
+                    'marriage-line-unknown': !couple.isMarried && !couple.isDivorced,
+                  }"
+                  v-if="couple.husband && couple.wife"
+                  @mouseenter="showMarriageTooltip($event, couple)"
+                  @mouseleave="hideMarriageTooltip()"
+                ></div>
 
                 <!-- Wife -->
                 <div
@@ -132,7 +142,7 @@
           <!-- All children of this generation below their parents -->
           <div
             v-if="generation.couples.some((c) => c.children.length > 0)"
-            class="generation-children-row"
+            class="generation-children-row children-row"
           >
             <div
               v-for="couple in generation.couples"
@@ -147,7 +157,7 @@
                   <div
                     v-for="child in couple.children"
                     :key="child.id"
-                    class="child-node"
+                    class="child-node person-node child"
                     :class="getPersonHighlightClass(child)"
                     @click="selectPerson(child)"
                     @mouseenter="handlePersonHoverAndShowTooltip($event, child)"
@@ -214,13 +224,69 @@
         </div>
       </div>
     </div>
+
+    <!-- Marriage Tooltip -->
+    <div
+      v-if="marriageTooltip.visible"
+      class="marriage-tooltip"
+      :style="{ left: marriageTooltip.x + 'px', top: marriageTooltip.y + 'px' }"
+    >
+      <div class="tooltip-content">
+        <div class="tooltip-name">
+          {{ marriageTooltip.couple?.husband?.first_name }}
+          {{ marriageTooltip.couple?.husband?.last_name }} &
+          {{ marriageTooltip.couple?.wife?.first_name }}
+          {{ marriageTooltip.couple?.wife?.last_name }}
+        </div>
+        <div class="tooltip-details">
+          <div
+            v-if="marriageTooltip.couple?.isMarried && !marriageTooltip.couple?.isDivorced"
+            class="relationship-status married"
+          >
+            <strong>Status:</strong> Married 💒
+          </div>
+          <div v-else-if="marriageTooltip.couple?.isDivorced" class="relationship-status divorced">
+            <strong>Status:</strong> Divorced 💔
+          </div>
+          <div v-else class="relationship-status unknown">
+            <strong>Status:</strong> Relationship Unknown ❓
+          </div>
+
+          <div v-if="marriageTooltip.couple?.marriageDate">
+            <strong>Married:</strong> {{ formatDate(marriageTooltip.couple.marriageDate) }}
+          </div>
+          <div v-if="marriageTooltip.couple?.marriagePlace">
+            <strong>Marriage Place:</strong> {{ marriageTooltip.couple.marriagePlace }}
+          </div>
+
+          <div v-if="marriageTooltip.couple?.divorceDate">
+            <strong>Divorced:</strong> {{ formatDate(marriageTooltip.couple.divorceDate) }}
+          </div>
+          <div v-if="marriageTooltip.couple?.divorcePlace">
+            <strong>Divorce Place:</strong> {{ marriageTooltip.couple.divorcePlace }}
+          </div>
+
+          <div v-if="marriageTooltip.couple?.events && marriageTooltip.couple.events.length > 0">
+            <strong>Events:</strong>
+            <ul class="events-list">
+              <li v-for="event in marriageTooltip.couple.events" :key="event.id">
+                {{ event.type }}
+                <span v-if="event.date"> - {{ formatDate(event.date) }}</span>
+                <span v-if="event.place"> in {{ event.place }}</span>
+                <span v-if="event.description">: {{ event.description }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
 import apiService from '../services/api'
-import type { FamilyDetailResult, Person } from '../types/family'
+import type { FamilyDetailResult, Person, Event } from '../types/family'
 
 interface Props {
   familyId: string
@@ -233,6 +299,11 @@ interface Couple {
   children: Person[]
   marriageDate?: string
   marriagePlace?: string
+  events: Event[]
+  isMarried: boolean
+  isDivorced: boolean
+  divorceDate?: string
+  divorcePlace?: string
 }
 
 interface FamilyGeneration {
@@ -261,6 +332,14 @@ const tooltip = ref({
   person: null as Person | null,
 })
 
+// Marriage tooltip state
+const marriageTooltip = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  couple: null as Couple | null,
+})
+
 // Highlight state
 const hoveredPerson = ref<Person | null>(null)
 const clickedPerson = ref<Person | null>(null)
@@ -283,6 +362,9 @@ const familyGenerations = computed((): FamilyGeneration[] => {
   const data = familyData.value
   const generations: FamilyGeneration[] = []
 
+  // Analyze relationship events for the main couple
+  const relationshipAnalysis = analyzeRelationshipEvents(data.events, data.marriage_date)
+
   // Create the main couple (current family)
   const mainCouple: Couple = {
     id: data.id,
@@ -291,6 +373,11 @@ const familyGenerations = computed((): FamilyGeneration[] => {
     children: data.children.map((child) => child.person).filter(Boolean) as Person[],
     marriageDate: data.marriage_date,
     marriagePlace: data.marriage_place,
+    events: data.events,
+    isMarried: relationshipAnalysis.isMarried,
+    isDivorced: relationshipAnalysis.isDivorced,
+    divorceDate: relationshipAnalysis.divorceDate,
+    divorcePlace: relationshipAnalysis.divorcePlace,
   }
 
   // Add main couple to first generation
@@ -314,6 +401,13 @@ const familyGenerations = computed((): FamilyGeneration[] => {
             const childFamilyData = crossFamilyChildren.value.get(ownFamily.id)
 
             if (ownFamily.spouse || childFamilyData) {
+              // For child couples, we need to fetch their events
+              // Analyze relationship events for the child couple
+              const childRelationshipAnalysis = analyzeRelationshipEvents(
+                ownFamily.events || [],
+                ownFamily.marriage_date,
+              )
+
               const childCouple: Couple = {
                 id: ownFamily.id,
                 husband: child.sex === 'M' ? child : undefined,
@@ -321,6 +415,11 @@ const familyGenerations = computed((): FamilyGeneration[] => {
                 children: childFamilyData || [],
                 marriageDate: ownFamily.marriage_date,
                 marriagePlace: ownFamily.marriage_place,
+                events: ownFamily.events || [],
+                isMarried: childRelationshipAnalysis.isMarried,
+                isDivorced: childRelationshipAnalysis.isDivorced,
+                divorceDate: childRelationshipAnalysis.divorceDate,
+                divorcePlace: childRelationshipAnalysis.divorcePlace,
               }
 
               // Add spouse
@@ -364,6 +463,42 @@ const familyGenerations = computed((): FamilyGeneration[] => {
 
   return generations
 })
+
+// Helper function to analyze events and determine relationship status
+const analyzeRelationshipEvents = (events: Event[], marriageDate?: string) => {
+  const marriageEvents = events.filter(
+    (event) =>
+      event.type.toLowerCase().includes('marriage') ||
+      event.type.toLowerCase().includes('wedding') ||
+      event.type.toLowerCase().includes('marry'),
+  )
+
+  const divorceEvents = events.filter(
+    (event) =>
+      event.type.toLowerCase().includes('divorce') ||
+      event.type.toLowerCase().includes('separation') ||
+      event.type.toLowerCase().includes('annulment'),
+  )
+
+  // Consider a couple married if they have marriage events OR a marriage date
+  const isMarried = marriageEvents.length > 0 || !!marriageDate
+  const isDivorced = divorceEvents.length > 0
+
+  // Get the most recent divorce event
+  const latestDivorce = divorceEvents.sort((a, b) => {
+    if (!a.date || !b.date) return 0
+    return new Date(b.date).getTime() - new Date(a.date).getTime()
+  })[0]
+
+  return {
+    isMarried,
+    isDivorced,
+    divorceDate: latestDivorce?.date,
+    divorcePlace: latestDivorce?.place,
+    marriageEvents,
+    divorceEvents,
+  }
+}
 
 // Methods
 const loadFamilyData = async () => {
@@ -578,6 +713,19 @@ const hideTooltip = () => {
   tooltip.value.visible = false
 }
 
+const showMarriageTooltip = (event: MouseEvent, couple: Couple) => {
+  marriageTooltip.value = {
+    visible: true,
+    x: event.pageX + 10,
+    y: event.pageY - 10,
+    couple: couple,
+  }
+}
+
+const hideMarriageTooltip = () => {
+  marriageTooltip.value.visible = false
+}
+
 const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString)
@@ -641,7 +789,7 @@ const handleWheel = (e: WheelEvent) => {
 }
 
 const zoomIn = () => {
-  const newScale = Math.min(scale.value * 1.2, 3)
+  const newScale = Math.min(scale.value * 1.1, 3)
 
   // Zoom towards center
   if (treeContainer.value) {
@@ -660,7 +808,7 @@ const zoomIn = () => {
 }
 
 const zoomOut = () => {
-  const newScale = Math.max(scale.value / 1.2, 0.1)
+  const newScale = Math.max(scale.value / 1.1, 0.1)
 
   // Zoom towards center
   if (treeContainer.value) {
@@ -679,7 +827,9 @@ const zoomOut = () => {
 }
 
 const resetZoom = () => {
-  fitTreeToView()
+  scale.value = 1
+  panX.value = 0
+  panY.value = 0
 }
 
 const fitTreeToView = async () => {
@@ -967,10 +1117,37 @@ watch(
 .marriage-line {
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, #e74c3c, #f39c12);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.marriage-line-married {
+  background: linear-gradient(90deg, #27ae60, #2ecc71) !important;
+  border: 2px solid #27ae60;
+}
+
+.marriage-line-divorced {
+  background: repeating-linear-gradient(
+    90deg,
+    #e74c3c 0px,
+    #e74c3c 8px,
+    transparent 8px,
+    transparent 16px
+  ) !important;
+  border: 2px solid #e74c3c;
+}
+
+.marriage-line-unknown {
+  background: linear-gradient(90deg, #95a5a6, #bdc3c7) !important;
+  border: 2px solid #95a5a6;
+}
+
+.marriage-line:hover {
+  transform: scaleY(1.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .person-node {
@@ -1177,7 +1354,8 @@ watch(
   font-style: italic;
 }
 
-.person-tooltip {
+.person-tooltip,
+.marriage-tooltip {
   position: fixed;
   background: rgba(0, 0, 0, 0.9);
   color: white;
@@ -1213,6 +1391,44 @@ watch(
 
 .tooltip-details div {
   margin-bottom: 0.25rem;
+}
+
+.relationship-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.relationship-status.married {
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.relationship-status.divorced {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.relationship-status.unknown {
+  background: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
+  border: 1px solid #95a5a6;
+}
+
+.events-list {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.events-list li {
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  color: #ecf0f1;
 }
 
 /* Responsive */

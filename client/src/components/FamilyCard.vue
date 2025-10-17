@@ -28,12 +28,12 @@
 
       <div class="children-info">
         <span class="children-label">Children:</span>
-        <span class="children-count">{{ family.children_count }}</span>
+        <span class="children-count">{{ family.children_count }} children</span>
       </div>
     </div>
 
     <div class="family-actions">
-      <button class="view-button" @click.stop="handleViewDetails">View Family Tree</button>
+      <button class="view-button" @click.stop="handleViewDetails">View Details</button>
     </div>
   </div>
 </template>
