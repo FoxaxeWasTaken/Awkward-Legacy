@@ -24,16 +24,16 @@ export interface FamilyGeneration {
 export const analyzeRelationshipEvents = (events: Event[], marriageDate?: string) => {
   const marriageEvents = events.filter(
     (event) =>
-      (event.type && event.type.toLowerCase().includes('marriage')) ||
-      (event.type && event.type.toLowerCase().includes('wedding')) ||
-      (event.type && event.type.toLowerCase().includes('marry')),
+      event.type?.toLowerCase().includes('marriage') ||
+      event.type?.toLowerCase().includes('wedding') ||
+      event.type?.toLowerCase().includes('marry'),
   )
 
   const divorceEvents = events.filter(
     (event) =>
-      (event.type && event.type.toLowerCase().includes('divorce')) ||
-      (event.type && event.type.toLowerCase().includes('separation')) ||
-      (event.type && event.type.toLowerCase().includes('annulment')),
+      event.type?.toLowerCase().includes('divorce') ||
+      event.type?.toLowerCase().includes('separation') ||
+      event.type?.toLowerCase().includes('annulment'),
   )
 
   // Consider a couple married if they have marriage events OR a marriage date
@@ -41,10 +41,11 @@ export const analyzeRelationshipEvents = (events: Event[], marriageDate?: string
   const isDivorced = divorceEvents.length > 0
 
   // Get the most recent divorce event
-  const latestDivorce = divorceEvents.sort((a, b) => {
+  const sortedDivorceEvents = divorceEvents.toSorted((a, b) => {
     if (!a.date || !b.date) return 0
     return new Date(b.date).getTime() - new Date(a.date).getTime()
-  })[0]
+  })
+  const latestDivorce = sortedDivorceEvents[0]
 
   return {
     isMarried,
@@ -98,12 +99,12 @@ export const createFamilyGenerations = (
     const nextGenCouples: Couple[] = []
 
     // For each couple in the current generation, find their children who have families
-    currentGenCouples.forEach((couple) => {
+    for (const couple of currentGenCouples) {
       const coupleChildren = couple.children
 
-      coupleChildren.forEach((child) => {
+      for (const child of coupleChildren) {
         if (child.has_own_family && child.own_families) {
-          child.own_families.forEach((ownFamily) => {
+          for (const ownFamily of child.own_families) {
             const childFamilyData = crossFamilyChildren.get(ownFamily.id)
 
             if (ownFamily.spouse || childFamilyData) {
@@ -151,10 +152,10 @@ export const createFamilyGenerations = (
 
               nextGenCouples.push(childCouple)
             }
-          })
+          }
         }
-      })
-    })
+      }
+    }
 
     // Add next generation if it exists
     if (nextGenCouples.length > 0) {

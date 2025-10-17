@@ -44,36 +44,58 @@ export function useFamilyTree(familyId: Ref<string> | string) {
     }
   }
 
+  const processFamilyChildren = async (
+    familyDetail: FamilyDetailResult,
+    childrenMap: Map<string, Person[]>,
+  ) => {
+    const familyChildren = familyDetail.children.map((c) => c.person).filter(Boolean) as Person[]
+    childrenMap.set(familyDetail.id, familyChildren)
+    return familyChildren
+  }
+
+  const loadFamilyDetailSafely = async (familyId: string, childrenMap: Map<string, Person[]>) => {
+    try {
+      const familyDetail = await apiService.getFamilyDetail(familyId)
+      return await processFamilyChildren(familyDetail, childrenMap)
+    } catch (err) {
+      console.error(`Error loading children for family ${familyId}:`, err)
+      return []
+    }
+  }
+
+  const processChildFamilies = async (
+    child: Person,
+    processedFamilies: Set<string>,
+    childrenMap: Map<string, Person[]>,
+  ) => {
+    if (!child.has_own_family || !child.own_families) return
+
+    for (const ownFamily of child.own_families) {
+      if (processedFamilies.has(ownFamily.id)) continue
+      processedFamilies.add(ownFamily.id)
+
+      const familyChildren = await loadFamilyDetailSafely(ownFamily.id, childrenMap)
+      if (familyChildren.length > 0) {
+        await loadDescendantFamilies(familyChildren, processedFamilies, childrenMap)
+      }
+    }
+  }
+
+  const loadDescendantFamilies = async (
+    children: Person[],
+    processedFamilies: Set<string>,
+    childrenMap: Map<string, Person[]>,
+  ) => {
+    for (const child of children) {
+      await processChildFamilies(child, processedFamilies, childrenMap)
+    }
+  }
+
   const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
     const childrenMap = new Map<string, Person[]>()
     const processedFamilies = new Set<string>([data.id])
-    const loadDescendantFamilies = async (children: Person[]) => {
-      for (const child of children) {
-        if (child.has_own_family && child.own_families) {
-          for (const ownFamily of child.own_families) {
-            if (processedFamilies.has(ownFamily.id)) continue
-            processedFamilies.add(ownFamily.id)
-
-            try {
-              const familyDetail = await apiService.getFamilyDetail(ownFamily.id)
-              const familyChildren = familyDetail.children
-                .map((c) => c.person)
-                .filter(Boolean) as Person[]
-              childrenMap.set(ownFamily.id, familyChildren)
-
-              if (familyChildren.length > 0) {
-                await loadDescendantFamilies(familyChildren)
-              }
-            } catch (err) {
-              console.error(`Error loading children for family ${ownFamily.id}:`, err)
-            }
-          }
-        }
-      }
-    }
     const rootChildren = data.children.map((c) => c.person).filter(Boolean) as Person[]
-    await loadDescendantFamilies(rootChildren)
-
+    await loadDescendantFamilies(rootChildren, processedFamilies, childrenMap)
     crossFamilyChildren.value = childrenMap
   }
 

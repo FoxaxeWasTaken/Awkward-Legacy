@@ -20,7 +20,7 @@ export function useTreeNavigation() {
     const dx = e.clientX - dragStart.value.x
     const dy = e.clientY - dragStart.value.y
 
-    const distance = Math.sqrt(dx * dx + dy * dy)
+    const distance = Math.hypot(dx, dy)
     if (distance > 3) {
       panX.value = panStart.value.x + dx
       panY.value = panStart.value.y + dy

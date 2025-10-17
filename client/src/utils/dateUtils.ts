@@ -5,12 +5,16 @@
 export const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return dateString
+    }
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     })
-  } catch (_error) {
+  } catch (error) {
+    console.warn('Error formatting date:', error)
     return dateString
   }
 }
@@ -18,12 +22,16 @@ export const formatDate = (dateString: string): string => {
 export const formatDateLong = (dateString: string): string => {
   try {
     const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return dateString
+    }
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     })
-  } catch (_error) {
+  } catch (error) {
+    console.warn('Error formatting date:', error)
     return dateString
   }
 }

@@ -84,21 +84,25 @@ const selectPersonWithHighlights = (person: Person) => {
 }
 
 const loadFamilyDataAndFit = async () => {
-  await loadFamilyData()
-  await nextTick()
-  setTimeout(() => {
-    fitTreeToView(treeContainer.value, treeContent.value)
-  }, 100)
+  try {
+    await loadFamilyData()
+    await nextTick()
+    setTimeout(() => {
+      fitTreeToView(treeContainer.value, treeContent.value)
+    }, 100)
+  } catch (error) {
+    console.error('Error loading family data:', error)
+  }
 }
 onMounted(() => {
   loadFamilyDataAndFit()
-  window.addEventListener('mousemove', handleDrag)
-  window.addEventListener('mouseup', stopDrag)
+  globalThis.addEventListener('mousemove', handleDrag)
+  globalThis.addEventListener('mouseup', stopDrag)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('mousemove', handleDrag)
-  window.removeEventListener('mouseup', stopDrag)
+  globalThis.removeEventListener('mousemove', handleDrag)
+  globalThis.removeEventListener('mouseup', stopDrag)
 })
 </script>
 

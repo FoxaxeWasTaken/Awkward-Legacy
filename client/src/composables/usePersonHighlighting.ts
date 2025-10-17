@@ -37,6 +37,66 @@ export function usePersonHighlighting() {
     highlightedSpouse.value = null
   }
 
+  const findParentsInData = (data: FamilyDetailResult, person: Person, parents: Set<string>) => {
+    for (const child of data.children) {
+      if (child.person?.id === person.id) {
+        if (data.husband?.id) parents.add(data.husband.id)
+        if (data.wife?.id) parents.add(data.wife.id)
+      }
+    }
+  }
+
+  const findParentsInGenerations = (
+    familyGenerations: FamilyGeneration[],
+    person: Person,
+    parents: Set<string>,
+  ) => {
+    for (const generation of familyGenerations) {
+      for (const couple of generation.couples) {
+        for (const child of couple.children) {
+          if (child.id === person.id) {
+            if (couple.husband?.id) parents.add(couple.husband.id)
+            if (couple.wife?.id) parents.add(couple.wife.id)
+          }
+        }
+      }
+    }
+  }
+
+  const findSpouseInGenerations = (
+    familyGenerations: FamilyGeneration[],
+    person: Person,
+  ): string | null => {
+    for (const generation of familyGenerations) {
+      for (const couple of generation.couples) {
+        if (couple.husband?.id === person.id && couple.wife?.id) {
+          return couple.wife.id
+        } else if (couple.wife?.id === person.id && couple.husband?.id) {
+          return couple.husband.id
+        }
+      }
+    }
+    return null
+  }
+
+  const findAllDescendants = (
+    personToCheck: Person,
+    crossFamilyChildren: Map<string, Person[]>,
+    children: Set<string>,
+  ) => {
+    if (!personToCheck.has_own_family || !personToCheck.own_families) return
+
+    for (const ownFamily of personToCheck.own_families) {
+      const familyChildren = crossFamilyChildren.get(ownFamily.id) || []
+      for (const child of familyChildren) {
+        if (child.id && !children.has(child.id)) {
+          children.add(child.id)
+          findAllDescendants(child, crossFamilyChildren, children)
+        }
+      }
+    }
+  }
+
   const updateHighlights = (
     person: Person,
     familyData: FamilyDetailResult | null,
@@ -49,51 +109,11 @@ export function usePersonHighlighting() {
 
     const parents = new Set<string>()
     const children = new Set<string>()
-    let spouse: string | null = null
-    const findParents = (data: FamilyDetailResult) => {
-      data.children.forEach((child) => {
-        if (child.person?.id === person.id) {
-          if (data.husband?.id) parents.add(data.husband.id)
-          if (data.wife?.id) parents.add(data.wife.id)
-        }
-      })
-    }
 
-    findParents(familyData)
-    familyGenerations.forEach((generation) => {
-      generation.couples.forEach((couple) => {
-        couple.children.forEach((child) => {
-          if (child.id === person.id) {
-            if (couple.husband?.id) parents.add(couple.husband.id)
-            if (couple.wife?.id) parents.add(couple.wife.id)
-          }
-        })
-      })
-    })
-    familyGenerations.forEach((generation) => {
-      generation.couples.forEach((couple) => {
-        if (couple.husband?.id === person.id && couple.wife?.id) {
-          spouse = couple.wife.id
-        } else if (couple.wife?.id === person.id && couple.husband?.id) {
-          spouse = couple.husband.id
-        }
-      })
-    })
-    const findAllDescendants = (personToCheck: Person) => {
-      if (personToCheck.has_own_family && personToCheck.own_families) {
-        personToCheck.own_families.forEach((ownFamily) => {
-          const familyChildren = crossFamilyChildren.get(ownFamily.id) || []
-          familyChildren.forEach((child) => {
-            if (child.id && !children.has(child.id)) {
-              children.add(child.id)
-              findAllDescendants(child)
-            }
-          })
-        })
-      }
-    }
-
-    findAllDescendants(person)
+    findParentsInData(familyData, person, parents)
+    findParentsInGenerations(familyGenerations, person, parents)
+    const spouse = findSpouseInGenerations(familyGenerations, person)
+    findAllDescendants(person, crossFamilyChildren, children)
 
     highlightedParents.value = parents
     highlightedChildren.value = children

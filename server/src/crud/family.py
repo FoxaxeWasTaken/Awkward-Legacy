@@ -313,7 +313,7 @@ class FamilyCRUD:
             family_info["spouse"] = {
                 "id": child_family.wife.id,
                 "name": (
-                    f"{child_family.wife.first_name} " f"{child_family.wife.last_name}"
+                    f"{child_family.wife.first_name} {child_family.wife.last_name}"
                 ),
                 "sex": child_family.wife.sex,
             }
@@ -321,8 +321,7 @@ class FamilyCRUD:
             family_info["spouse"] = {
                 "id": child_family.husband.id,
                 "name": (
-                    f"{child_family.husband.first_name} "
-                    f"{child_family.husband.last_name}"
+                    f"{child_family.husband.first_name} {child_family.husband.last_name}"
                 ),
                 "sex": child_family.husband.sex,
             }

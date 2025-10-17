@@ -3,7 +3,7 @@ import type { AxiosInstance, AxiosResponse } from 'axios'
 import type { FamilySearchResult, FamilyDetailResult, FamilySearchParams } from '../types/family'
 
 class ApiService {
-  private api: AxiosInstance
+  private readonly api: AxiosInstance
 
   constructor() {
     this.api = axios.create({
@@ -22,7 +22,7 @@ class ApiService {
       },
       (error) => {
         console.error('API Request Error:', error)
-        return Promise.reject(error)
+        return Promise.reject(error instanceof Error ? error : new Error(String(error)))
       },
     )
 
@@ -34,7 +34,7 @@ class ApiService {
       },
       (error) => {
         console.error('API Response Error:', error.response?.data || error.message)
-        return Promise.reject(error)
+        return Promise.reject(error instanceof Error ? error : new Error(String(error)))
       },
     )
   }
