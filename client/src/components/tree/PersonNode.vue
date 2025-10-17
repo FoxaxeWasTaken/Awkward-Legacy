@@ -1,23 +1,3 @@
-<template>
-  <div
-    class="person-node"
-    :class="nodeClasses"
-    @click="handleClick"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-  >
-    <div class="person-avatar">
-      <div class="avatar-circle">
-        <span class="gender-icon">{{ genderIcon }}</span>
-      </div>
-    </div>
-    <div class="person-info">
-      <div class="person-name">{{ fullName }}</div>
-      <div class="person-dates" v-if="person.birth_date">{{ dateRange }}</div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Person } from '../../types/family'
@@ -64,4 +44,22 @@ const handleMouseLeave = () => {
 }
 </script>
 
-<!-- CSS is now imported from external files -->
+<template>
+  <div
+    class="person-node"
+    :class="nodeClasses"
+    @click="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
+    <div class="person-avatar">
+      <div class="avatar-circle">
+        <span class="gender-icon">{{ genderIcon }}</span>
+      </div>
+    </div>
+    <div class="person-info">
+      <div class="person-name">{{ fullName }}</div>
+      <div class="person-dates" v-if="person.birth_date">{{ dateRange }}</div>
+    </div>
+  </div>
+</template>

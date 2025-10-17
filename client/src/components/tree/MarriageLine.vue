@@ -1,12 +1,3 @@
-<template>
-  <div
-    class="marriage-line"
-    :class="marriageClasses"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-  ></div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Couple } from '../../utils/familyUtils'
@@ -37,4 +28,11 @@ const handleMouseLeave = () => {
 }
 </script>
 
-<!-- CSS is now imported from external files -->
+<template>
+  <div
+    class="marriage-line"
+    :class="marriageClasses"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  ></div>
+</template>

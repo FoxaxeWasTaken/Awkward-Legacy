@@ -1,3 +1,107 @@
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, nextTick, computed, toRef } from 'vue'
+import type { Person } from '../types/family'
+import { useFamilyTree } from '../composables/useFamilyTree'
+import { useTreeNavigation } from '../composables/useTreeNavigation'
+import { usePersonHighlighting } from '../composables/usePersonHighlighting'
+import { useTooltips } from '../composables/useTooltips'
+import { createFamilyGenerations } from '../utils/familyUtils'
+import { formatDate } from '../utils/dateUtils'
+import TreeControls from './tree/TreeControls.vue'
+import PersonNode from './tree/PersonNode.vue'
+import ChildNode from './tree/ChildNode.vue'
+import MarriageLine from './tree/MarriageLine.vue'
+import PersonTooltip from './tree/PersonTooltip.vue'
+import MarriageTooltip from './tree/MarriageTooltip.vue'
+
+interface Props {
+  familyId: string
+}
+
+const props = defineProps<Props>()
+
+const treeContainer = ref<HTMLElement>()
+const treeContent = ref<HTMLElement>()
+const { isLoading, error, familyData, familyTitle, crossFamilyChildren, loadFamilyData } =
+  useFamilyTree(toRef(props, 'familyId'))
+const {
+  panX,
+  panY,
+  scale,
+  isDragging,
+  startDrag,
+  handleDrag,
+  stopDrag,
+  handleWheel,
+  zoomIn,
+  zoomOut,
+  resetZoom,
+  fitTreeToView,
+} = useTreeNavigation()
+const {
+  selectPerson,
+  handlePersonHover,
+  handlePersonLeave,
+  updateHighlights,
+  getPersonHighlightClass,
+  clickedPerson,
+} = usePersonHighlighting()
+const {
+  tooltip,
+  marriageTooltip,
+  showTooltip,
+  hideTooltip,
+  showMarriageTooltip,
+  hideMarriageTooltip,
+} = useTooltips()
+
+const familyGenerations = computed(() => {
+  if (!familyData.value) return []
+  return createFamilyGenerations(familyData.value, crossFamilyChildren.value)
+})
+const handlePersonHoverAndShowTooltip = (event: MouseEvent, person: Person) => {
+  if (!clickedPerson.value) {
+    handlePersonHover(person)
+    if (familyData.value) {
+      updateHighlights(person, familyData.value, familyGenerations.value, crossFamilyChildren.value)
+    }
+  }
+  showTooltip(event, person)
+}
+
+const handlePersonLeaveAndHideTooltip = () => {
+  if (!clickedPerson.value) {
+    handlePersonLeave()
+  }
+  hideTooltip()
+}
+
+const selectPersonWithHighlights = (person: Person) => {
+  selectPerson(person)
+  if (familyData.value) {
+    updateHighlights(person, familyData.value, familyGenerations.value, crossFamilyChildren.value)
+  }
+}
+
+const loadFamilyDataAndFit = async () => {
+  await loadFamilyData()
+  await nextTick()
+  setTimeout(() => {
+    fitTreeToView(treeContainer.value, treeContent.value)
+  }, 100)
+}
+onMounted(() => {
+  loadFamilyDataAndFit()
+  window.addEventListener('mousemove', handleDrag)
+  window.addEventListener('mouseup', stopDrag)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', handleDrag)
+  window.removeEventListener('mouseup', stopDrag)
+})
+</script>
+
 <template>
   <div class="family-tree">
     <div class="tree-header">
@@ -51,7 +155,6 @@
         >
           <div class="generation-label" v-if="index > 0">Generation {{ index + 1 }}</div>
 
-          <!-- Marriage Information for the main couple -->
           <div v-if="index === 0 && generation.couples[0]" class="marriage-info">
             <div
               v-if="generation.couples[0].marriageDate || generation.couples[0].marriagePlace"
@@ -66,7 +169,6 @@
             </div>
           </div>
 
-          <!-- All couples of this generation on the same horizontal level -->
           <div class="couples-row">
             <div
               v-for="couple in generation.couples"
@@ -74,9 +176,7 @@
               class="couple-container"
               :class="{ 'has-children': couple.children.length > 0 }"
             >
-              <!-- Spouses Row - Husband and Wife side by side -->
               <div class="spouses-row">
-                <!-- Husband -->
                 <PersonNode
                   v-if="couple.husband"
                   :person="couple.husband"
@@ -88,7 +188,6 @@
                   @mouseleave="handlePersonLeaveAndHideTooltip"
                 />
 
-                <!-- Marriage/Divorce Line -->
                 <MarriageLine
                   v-if="couple.husband && couple.wife"
                   :couple="couple"
@@ -96,7 +195,6 @@
                   @mouseleave="hideMarriageTooltip"
                 />
 
-                <!-- Wife -->
                 <PersonNode
                   v-if="couple.wife"
                   :person="couple.wife"
@@ -111,7 +209,6 @@
             </div>
           </div>
 
-          <!-- All children of this generation below their parents -->
           <div
             v-if="generation.couples.some((c) => c.children.length > 0)"
             class="generation-children-row children-row"
@@ -143,7 +240,6 @@
       </div>
     </div>
 
-    <!-- Tooltips -->
     <PersonTooltip
       :visible="tooltip.visible"
       :x="tooltip.x"
@@ -159,128 +255,3 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, computed, toRef } from 'vue'
-import type { Person } from '../types/family'
-import { useFamilyTree } from '../composables/useFamilyTree'
-import { useTreeNavigation } from '../composables/useTreeNavigation'
-import { usePersonHighlighting } from '../composables/usePersonHighlighting'
-import { useTooltips } from '../composables/useTooltips'
-import { createFamilyGenerations } from '../utils/familyUtils'
-import { formatDate } from '../utils/dateUtils'
-import TreeControls from './tree/TreeControls.vue'
-import PersonNode from './tree/PersonNode.vue'
-import ChildNode from './tree/ChildNode.vue'
-import MarriageLine from './tree/MarriageLine.vue'
-import PersonTooltip from './tree/PersonTooltip.vue'
-import MarriageTooltip from './tree/MarriageTooltip.vue'
-
-interface Props {
-  familyId: string
-}
-
-const props = defineProps<Props>()
-
-// Template refs
-const treeContainer = ref<HTMLElement>()
-const treeContent = ref<HTMLElement>()
-
-// Use composables
-const { isLoading, error, familyData, familyTitle, crossFamilyChildren, loadFamilyData } =
-  useFamilyTree(toRef(props, 'familyId'))
-const {
-  panX,
-  panY,
-  scale,
-  isDragging,
-  startDrag,
-  handleDrag,
-  stopDrag,
-  handleWheel,
-  zoomIn,
-  zoomOut,
-  resetZoom,
-  fitTreeToView,
-} = useTreeNavigation()
-const {
-  selectPerson,
-  handlePersonHover,
-  handlePersonLeave,
-  updateHighlights,
-  getPersonHighlightClass,
-  clickedPerson,
-} = usePersonHighlighting()
-const {
-  tooltip,
-  marriageTooltip,
-  showTooltip,
-  hideTooltip,
-  showMarriageTooltip,
-  hideMarriageTooltip,
-} = useTooltips()
-
-// Computed property for family generations
-const familyGenerations = computed(() => {
-  if (!familyData.value) return []
-  return createFamilyGenerations(familyData.value, crossFamilyChildren.value)
-})
-
-// Event handlers that combine multiple composable functions
-const handlePersonHoverAndShowTooltip = (event: MouseEvent, person: Person) => {
-  // Only apply hover effects if no one is currently clicked/selected
-  if (!clickedPerson.value) {
-    handlePersonHover(person)
-    if (familyData.value) {
-      updateHighlights(person, familyData.value, familyGenerations.value, crossFamilyChildren.value)
-    }
-  }
-  // Always show tooltip on hover, regardless of selection state
-  showTooltip(event, person)
-}
-
-const handlePersonLeaveAndHideTooltip = () => {
-  // Only clear hover effects if no one is currently clicked/selected
-  if (!clickedPerson.value) {
-    handlePersonLeave()
-  }
-  hideTooltip()
-}
-
-// Enhanced selectPerson that updates highlights with family data
-const selectPersonWithHighlights = (person: Person) => {
-  selectPerson(person)
-  if (familyData.value) {
-    updateHighlights(person, familyData.value, familyGenerations.value, crossFamilyChildren.value)
-  }
-}
-
-// Enhanced loadFamilyData that fits tree to view
-const loadFamilyDataAndFit = async () => {
-  await loadFamilyData()
-  // Fit tree to view after data is loaded
-  await nextTick()
-  setTimeout(() => {
-    fitTreeToView(treeContainer.value, treeContent.value)
-  }, 100) // Small delay to ensure DOM is fully rendered
-}
-
-// Lifecycle
-onMounted(() => {
-  loadFamilyDataAndFit()
-
-  // Add global mouse event listeners for drag
-  window.addEventListener('mousemove', handleDrag)
-  window.addEventListener('mouseup', stopDrag)
-})
-
-onUnmounted(() => {
-  // Clean up event listeners
-  window.removeEventListener('mousemove', handleDrag)
-  window.removeEventListener('mouseup', stopDrag)
-})
-
-// Family ID changes are now handled by the useFamilyTree composable
-</script>
-
-<!-- CSS is now imported from external files -->

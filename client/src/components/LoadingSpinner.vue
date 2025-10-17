@@ -1,10 +1,3 @@
-<template>
-  <div class="loading-spinner" :class="{ fullscreen: fullscreen }">
-    <div class="spinner"></div>
-    <p v-if="message" class="loading-message">{{ message }}</p>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   message?: string
@@ -14,4 +7,9 @@ interface Props {
 defineProps<Props>()
 </script>
 
-<!-- CSS is now imported from external files -->
+<template>
+  <div class="loading-spinner" :class="{ fullscreen: fullscreen }">
+    <div class="spinner"></div>
+    <p v-if="message" class="loading-message">{{ message }}</p>
+  </div>
+</template>

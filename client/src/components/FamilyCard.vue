@@ -1,3 +1,34 @@
+<script setup lang="ts">
+import type { FamilySearchResult } from '../types/family'
+
+interface Props {
+  family: FamilySearchResult
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  viewDetails: [familyId: string]
+}>()
+
+const handleViewDetails = () => {
+  emit('viewDetails', props.family.id)
+}
+
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  } catch (_error) {
+    return dateString
+  }
+}
+</script>
+
 <template>
   <div class="family-card" @click="handleViewDetails">
     <div class="family-header">
@@ -37,36 +68,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import type { FamilySearchResult } from '../types/family'
-
-interface Props {
-  family: FamilySearchResult
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  viewDetails: [familyId: string]
-}>()
-
-const handleViewDetails = () => {
-  emit('viewDetails', props.family.id)
-}
-
-const formatDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  } catch (_error) {
-    return dateString
-  }
-}
-</script>
-
-<!-- CSS is now imported from external files -->

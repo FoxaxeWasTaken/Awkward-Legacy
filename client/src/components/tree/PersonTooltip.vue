@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import type { Person } from '../../types/family'
+import { formatDate } from '../../utils/dateUtils'
+
+interface Props {
+  visible: boolean
+  x: number
+  y: number
+  person: Person | null
+}
+
+defineProps<Props>()
+</script>
+
 <template>
   <div v-if="visible" class="person-tooltip" :style="{ left: x + 'px', top: y + 'px' }">
     <div class="tooltip-content">
@@ -21,19 +35,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import type { Person } from '../../types/family'
-import { formatDate } from '../../utils/dateUtils'
-
-interface Props {
-  visible: boolean
-  x: number
-  y: number
-  person: Person | null
-}
-
-defineProps<Props>()
-</script>
-
-<!-- CSS is now imported from external files -->

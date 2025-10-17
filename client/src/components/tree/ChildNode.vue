@@ -1,23 +1,3 @@
-<template>
-  <div
-    class="child-node person-node child"
-    :class="highlightClass"
-    @click="handleClick"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-  >
-    <div class="child-avatar">
-      <div class="avatar-circle">
-        <span class="gender-icon">{{ genderIcon }}</span>
-      </div>
-    </div>
-    <div class="child-info">
-      <div class="child-name">{{ fullName }}</div>
-      <div class="child-dates" v-if="child.birth_date">{{ dateRange }}</div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Person } from '../../types/family'
@@ -56,4 +36,22 @@ const handleMouseLeave = () => {
 }
 </script>
 
-<!-- CSS is now imported from external files -->
+<template>
+  <div
+    class="child-node person-node child"
+    :class="highlightClass"
+    @click="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
+    <div class="child-avatar">
+      <div class="avatar-circle">
+        <span class="gender-icon">{{ genderIcon }}</span>
+      </div>
+    </div>
+    <div class="child-info">
+      <div class="child-name">{{ fullName }}</div>
+      <div class="child-dates" v-if="child.birth_date">{{ dateRange }}</div>
+    </div>
+  </div>
+</template>

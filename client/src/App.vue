@@ -5,7 +5,6 @@ import { useRouter } from 'vue-router'
 const _router = useRouter()
 
 onMounted(() => {
-  // Initialize the app
   console.log('Geneweb Family Search App initialized')
 })
 </script>

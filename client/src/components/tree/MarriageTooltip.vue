@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import type { Couple } from '../../utils/familyUtils'
+import { formatDate } from '../../utils/dateUtils'
+
+interface Props {
+  visible: boolean
+  x: number
+  y: number
+  couple: Couple | null
+}
+
+defineProps<Props>()
+</script>
+
 <template>
   <div v-if="visible" class="marriage-tooltip" :style="{ left: x + 'px', top: y + 'px' }">
     <div class="tooltip-content">
@@ -47,19 +61,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import type { Couple } from '../../utils/familyUtils'
-import { formatDate } from '../../utils/dateUtils'
-
-interface Props {
-  visible: boolean
-  x: number
-  y: number
-  couple: Couple | null
-}
-
-defineProps<Props>()
-</script>
-
-<!-- CSS is now imported from external files -->

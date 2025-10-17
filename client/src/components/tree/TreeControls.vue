@@ -1,16 +1,3 @@
-<template>
-  <div class="tree-controls">
-    <div class="zoom-info">
-      <span class="zoom-label">{{ Math.round(scale * 100) }}%</span>
-    </div>
-    <button @click="zoomOut" class="control-button control-button-small" title="Zoom Out">−</button>
-    <button @click="zoomIn" class="control-button control-button-small" title="Zoom In">+</button>
-    <button @click="resetZoom" class="control-button control-button-small" title="Reset View">
-      ⟲
-    </button>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   scale: number
@@ -29,4 +16,15 @@ const zoomOut = () => emit('zoomOut')
 const resetZoom = () => emit('resetZoom')
 </script>
 
-<!-- CSS is now imported from external files -->
+<template>
+  <div class="tree-controls">
+    <div class="zoom-info">
+      <span class="zoom-label">{{ Math.round(scale * 100) }}%</span>
+    </div>
+    <button @click="zoomOut" class="control-button control-button-small" title="Zoom Out">−</button>
+    <button @click="zoomIn" class="control-button control-button-small" title="Zoom In">+</button>
+    <button @click="resetZoom" class="control-button control-button-small" title="Reset View">
+      ⟲
+    </button>
+  </div>
+</template>

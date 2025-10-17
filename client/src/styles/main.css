@@ -1,12 +1,6 @@
-/* Main CSS file - imports all styles */
-
-/* Import CSS variables first */
 @import './variables.css';
 
-/* Import base styles */
 @import './base.css';
-
-/* Import component styles */
 @import './components/tree.css';
 @import './components/person-node.css';
 @import './components/child-node.css';
@@ -16,8 +10,6 @@
 @import './components/family-search.css';
 @import './components/family-card.css';
 @import './components/loading-spinner.css';
-
-/* Global styles */
 html,
 body {
   height: 100%;
@@ -30,8 +22,6 @@ body {
   display: flex;
   flex-direction: column;
 }
-
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -50,14 +40,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-dark);
 }
-
-/* Focus styles for accessibility */
 *:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
-
-/* Print styles */
 @media print {
   .tree-controls,
   .back-button {

@@ -1,12 +1,12 @@
+<script setup lang="ts">
+import FamilySearch from '../components/FamilySearch.vue'
+</script>
+
 <template>
   <div class="family-search-view">
     <FamilySearch />
   </div>
 </template>
-
-<script setup lang="ts">
-import FamilySearch from '../components/FamilySearch.vue'
-</script>
 
 <style scoped>
 .family-search-view {

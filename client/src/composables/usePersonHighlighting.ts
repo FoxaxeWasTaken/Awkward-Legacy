@@ -10,20 +10,17 @@ export function usePersonHighlighting() {
   const highlightedSpouse = ref<string | null>(null)
 
   const selectPerson = (person: Person) => {
-    // Toggle off if clicking the same person
     if (clickedPerson.value?.id === person.id) {
       clickedPerson.value = null
       clearHighlights()
     } else {
       clickedPerson.value = person
-      // Note: updateHighlights will be called from the component with proper parameters
     }
   }
 
   const handlePersonHover = (person: Person) => {
     if (!clickedPerson.value) {
       hoveredPerson.value = person
-      // Note: updateHighlights will be called from the component with proper parameters
     }
   }
 
@@ -53,8 +50,6 @@ export function usePersonHighlighting() {
     const parents = new Set<string>()
     const children = new Set<string>()
     let spouse: string | null = null
-
-    // Find parents (check if person is a child in the main family or any sub-family)
     const findParents = (data: FamilyDetailResult) => {
       data.children.forEach((child) => {
         if (child.person?.id === person.id) {
@@ -64,10 +59,7 @@ export function usePersonHighlighting() {
       })
     }
 
-    // Check main family
     findParents(familyData)
-
-    // Check all cross-families
     familyGenerations.forEach((generation) => {
       generation.couples.forEach((couple) => {
         couple.children.forEach((child) => {
@@ -78,8 +70,6 @@ export function usePersonHighlighting() {
         })
       })
     })
-
-    // Find spouse (check if person is part of a couple)
     familyGenerations.forEach((generation) => {
       generation.couples.forEach((couple) => {
         if (couple.husband?.id === person.id && couple.wife?.id) {
@@ -89,8 +79,6 @@ export function usePersonHighlighting() {
         }
       })
     })
-
-    // Recursively find all descendants (children, grandchildren, etc.)
     const findAllDescendants = (personToCheck: Person) => {
       if (personToCheck.has_own_family && personToCheck.own_families) {
         personToCheck.own_families.forEach((ownFamily) => {
@@ -98,7 +86,6 @@ export function usePersonHighlighting() {
           familyChildren.forEach((child) => {
             if (child.id && !children.has(child.id)) {
               children.add(child.id)
-              // Recursively find this child's descendants
               findAllDescendants(child)
             }
           })
@@ -106,7 +93,6 @@ export function usePersonHighlighting() {
       }
     }
 
-    // Start recursive search from the selected person
     findAllDescendants(person)
 
     highlightedParents.value = parents

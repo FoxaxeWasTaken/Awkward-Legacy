@@ -9,7 +9,6 @@ export function useTreeNavigation() {
   const panStart = ref({ x: 0, y: 0 })
 
   const startDrag = (e: MouseEvent) => {
-    // Allow drag from anywhere
     isDragging.value = true
     dragStart.value = { x: e.clientX, y: e.clientY }
     panStart.value = { x: panX.value, y: panY.value }
@@ -21,7 +20,6 @@ export function useTreeNavigation() {
     const dx = e.clientX - dragStart.value.x
     const dy = e.clientY - dragStart.value.y
 
-    // Only start panning if moved more than 3 pixels (to allow clicks)
     const distance = Math.sqrt(dx * dx + dy * dy)
     if (distance > 3) {
       panX.value = panStart.value.x + dx
@@ -39,17 +37,14 @@ export function useTreeNavigation() {
     const delta = e.deltaY > 0 ? 0.9 : 1.1
     const newScale = Math.min(Math.max(0.1, scale.value * delta), 3)
 
-    // Zoom towards mouse position
     if (treeContainer) {
       const rect = treeContainer.getBoundingClientRect()
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
 
-      // Calculate the point in the content that's under the mouse
       const contentX = (mouseX - panX.value) / scale.value
       const contentY = (mouseY - panY.value) / scale.value
 
-      // Update pan to keep that point under the mouse after zoom
       panX.value = mouseX - contentX * newScale
       panY.value = mouseY - contentY * newScale
     }
@@ -60,7 +55,6 @@ export function useTreeNavigation() {
   const zoomIn = (treeContainer: HTMLElement | undefined) => {
     const newScale = Math.min(scale.value * 1.1, 3)
 
-    // Zoom towards center
     if (treeContainer) {
       const rect = treeContainer.getBoundingClientRect()
       const centerX = rect.width / 2
@@ -79,7 +73,6 @@ export function useTreeNavigation() {
   const zoomOut = (treeContainer: HTMLElement | undefined) => {
     const newScale = Math.max(scale.value / 1.1, 0.1)
 
-    // Zoom towards center
     if (treeContainer) {
       const rect = treeContainer.getBoundingClientRect()
       const centerX = rect.width / 2
@@ -105,7 +98,6 @@ export function useTreeNavigation() {
     treeContainer: HTMLElement | undefined,
     treeContent: HTMLElement | undefined,
   ) => {
-    // Wait for next tick to ensure DOM is updated
     await nextTick()
 
     if (!treeContainer || !treeContent) return
@@ -113,17 +105,15 @@ export function useTreeNavigation() {
     const containerRect = treeContainer.getBoundingClientRect()
     const contentRect = treeContent.getBoundingClientRect()
 
-    // Calculate scale to fit content with some padding (90% of container)
     const scaleX = (containerRect.width * 0.9) / contentRect.width
     const scaleY = (containerRect.height * 0.9) / contentRect.height
-    const newScale = Math.min(scaleX, scaleY, 1) // Don't zoom in beyond 100%
+    const newScale = Math.min(scaleX, scaleY, 1)
 
-    // Calculate pan to center the content
     const scaledWidth = contentRect.width * newScale
     const scaledHeight = contentRect.height * newScale
 
     panX.value = (containerRect.width - scaledWidth) / 2
-    panY.value = (containerRect.height - scaledHeight) / 2 + 50 // Add offset for header
+    panY.value = (containerRect.height - scaledHeight) / 2 + 50
     scale.value = newScale
   }
 

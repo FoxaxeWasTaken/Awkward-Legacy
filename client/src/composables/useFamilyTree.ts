@@ -23,7 +23,6 @@ export function useFamilyTree(familyId: Ref<string> | string) {
 
       familyData.value = data
 
-      // Create family title
       const parts = []
       if (data.husband) {
         parts.push(`${data.husband.first_name} ${data.husband.last_name}`)
@@ -32,8 +31,6 @@ export function useFamilyTree(familyId: Ref<string> | string) {
         parts.push(`${data.wife.first_name} ${data.wife.last_name}`)
       }
       familyTitle.value = parts.length > 0 ? parts.join(' & ') : 'Family Tree'
-
-      // Fetch children data for cross-family relationships
       await loadCrossFamilyChildren(data)
     } catch (err: unknown) {
       console.error('Error loading family data:', err)
@@ -49,14 +46,11 @@ export function useFamilyTree(familyId: Ref<string> | string) {
 
   const loadCrossFamilyChildren = async (data: FamilyDetailResult) => {
     const childrenMap = new Map<string, Person[]>()
-    const processedFamilies = new Set<string>([data.id]) // Track processed families to avoid infinite loops
-
-    // Recursive function to load all descendant families
+    const processedFamilies = new Set<string>([data.id])
     const loadDescendantFamilies = async (children: Person[]) => {
       for (const child of children) {
         if (child.has_own_family && child.own_families) {
           for (const ownFamily of child.own_families) {
-            // Skip if already processed
             if (processedFamilies.has(ownFamily.id)) continue
             processedFamilies.add(ownFamily.id)
 
@@ -67,7 +61,6 @@ export function useFamilyTree(familyId: Ref<string> | string) {
                 .filter(Boolean) as Person[]
               childrenMap.set(ownFamily.id, familyChildren)
 
-              // Recursively load grandchildren families
               if (familyChildren.length > 0) {
                 await loadDescendantFamilies(familyChildren)
               }
@@ -78,15 +71,12 @@ export function useFamilyTree(familyId: Ref<string> | string) {
         }
       }
     }
-
-    // Start loading from the root family's children
     const rootChildren = data.children.map((c) => c.person).filter(Boolean) as Person[]
     await loadDescendantFamilies(rootChildren)
 
     crossFamilyChildren.value = childrenMap
   }
 
-  // Watch for familyId changes if it's a ref
   if (typeof familyId !== 'string') {
     watch(familyId, () => {
       loadFamilyData()
