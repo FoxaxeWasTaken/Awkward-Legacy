@@ -43,9 +43,10 @@ body {
 }
 
 #app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .app-header {
@@ -78,6 +79,7 @@ body {
 .app-main {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .app-footer {
