@@ -3,6 +3,10 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile.prod
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - VITE_API_URL=${VITE_API_URL:-http://server-prod:8000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://client-prod:5173}
     restart: unless-stopped
     ports:
       - "80:80"
@@ -16,6 +20,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=${DATABASE_PROD_URL:-postgresql://genealogy_user:genealogy_password@postgres-prod:5432/genealogy_db}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000,http://client-prod:5173,http://localhost:80,http://localhost}
     depends_on:
       postgres-prod:
         condition: service_healthy

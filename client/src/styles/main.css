@@ -1,0 +1,63 @@
+@import './variables.css';
+
+@import './base.css';
+@import './components/tree.css';
+@import './components/person-node.css';
+@import './components/child-node.css';
+@import './components/marriage-line.css';
+@import './components/tooltips.css';
+@import './components/tree-controls.css';
+@import './components/family-search.css';
+@import './components/family-card.css';
+@import './components/loading-spinner.css';
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-dark);
+}
+*:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+@media print {
+  .tree-controls,
+  .back-button {
+    display: none !important;
+  }
+
+  .family-tree {
+    background: white !important;
+  }
+
+  .person-node,
+  .child-node {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}

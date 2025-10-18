@@ -1,5 +1,5 @@
 describe('Server Connection & CORS', () => {
-    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000';
+    const apiUrl = 'http://server-dev:8000';
 
     it('should test API connectivity', () => {
       cy.request('GET', `${apiUrl}/health`).then((response) => {

@@ -31,8 +31,8 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
-    title="Genealogy API",
-    description="A modern genealogy application API with PostgreSQL",
+    title="Geneweb API",
+    description="A modern Geneweb application API with PostgreSQL",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -57,7 +57,7 @@ def read_root():
     """Return a simple greeting message."""
     return {
         "Hello": "World",
-        "message": "Genealogy API is running!",
+        "message": "Geneweb API is running!",
         "docs": "/docs",
         "redoc": "/redoc",
         "health": "/health",

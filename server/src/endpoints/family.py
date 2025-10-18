@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -7,7 +7,14 @@ from sqlmodel import Session
 from ..constants import FAMILY_NOT_FOUND
 from ..crud.family import family_crud
 from ..db import get_session
-from ..models.family import Family, FamilyCreate, FamilyRead, FamilyUpdate
+from ..models.family import (
+    Family,
+    FamilyCreate,
+    FamilyRead,
+    FamilyUpdate,
+    FamilySearchResult,
+    FamilyDetailResult,
+)
 
 router = APIRouter(prefix="/api/v1/families", tags=["families"])
 
@@ -132,6 +139,42 @@ def create_family(
     return family_crud.create(session, family)
 
 
+@router.get("/search", response_model=List[FamilySearchResult])
+def search_families(
+    q: Optional[str] = Query(None, description="Search query for family names"),
+    family_id: Optional[UUID] = Query(
+        None, description="Specific family ID to retrieve"
+    ),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of results"),
+    session: Session = Depends(get_session),
+):
+    """
+    Search families by name or get a specific family by ID.
+
+    - **q**: Search query to find families by spouse names (fuzzy search)
+    - **family_id**: Get a specific family by its ID
+    - **limit**: Maximum number of results to return (1-100)
+
+    Returns a list of family summaries with basic information.
+    """
+    if (not q or not q.strip()) and not family_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Either 'q' (search query) or 'family_id' parameter is required",
+        )
+
+    results = family_crud.search_families(
+        session, query=q, family_id=family_id, limit=limit
+    )
+
+    if not results:
+        raise HTTPException(
+            status_code=404, detail="No families found matching the search criteria"
+        )
+
+    return results
+
+
 @router.get("/", response_model=List[FamilyRead])
 def get_all_families(
     skip: int = Query(0, ge=0),
@@ -224,3 +267,20 @@ def delete_family(
     success = family_crud.delete(session, family_id)
     if not success:
         raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
+
+
+@router.get("/{family_id}/detail", response_model=FamilyDetailResult)
+def get_family_detail(
+    family_id: UUID,
+    session: Session = Depends(get_session),
+):
+    """
+    Get detailed information about a family including spouses, children, and events.
+
+    Returns complete family data with all related information.
+    """
+    family_detail = family_crud.get_family_detail(session, family_id)
+    if not family_detail:
+        raise HTTPException(status_code=404, detail=FAMILY_NOT_FOUND)
+
+    return family_detail

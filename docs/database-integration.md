@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the PostgreSQL database integration for the Genealogy API, which modernizes the legacy GeneWeb file-based system with a proper relational database using SQLModel (SQLAlchemy + Pydantic).
+This document describes the PostgreSQL database integration for the Geneweb API, which modernizes the legacy GeneWeb file-based system with a proper relational database using SQLModel (SQLAlchemy + Pydantic).
 
 ## Quick Start
 

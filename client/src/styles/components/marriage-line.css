@@ -1,0 +1,46 @@
+/* Marriage Line Component Styles */
+
+.marriage-line {
+  width: 60px;
+  height: 3px;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.marriage-line-married {
+  background: linear-gradient(90deg, #27ae60, #2ecc71) !important;
+  border: 2px solid #27ae60;
+}
+
+.marriage-line-divorced {
+  background: repeating-linear-gradient(
+    90deg,
+    #e74c3c 0px,
+    #e74c3c 8px,
+    transparent 8px,
+    transparent 16px
+  ) !important;
+  border: 2px solid #e74c3c;
+}
+
+.marriage-line-unknown {
+  background: linear-gradient(90deg, #95a5a6, #bdc3c7) !important;
+  border: 2px solid #95a5a6;
+}
+
+.marriage-line:hover {
+  transform: scaleY(1.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .marriage-line {
+    width: 3px;
+    height: 30px;
+    background: linear-gradient(180deg, #e74c3c, #f39c12);
+  }
+}

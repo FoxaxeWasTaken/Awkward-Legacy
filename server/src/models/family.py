@@ -67,3 +67,24 @@ class FamilyUpdate(SQLModel):
     marriage_date: Optional[date_type] = Field(default=None)
     marriage_place: Optional[str] = Field(default=None, max_length=200)
     notes: Optional[str] = Field(default=None)
+
+
+class FamilySearchResult(SQLModel):
+    """Family model for search results."""
+
+    id: UUID
+    husband_name: Optional[str] = None
+    wife_name: Optional[str] = None
+    marriage_date: Optional[date_type] = None
+    marriage_place: Optional[str] = None
+    children_count: int = 0
+    summary: str  # Human-readable summary like "John Doe & Jane Smith (1920)"
+
+
+class FamilyDetailResult(FamilyRead):
+    """Family model for detailed responses with related data."""
+
+    husband: Optional[dict] = None
+    wife: Optional[dict] = None
+    children: List[dict] = []
+    events: List[dict] = []

@@ -1,0 +1,95 @@
+/* Tooltip Component Styles */
+
+.person-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 350px;
+  line-height: 1.4;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tooltip-name {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.tooltip-details {
+  font-size: 0.9rem;
+}
+
+.tooltip-details div {
+  margin-bottom: 0.25rem;
+}
+
+.marriage-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 350px;
+  line-height: 1.4;
+}
+
+.relationship-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.relationship-status.married {
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.relationship-status.divorced {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.relationship-status.unknown {
+  background: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
+  border: 1px solid #95a5a6;
+}
+
+.events-list {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.events-list li {
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  color: #ecf0f1;
+}

@@ -1,0 +1,59 @@
+/* Tree Controls Component Styles */
+
+.tree-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.zoom-info {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  min-width: 60px;
+  text-align: center;
+}
+
+.zoom-label {
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.control-button {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.control-button-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 1.1rem;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tree-controls {
+    justify-content: center;
+  }
+}

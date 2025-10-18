@@ -11,8 +11,8 @@ from src.models.child import ChildCreate
 from src.models.event import EventCreate
 
 
-class TestGenealogyIntegration:
-    """Integration tests for genealogy workflows."""
+class TestGenewebIntegration:
+    """Integration tests for Geneweb workflows."""
 
     def test_complete_family_tree_workflow(self, test_db):
         """Test creating a complete family tree with multiple generations."""
