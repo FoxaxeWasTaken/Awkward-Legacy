@@ -10,8 +10,8 @@ import FamilySearch from '../components/FamilySearch.vue'
 
 <style scoped>
 .family-search-view {
-  height: 100%;
+  flex: 1;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  overflow: auto;
+  overflow: visible;
 }
 </style>

@@ -14,9 +14,9 @@ const familyId = route.params.id as string
 
 <style scoped>
 .family-tree-view {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 </style>
