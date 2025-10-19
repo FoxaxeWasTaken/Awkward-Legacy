@@ -25,7 +25,6 @@ const marriageDateError = ref('')
 
 // Modales
 const showCreatePersonModal = ref(false)
-const showLinkPersonModal = ref(false)
 const currentParentType = ref<'husband' | 'wife'>('husband')
 
 // Autocomplétion simple (texte libre)
@@ -47,13 +46,19 @@ async function searchPersons(target: 'husband' | 'wife') {
     else wifeOptions.value = []
     return
   }
-  const res = await personService.searchPersonsByName(q)
-  const list = (res.data || []).map((p: any) => ({
-    id: p.id,
-    label: `${p.first_name} ${p.last_name} (${p.sex})${p.birth_date ? ' • n. ' + p.birth_date : ''}${p.birth_place ? ' • ' + p.birth_place : ''}`,
-  }))
-  if (target === 'husband') husbandOptions.value = list
-  else wifeOptions.value = list
+  try {
+    const res = await personService.searchPersonsByName(q)
+    const list = (res.data || []).map((p: any) => ({
+      id: p.id,
+      label: `${p.first_name} ${p.last_name} (${p.sex})${p.birth_date ? ' • n. ' + p.birth_date : ''}${p.birth_place ? ' • ' + p.birth_place : ''}`,
+    }))
+    if (target === 'husband') husbandOptions.value = list
+    else wifeOptions.value = list
+  } catch (_e) {
+    // En cas d'erreur réseau / serveur, ne pas faire échouer l'app
+    if (target === 'husband') husbandOptions.value = []
+    else wifeOptions.value = []
+  }
 }
 
 function onInputSearch(target: 'husband' | 'wife') {
@@ -112,6 +117,19 @@ function validateMarriageDate() {
 // Charger les données complètes d'une personne sélectionnée
 async function loadPersonDetails(personId: string, type: 'husband' | 'wife') {
   try {
+    // Si aucun sélectionné, réinitialiser l'aperçu
+    if (!personId) {
+      if (type === 'husband') {
+        selectedHusband.value = null
+      } else {
+        selectedWife.value = null
+      }
+      // Revalider la date si besoin (pour nettoyer un éventuel message)
+      if (marriage_date.value) {
+        validateMarriageDate()
+      }
+      return
+    }
     const response = await personService.getPersonById(personId)
     const person = response.data
     
@@ -136,11 +154,7 @@ function openCreatePersonModal(type: 'husband' | 'wife') {
   showCreatePersonModal.value = true
 }
 
-// Ouvrir modale de liaison de personne
-function openLinkPersonModal(type: 'husband' | 'wife') {
-  currentParentType.value = type
-  showLinkPersonModal.value = true
-}
+// (Pas de modale de liaison: la liaison se fait via l'auto-complétion)
 
 const payload = computed<CreateFamily>(() => {
   const data: CreateFamily = {}
@@ -153,6 +167,7 @@ const payload = computed<CreateFamily>(() => {
 })
 
 async function submit() {
+  console.log('Submit function called')
   error.value = ''
   success.value = ''
   marriageDateError.value = ''
@@ -166,11 +181,12 @@ async function submit() {
   
   submitting.value = true
   try {
-    // Validation minimale: au moins un parent
-    if (!husbandId.value && !wifeId.value) {
-      error.value = 'Au moins un parent est requis.'
-      return
-    }
+  // Validation minimale: au moins un parent
+  if (!husbandId.value && !wifeId.value) {
+    error.value = 'Au moins un parent est requis.'
+    submitting.value = false
+    return
+  }
     const res = await familyService.createFamily(payload.value)
     success.value = 'Famille créée.'
     // Reset simple
@@ -211,14 +227,23 @@ async function submit() {
             <button type="button" @click="openCreatePersonModal('husband')" class="btn-secondary">
               Créer
             </button>
-            <button type="button" @click="openLinkPersonModal('husband')" class="btn-secondary">
-              Lier
-            </button>
+            
           </div>
           <select v-model="husbandId" @change="loadPersonDetails(husbandId, 'husband')" data-cy="select-husband">
             <option value="">— Aucun —</option>
             <option v-for="opt in husbandOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
           </select>
+          <div v-if="selectedHusband" class="person-preview" data-cy="preview-husband">
+            <strong>{{ selectedHusband.first_name }} {{ selectedHusband.last_name }}</strong>
+            <div class="meta">
+              <span>Sexe: {{ selectedHusband.sex }}</span>
+              <span v-if="selectedHusband.birth_date">Naissance: {{ selectedHusband.birth_date }}</span>
+              <span v-if="selectedHusband.birth_place">({{ selectedHusband.birth_place }})</span>
+              <span v-if="selectedHusband.death_date"> • Décès: {{ selectedHusband.death_date }}</span>
+              <span v-if="selectedHusband.death_place">({{ selectedHusband.death_place }})</span>
+            </div>
+            <div v-if="selectedHusband.notes" class="notes">{{ selectedHusband.notes }}</div>
+          </div>
         </div>
         <div class="parent-field">
           <label>Parent 2 (Wife)</label>
@@ -232,14 +257,23 @@ async function submit() {
             <button type="button" @click="openCreatePersonModal('wife')" class="btn-secondary">
               Créer
             </button>
-            <button type="button" @click="openLinkPersonModal('wife')" class="btn-secondary">
-              Lier
-            </button>
+            
           </div>
           <select v-model="wifeId" @change="loadPersonDetails(wifeId, 'wife')" data-cy="select-wife">
             <option value="">— Aucun —</option>
             <option v-for="opt in wifeOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
           </select>
+          <div v-if="selectedWife" class="person-preview" data-cy="preview-wife">
+            <strong>{{ selectedWife.first_name }} {{ selectedWife.last_name }}</strong>
+            <div class="meta">
+              <span>Sexe: {{ selectedWife.sex }}</span>
+              <span v-if="selectedWife.birth_date">Naissance: {{ selectedWife.birth_date }}</span>
+              <span v-if="selectedWife.birth_place">({{ selectedWife.birth_place }})</span>
+              <span v-if="selectedWife.death_date"> • Décès: {{ selectedWife.death_date }}</span>
+              <span v-if="selectedWife.death_place">({{ selectedWife.death_place }})</span>
+            </div>
+            <div v-if="selectedWife.notes" class="notes">{{ selectedWife.notes }}</div>
+          </div>
         </div>
       </fieldset>
 
@@ -310,6 +344,26 @@ input, select, textarea { width: 100%; padding: 0.5em; box-sizing: border-box; }
 .error { color: #b00020; margin-top: 1em; }
 .success { color: #0a7a2f; margin-top: 1em; }
 .field-error { color: #b00020; font-size: 0.9em; margin-top: 0.3em; }
+ 
+.person-preview {
+  margin-top: 0.5em;
+  padding: 0.75em;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+.person-preview .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 1em;
+  color: #555;
+  margin-top: 0.25em;
+}
+.person-preview .notes {
+  margin-top: 0.5em;
+  font-style: italic;
+  color: #666;
+}
 </style>
 
 
