@@ -338,5 +338,207 @@ describe('Create Family', () => {
     cy.get('.close-btn').click()
     cy.get('.modal').should('not.exist')
   })
+
+  it('should add existing children to the family', () => {
+    // Créer une personne qui sera un enfant
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+    
+    cy.request('POST', `${apiUrl}/api/v1/persons`, {
+      first_name: 'Charlie',
+      last_name: 'TestChild',
+      sex: 'U',
+      birth_date: '2010-01-01'
+    }).as('createChild').then((response) => {
+      const childId = response.body.id
+
+      // Sélectionner les parents
+      cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
+      cy.get('[data-cy="search-husband"]').type('John')
+      cy.wait('@searchPersons')
+      cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
+        cy.get('[data-cy="select-husband"]').select($opt.val())
+      })
+
+      // Rechercher et ajouter l'enfant
+      cy.get('[data-cy="search-child"]').type('Charlie')
+      cy.wait('@searchPersons')
+      cy.get('[data-cy="select-child"]').find('option').eq(1).then(($opt) => {
+        cy.get('[data-cy="select-child"]').select($opt.val())
+      })
+
+      // Vérifier que l'enfant est ajouté à la liste
+      cy.get('[data-cy="children-list"]').should('be.visible')
+      cy.get('[data-cy="children-list"]').should('contain', 'Charlie TestChild')
+
+      // Vérifier que le compteur d'enfants est mis à jour
+      cy.contains('Enfants (1)').should('be.visible')
+
+      // Créer la famille
+      cy.intercept('POST', '**/api/v1/families').as('createFamily')
+      cy.intercept('POST', '**/api/v1/children').as('createChildRelation')
+      cy.get('[data-cy="submit-family"]').click()
+      cy.wait('@createFamily')
+      cy.wait('@createChildRelation', { timeout: 10000 })
+
+      // Vérifier le message de succès
+      cy.get('.success').should('be.visible')
+      cy.get('.success').should('contain.text', 'Famille créée avec 1 enfant')
+
+      // Nettoyer l'enfant créé
+      cy.request('DELETE', `${apiUrl}/api/v1/persons/${childId}`, { failOnStatusCode: false })
+    })
+  })
+
+  it('should add multiple children to the family', () => {
+    // Créer deux enfants
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+    const childIds = []
+    
+    cy.request('POST', `${apiUrl}/api/v1/persons`, {
+      first_name: 'Alice',
+      last_name: 'Child',
+      sex: 'F',
+      birth_date: '2008-05-15'
+    }).then((response) => {
+      childIds.push(response.body.id)
+    })
+
+    cy.request('POST', `${apiUrl}/api/v1/persons`, {
+      first_name: 'Bob',
+      last_name: 'Child',
+      sex: 'M',
+      birth_date: '2012-08-20'
+    }).then((response) => {
+      childIds.push(response.body.id)
+    })
+
+    // Sélectionner les parents
+    cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
+    cy.get('[data-cy="search-husband"]').type('John')
+    cy.wait('@searchPersons')
+    cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
+      cy.get('[data-cy="select-husband"]').select($opt.val())
+    })
+
+    cy.get('[data-cy="search-wife"]').type('Jane')
+    cy.wait('@searchPersons')
+    cy.get('[data-cy="select-wife"]').find('option').eq(1).then(($opt) => {
+      cy.get('[data-cy="select-wife"]').select($opt.val())
+    })
+
+    // Ajouter le premier enfant
+    cy.get('[data-cy="search-child"]').type('Alice')
+    cy.wait('@searchPersons')
+    cy.get('[data-cy="select-child"]').find('option').eq(1).then(($opt) => {
+      cy.get('[data-cy="select-child"]').select($opt.val())
+    })
+
+    // Ajouter le deuxième enfant
+    cy.get('[data-cy="search-child"]').clear().type('Bob')
+    cy.wait('@searchPersons')
+    cy.get('[data-cy="select-child"]').find('option').eq(1).then(($opt) => {
+      cy.get('[data-cy="select-child"]').select($opt.val())
+    })
+
+    // Vérifier que les deux enfants sont dans la liste
+    cy.get('[data-cy="children-list"]').should('contain', 'Alice Child')
+    cy.get('[data-cy="children-list"]').should('contain', 'Bob Child')
+    cy.contains('Enfants (2)').should('be.visible')
+
+    // Créer la famille
+    cy.intercept('POST', '**/api/v1/families').as('createFamily')
+    cy.get('[data-cy="submit-family"]').click()
+    cy.wait('@createFamily')
+
+    // Vérifier le message de succès
+    cy.get('.success').should('contain.text', 'Famille créée avec 2 enfants')
+
+    // Nettoyer les enfants créés
+    cy.then(() => {
+      childIds.forEach(id => {
+        cy.request('DELETE', `${apiUrl}/api/v1/persons/${id}`, { failOnStatusCode: false })
+      })
+    })
+  })
+
+  it('should remove a child from the list before submission', () => {
+    // Créer un enfant
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+    
+    cy.request('POST', `${apiUrl}/api/v1/persons`, {
+      first_name: 'ToRemove',
+      last_name: 'Child',
+      sex: 'U',
+      birth_date: '2010-01-01'
+    }).then((response) => {
+      const childId = response.body.id
+
+      // Sélectionner un parent
+      cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
+      cy.get('[data-cy="search-husband"]').type('John')
+      cy.wait('@searchPersons')
+      cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
+        cy.get('[data-cy="select-husband"]').select($opt.val())
+      })
+
+      // Ajouter l'enfant
+      cy.get('[data-cy="search-child"]').type('ToRemove')
+      cy.wait('@searchPersons')
+      cy.get('[data-cy="select-child"]').find('option').eq(1).then(($opt) => {
+        cy.get('[data-cy="select-child"]').select($opt.val())
+      })
+
+      // Vérifier que l'enfant est ajouté
+      cy.get('[data-cy="children-list"]').should('contain', 'ToRemove Child')
+      cy.contains('Enfants (1)').should('be.visible')
+
+      // Supprimer l'enfant
+      cy.get(`[data-cy="remove-child-${childId}"]`).click()
+
+      // Vérifier que l'enfant est supprimé
+      cy.get('[data-cy="children-list"]').should('not.exist')
+      cy.contains('Enfants (0)').should('be.visible')
+
+      // Nettoyer l'enfant créé
+      cy.request('DELETE', `${apiUrl}/api/v1/persons/${childId}`, { failOnStatusCode: false })
+    })
+  })
+
+  it('should create a new child via modal and add to family', () => {
+    // Sélectionner un parent
+    cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
+    cy.get('[data-cy="search-husband"]').type('John')
+    cy.wait('@searchPersons')
+    cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
+      cy.get('[data-cy="select-husband"]').select($opt.val())
+    })
+
+    // Ouvrir la modale pour créer un enfant
+    cy.get('[data-cy="create-child-button"]').click()
+    cy.get('.modal').should('be.visible')
+
+    // Remplir le formulaire
+    cy.get('[data-cy="new-person-first-name"]').type('NewChild')
+    cy.get('[data-cy="new-person-last-name"]').type('Created')
+    cy.get('[data-cy="new-person-birth-date"]').type('2015-03-10')
+
+    // Soumettre
+    cy.intercept('POST', '**/api/v1/persons').as('createPerson')
+    cy.get('[data-cy="create-person-submit"]').click()
+    cy.wait('@createPerson')
+
+    // Vérifier que la modale se ferme et que l'enfant est ajouté
+    cy.get('.modal').should('not.exist')
+    cy.get('[data-cy="children-list"]').should('contain', 'NewChild Created')
+    cy.contains('Enfants (1)').should('be.visible')
+
+    // Créer la famille
+    cy.intercept('POST', '**/api/v1/families').as('createFamily')
+    cy.get('[data-cy="submit-family"]').click()
+    cy.wait('@createFamily')
+
+    // Vérifier le message de succès
+    cy.get('.success').should('contain.text', 'Famille créée avec 1 enfant')
+  })
 })
 
