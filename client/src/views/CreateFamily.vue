@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { familyService, type CreateFamily } from '@/services/familyService'
 import { personService } from '@/services/personService'
+import CreatePersonModal from '@/components/CreatePersonModal.vue'
 
 type PersonOption = {
   id: string
@@ -154,6 +155,37 @@ function openCreatePersonModal(type: 'husband' | 'wife') {
   showCreatePersonModal.value = true
 }
 
+// Fermer la modale
+function closeCreatePersonModal() {
+  showCreatePersonModal.value = false
+}
+
+// Gérer la création de personne depuis la modale
+function handlePersonCreated(createdPerson: any) {
+  // Ajouter la personne créée aux options et la sélectionner
+  const newOption = {
+    id: createdPerson.id,
+    label: `${createdPerson.first_name} ${createdPerson.last_name}`
+  }
+
+  if (currentParentType.value === 'husband') {
+    husbandOptions.value = [newOption, ...husbandOptions.value]
+    husbandId.value = createdPerson.id
+    selectedHusband.value = createdPerson
+  } else {
+    wifeOptions.value = [newOption, ...wifeOptions.value]
+    wifeId.value = createdPerson.id
+    selectedWife.value = createdPerson
+  }
+
+  // Fermer la modale
+  closeCreatePersonModal()
+  
+  // Afficher un message de succès
+  success.value = `Personne "${createdPerson.first_name} ${createdPerson.last_name}" créée avec succès`
+  setTimeout(() => { success.value = '' }, 3000)
+}
+
 // (Pas de modale de liaison: la liaison se fait via l'auto-complétion)
 
 const payload = computed<CreateFamily>(() => {
@@ -207,6 +239,7 @@ async function submit() {
     submitting.value = false
   }
 }
+
 </script>
 
 <template>
@@ -305,6 +338,14 @@ async function submit() {
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="success" class="success">{{ success }}</div>
   </div>
+
+  <!-- Modale de création de personne -->
+  <CreatePersonModal
+    :show="showCreatePersonModal"
+    :parent-type="currentParentType"
+    @close="closeCreatePersonModal"
+    @person-created="handlePersonCreated"
+  />
   
 </template>
 

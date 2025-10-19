@@ -261,5 +261,63 @@ describe('Create Family', () => {
     cy.get('[data-cy="search-wife"]').parent().contains('Créer').should('be.visible')
     cy.contains('Lier').should('not.exist')
   })
+
+  it('should open create person modal and create a new person', () => {
+    // Ouvrir la modale de création de personne pour le husband
+    cy.get('[data-cy="search-husband"]').parent().find('button').click()
+    
+    // Vérifier que la modale s'ouvre
+    cy.get('.modal').should('be.visible')
+    cy.get('.modal-header h3').should('contain.text', 'Créer une nouvelle personne')
+    
+    // Remplir le formulaire
+    cy.get('[data-cy="new-person-first-name"]').type('Jean')
+    cy.get('[data-cy="new-person-last-name"]').type('Dupont')
+    cy.get('[data-cy="new-person-sex"]').select('M')
+    cy.get('[data-cy="new-person-birth-date"]').type('1975-03-15')
+    cy.get('[data-cy="new-person-birth-place"]').type('Paris')
+    cy.get('[data-cy="new-person-notes"]').type('Personne créée via modale')
+    
+    // Intercepter la création de personne
+    cy.intercept('POST', '**/api/v1/persons').as('createPerson')
+    
+    // Soumettre le formulaire
+    cy.get('[data-cy="create-person-submit"]').click()
+    cy.wait('@createPerson')
+    
+    // Vérifier que la modale se ferme
+    cy.get('.modal').should('not.exist')
+    
+    // Vérifier que la personne a été sélectionnée automatiquement
+    cy.get('[data-cy="select-husband"]').should('contain.text', 'Jean Dupont')
+    cy.get('[data-cy="preview-husband"]').should('be.visible')
+    cy.get('[data-cy="preview-husband"]').should('contain.text', 'Jean Dupont')
+    cy.get('[data-cy="preview-husband"]').should('contain.text', 'Sexe: M')
+    
+    // Vérifier le message de succès
+    cy.get('.success').should('be.visible')
+    cy.get('.success').should('contain.text', 'Personne "Jean Dupont" créée avec succès')
+  })
+
+  it('should validate required fields in create person modal', () => {
+    // Ouvrir la modale de création de personne
+    cy.get('[data-cy="search-husband"]').parent().find('button').click()
+    
+    // Vérifier que les champs ont l'attribut 'required'
+    cy.get('[data-cy="new-person-first-name"]').should('have.attr', 'required')
+    cy.get('[data-cy="new-person-last-name"]').should('have.attr', 'required')
+    
+    // Essayer de remplir seulement le prénom (pas le nom)
+    cy.get('[data-cy="new-person-first-name"]').type('Test')
+    cy.get('[data-cy="create-person-submit"]').click()
+    
+    // Le navigateur devrait empêcher la soumission avec la validation HTML5
+    // La modale devrait rester ouverte
+    cy.get('.modal').should('be.visible')
+    
+    // Fermer la modale
+    cy.get('.close-btn').click()
+    cy.get('.modal').should('not.exist')
+  })
 })
 
