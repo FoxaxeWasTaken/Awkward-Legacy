@@ -1,9 +1,17 @@
 describe('Create Person Modal', () => {
-  const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+  before(() => {
+    // Nettoyer complètement la base de données avant la suite de tests
+    cy.cleanDatabase()
+  })
 
   beforeEach(() => {
     // Visiter la page de création de famille pour accéder à la modale
     cy.visit('/families/create')
+  })
+
+  after(() => {
+    // Nettoyer complètement la base de données à la fin de la suite de tests
+    cy.cleanDatabase()
   })
 
   describe('Modal Opening and Closing', () => {

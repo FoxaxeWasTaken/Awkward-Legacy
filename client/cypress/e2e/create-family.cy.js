@@ -1,35 +1,53 @@
 describe('Create Family', () => {
-  const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
-
   let johnId, janeId
 
   before(() => {
-    // Créer les personnes nécessaires une seule fois
-    cy.request('POST', `${apiUrl}/api/v1/persons`, {
-      first_name: 'John', last_name: 'Doe', sex: 'M', birth_date: '1980-01-01'
-    }).then((response) => {
-      johnId = response.body.id
-    })
-    cy.request('POST', `${apiUrl}/api/v1/persons`, {
-      first_name: 'Jane', last_name: 'Smith', sex: 'F', birth_date: '1982-05-15'
-    }).then((response) => {
-      janeId = response.body.id
-    })
-  })
+    // Nettoyer complètement la base de données avant la suite de tests
+    cy.cleanDatabase()
 
-  after(() => {
-    // Supprimer les personnes créées à la fin de la suite de tests
-    if (johnId) {
-      cy.request('DELETE', `${apiUrl}/api/v1/persons/${johnId}`, { failOnStatusCode: false })
-    }
-    if (janeId) {
-      cy.request('DELETE', `${apiUrl}/api/v1/persons/${janeId}`, { failOnStatusCode: false })
-    }
+    // Créer les personnes nécessaires une seule fois
+    cy.createTestPerson({
+      first_name: 'John',
+      last_name: 'Doe',
+      sex: 'M',
+      birth_date: '1980-01-01'
+    }).then((id) => {
+      johnId = id
+    })
+
+    cy.createTestPerson({
+      first_name: 'Jane',
+      last_name: 'Smith',
+      sex: 'F',
+      birth_date: '1982-05-15'
+    }).then((id) => {
+      janeId = id
+    })
   })
 
   beforeEach(() => {
     // Ouvrir la page
     cy.visit('/families/create')
+  })
+
+  afterEach(() => {
+    // Nettoyer les familles après chaque test
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+    cy.request('GET', `${apiUrl}/api/v1/families?limit=1000`).then((response) => {
+      const families = response.body
+      families.forEach((family) => {
+        cy.request({
+          method: 'DELETE',
+          url: `${apiUrl}/api/v1/families/${family.id}`,
+          failOnStatusCode: false
+        })
+      })
+    })
+  })
+
+  after(() => {
+    // Nettoyer complètement la base de données à la fin de la suite de tests
+    cy.cleanDatabase()
   })
 
   it('should create a family with one parent', () => {
@@ -157,6 +175,7 @@ describe('Create Family', () => {
 
   it('should handle duplicate family creation error', () => {
     // Créer des personnes uniques pour ce test
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
     const timestamp = Date.now()
     let husbandId, wifeId
     
