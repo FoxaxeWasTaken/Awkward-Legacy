@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { familyService, type CreateFamily } from '@/services/familyService'
 import { personService } from '@/services/personService'
+import { childService } from '@/services/childService'
 import CreatePersonModal from '@/components/CreatePersonModal.vue'
 
 type PersonOption = {
@@ -15,6 +16,11 @@ const marriage_date = ref<string>('')
 const marriage_place = ref<string>('')
 const notes = ref<string>('')
 
+// Enfants
+const children = ref<Array<{ id: string; label: string }>>([])
+const queryChild = ref('')
+const childOptions = ref<PersonOption[]>([])
+
 const submitting = ref(false)
 const error = ref('')
 const success = ref('')
@@ -26,7 +32,7 @@ const marriageDateError = ref('')
 
 // Modales
 const showCreatePersonModal = ref(false)
-const currentParentType = ref<'husband' | 'wife'>('husband')
+const currentParentType = ref<'husband' | 'wife' | 'child'>('husband')
 
 // Autocomplétion simple (texte libre)
 const queryHusband = ref('')
@@ -64,6 +70,55 @@ async function searchPersons(target: 'husband' | 'wife') {
 
 function onInputSearch(target: 'husband' | 'wife') {
   debounce(() => searchPersons(target))
+}
+
+// Recherche d'enfants
+async function searchChildren() {
+  if (!queryChild.value) {
+    childOptions.value = []
+    return
+  }
+  try {
+    const res = await personService.searchPersonsByName(queryChild.value)
+    const list = (res.data || []).map((p: any) => ({
+      id: p.id,
+      label: `${p.first_name} ${p.last_name} (${p.sex})${p.birth_date ? ' • n. ' + p.birth_date : ''}${p.birth_place ? ' • ' + p.birth_place : ''}`,
+    }))
+    // Filtrer les personnes déjà ajoutées comme enfants, mari ou femme
+    childOptions.value = list.filter((opt: PersonOption) => 
+      !children.value.some(c => c.id === opt.id) && 
+      opt.id !== husbandId.value && 
+      opt.id !== wifeId.value
+    )
+  } catch (_e) {
+    childOptions.value = []
+  }
+}
+
+function onChildSearch() {
+  debounce(() => searchChildren())
+}
+
+// Ajouter un enfant existant
+function addExistingChild(childId: string) {
+  if (!childId) return
+  const child = childOptions.value.find(c => c.id === childId)
+  if (child && !children.value.some(c => c.id === childId)) {
+    children.value.push({ id: child.id, label: child.label })
+    queryChild.value = ''
+    childOptions.value = []
+  }
+}
+
+// Supprimer un enfant
+function removeChild(childId: string) {
+  children.value = children.value.filter(c => c.id !== childId)
+}
+
+// Ouvrir la modale pour créer un enfant
+function openCreateChildModal() {
+  currentParentType.value = 'child'
+  showCreatePersonModal.value = true
 }
 
 // Validation de la date de mariage
@@ -172,10 +227,16 @@ function handlePersonCreated(createdPerson: any) {
     husbandOptions.value = [newOption, ...husbandOptions.value]
     husbandId.value = createdPerson.id
     selectedHusband.value = createdPerson
-  } else {
+  } else if (currentParentType.value === 'wife') {
     wifeOptions.value = [newOption, ...wifeOptions.value]
     wifeId.value = createdPerson.id
     selectedWife.value = createdPerson
+  } else if (currentParentType.value === 'child') {
+    // Ajouter l'enfant créé à la liste
+    children.value.push({
+      id: createdPerson.id,
+      label: `${createdPerson.first_name} ${createdPerson.last_name}${createdPerson.birth_date ? ' • n. ' + createdPerson.birth_date : ''}`
+    })
   }
 
   // Fermer la modale
@@ -220,17 +281,39 @@ async function submit() {
     return
   }
     const res = await familyService.createFamily(payload.value)
-    success.value = 'Famille créée.'
+    const familyId = res.data.id
+    
+    // Créer les relations enfant-famille
+    if (children.value.length > 0) {
+      for (const child of children.value) {
+        try {
+          await childService.createChild({
+            family_id: familyId,
+            child_id: child.id
+          })
+        } catch (childError: any) {
+          console.error(`Erreur lors de l'ajout de l'enfant ${child.label}:`, childError)
+          // On continue même si un enfant échoue
+        }
+      }
+    }
+    
+    const childCount = children.value.length
+    success.value = `Famille créée${childCount > 0 ? ` avec ${childCount} enfant${childCount > 1 ? 's' : ''}` : ''}.`
+    
     // Reset simple
     husbandId.value = ''
     wifeId.value = ''
     marriage_date.value = ''
     marriage_place.value = ''
     notes.value = ''
+    children.value = []
     husbandOptions.value = []
     wifeOptions.value = []
+    childOptions.value = []
     queryHusband.value = ''
     queryWife.value = ''
+    queryChild.value = ''
     selectedHusband.value = null
     selectedWife.value = null
   } catch (e: any) {
@@ -306,6 +389,52 @@ async function submit() {
               <span v-if="selectedWife.death_place">({{ selectedWife.death_place }})</span>
             </div>
             <div v-if="selectedWife.notes" class="notes">{{ selectedWife.notes }}</div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Enfants ({{ children.length }})</legend>
+        <div class="children-section">
+          <div class="add-child-controls">
+            <div class="search-and-select">
+              <label>Rechercher et ajouter un enfant existant</label>
+              <input 
+                v-model="queryChild"
+                @input="onChildSearch"
+                placeholder="Nom ou prénom de l'enfant"
+                data-cy="search-child"
+              />
+              <select 
+                @change="(e) => { addExistingChild((e.target as HTMLSelectElement).value); (e.target as HTMLSelectElement).value = '' }"
+                data-cy="select-child"
+              >
+                <option value="">— Sélectionner —</option>
+                <option v-for="opt in childOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
+              </select>
+            </div>
+            <div class="button-group">
+              <button type="button" @click="openCreateChildModal" data-cy="create-child-button">
+                Créer un nouvel enfant
+              </button>
+            </div>
+          </div>
+
+          <div v-if="children.length > 0" class="children-list">
+            <h4>Enfants ajoutés :</h4>
+            <ul data-cy="children-list">
+              <li v-for="child in children" :key="child.id" class="child-item">
+                <span>{{ child.label }}</span>
+                <button 
+                  type="button" 
+                  @click="removeChild(child.id)" 
+                  class="remove-btn"
+                  :data-cy="`remove-child-${child.id}`"
+                >
+                  ✕
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </fieldset>
@@ -404,6 +533,91 @@ input, select, textarea { width: 100%; padding: 0.5em; box-sizing: border-box; }
   margin-top: 0.5em;
   font-style: italic;
   color: #666;
+}
+
+/* Styles pour la section enfants */
+.children-section {
+  margin-top: 1em;
+}
+
+.add-child-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  margin-bottom: 1.5em;
+}
+
+.search-and-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5em;
+}
+
+.button-group button {
+  padding: 0.6em 1.2em;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95em;
+}
+
+.button-group button:hover {
+  background: #1976d2;
+}
+
+.children-list {
+  margin-top: 1.5em;
+}
+
+.children-list h4 {
+  margin-bottom: 0.75em;
+  color: #333;
+  font-weight: 600;
+}
+
+.children-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.child-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75em 1em;
+  margin-bottom: 0.5em;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+
+.child-item span {
+  flex: 1;
+  color: #333;
+}
+
+.remove-btn {
+  padding: 0.3em 0.6em;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.remove-btn:hover {
+  background: #d32f2f;
 }
 </style>
 
