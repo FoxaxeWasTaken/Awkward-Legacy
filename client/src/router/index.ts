@@ -1,12 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import FamilySearchView from '../views/FamilySearchView.vue'
+import WelcomeView from '../views/WelcomeView.vue'
 import FamilyTreeView from '../views/FamilyTreeView.vue'
+import FileUploadView from '../views/FileUploadView.vue'
+import FamilyManagementView from '../views/FamilyManagementView.vue'
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: FamilySearchView,
+    component: WelcomeView,
+  },
+  {
+    path: '/search',
+    redirect: '/manage',
+  },
+  {
+    path: '/upload',
+    name: 'upload',
+    component: FileUploadView,
+  },
+  {
+    path: '/manage',
+    name: 'manage',
+    component: FamilyManagementView,
   },
   {
     path: '/family/:id',

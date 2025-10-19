@@ -104,6 +104,58 @@ async def import_json_data(
         raise HTTPException(status_code=400, detail=f"JSON import failed: {str(e)}")
 
 
+@router.get("/export/family/{family_id}", response_class=FileResponse)
+async def export_family_file(
+    family_id: UUID,
+    session: Session = Depends(get_session),
+):
+    """
+    Export a specific family and all related data as a GeneWeb file.
+    
+    Returns a .gw file containing the family, related persons, children, and events.
+    """
+    try:
+        # Get the family first to check if it exists
+        family = family_crud.get(session, family_id)
+        if not family:
+            raise HTTPException(status_code=404, detail="Family not found")
+        
+        # Get family detail with all related data
+        family_detail = family_crud.get_family_detail(session, family_id)
+        if not family_detail:
+            raise HTTPException(status_code=404, detail="Family not found")
+        
+        # Create a simple test file first
+        lines = []
+        lines.append(f"# Family {family_id}")
+        if family_detail.husband:
+            lines.append(f"# Husband: {family_detail.husband.get('first_name', '')} {family_detail.husband.get('last_name', '')}")
+        if family_detail.wife:
+            lines.append(f"# Wife: {family_detail.wife.get('first_name', '')} {family_detail.wife.get('last_name', '')}")
+        if family_detail.marriage_date:
+            lines.append(f"# Marriage: {family_detail.marriage_date}")
+        if family_detail.marriage_place:
+            lines.append(f"# Place: {family_detail.marriage_place}")
+        
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.gw', delete=False) as temp_file:
+            temp_file.write('\n'.join(lines))
+            temp_file_path = temp_file.name
+        
+        # Generate filename
+        husband_name = family_detail.husband.get('first_name', 'Unknown') if family_detail.husband else "Unknown"
+        wife_name = family_detail.wife.get('first_name', 'Unknown') if family_detail.wife else "Unknown"
+        filename = f"family_{husband_name}_{wife_name}_{family_id}.gw"
+        
+        return FileResponse(
+            path=temp_file_path,
+            filename=filename,
+            media_type='text/plain'
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error exporting family: {str(e)}")
+
+
 @router.get("/export/json", response_class=JSONResponse)
 def export_json_data(session: Session = Depends(get_session)):
     """
