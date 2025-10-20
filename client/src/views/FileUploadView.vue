@@ -60,6 +60,38 @@ const handleFileSelect = (file: File) => {
   isSuccess.value = false
 }
 
+// Helper functions to reduce complexity
+const startProgressSimulation = (): NodeJS.Timeout => {
+  return setInterval(() => {
+    if (uploadProgress.value < 90) {
+      uploadProgress.value += Math.random() * 10
+    }
+  }, 100)
+}
+
+const handleUploadSuccess = (result: UploadResult) => {
+  uploadResult.value = result
+  isSuccess.value = true
+  
+  // Auto-navigate to family tree after 2 seconds
+  setTimeout(() => {
+    router.push('/manage')
+  }, 2000)
+}
+
+const extractErrorMessage = (err: unknown): string => {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const response = (err as { response?: { data?: { detail?: string } } }).response
+    return response?.data?.detail || 'Failed to upload file. Please try again.'
+  }
+  return 'Failed to upload file. Please try again.'
+}
+
+const handleUploadError = (err: unknown) => {
+  console.error('Upload error:', err)
+  error.value = extractErrorMessage(err)
+}
+
 const uploadFile = async () => {
   if (!selectedFile.value) return
   
@@ -68,33 +100,15 @@ const uploadFile = async () => {
   error.value = ''
   
   try {
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      if (uploadProgress.value < 90) {
-        uploadProgress.value += Math.random() * 10
-      }
-    }, 100)
-    
+    const progressInterval = startProgressSimulation()
     const result = await apiService.uploadFamilyFile(selectedFile.value)
     
     clearInterval(progressInterval)
     uploadProgress.value = 100
-    
-    uploadResult.value = result
-    isSuccess.value = true
-    
-    // Auto-navigate to family tree after 2 seconds
-    setTimeout(() => {
-      router.push('/manage')
-    }, 2000)
+    handleUploadSuccess(result)
     
   } catch (err: unknown) {
-    console.error('Upload error:', err)
-    const errorMessage = 
-      err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
-        : 'Failed to upload file. Please try again.'
-    error.value = errorMessage || 'Failed to upload file. Please try again.'
+    handleUploadError(err)
   } finally {
     isUploading.value = false
   }

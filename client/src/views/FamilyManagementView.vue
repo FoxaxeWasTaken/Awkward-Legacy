@@ -16,43 +16,57 @@ const currentPage = ref(1)
 const itemsPerPage = ref(20)
 const totalItems = ref(0)
 
+// Helper functions to reduce complexity
+const matchesSearchQuery = (family: FamilySearchResult, query: string): boolean => {
+  return family.id.toLowerCase().includes(query) ||
+         family.marriage_place?.toLowerCase().includes(query) ||
+         family.summary?.toLowerCase().includes(query) ||
+         family.husband_name?.toLowerCase().includes(query) ||
+         family.wife_name?.toLowerCase().includes(query)
+}
+
+const getSortValue = (family: FamilySearchResult, sortBy: string): string | number => {
+  const value = family[sortBy as keyof FamilySearchResult]
+  
+  if (sortBy === 'marriage_date') {
+    return value ? new Date(value as string).getTime() : 0
+  }
+  
+  if (typeof value === 'string') {
+    return value.toLowerCase()
+  }
+  
+  return value || ''
+}
+
+const compareValues = (aValue: string | number, bValue: string | number, sortOrder: string): number => {
+  if (sortOrder === 'asc') {
+    return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+  }
+  return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+}
+
+const applySearchFilter = (families: FamilySearchResult[]): FamilySearchResult[] => {
+  if (!searchQuery.value.trim()) {
+    return families
+  }
+  
+  const query = searchQuery.value.toLowerCase()
+  return families.filter(family => matchesSearchQuery(family, query))
+}
+
+const applySorting = (families: FamilySearchResult[]): FamilySearchResult[] => {
+  return families.sort((a, b) => {
+    const aValue = getSortValue(a, sortBy.value)
+    const bValue = getSortValue(b, sortBy.value)
+    return compareValues(aValue, bValue, sortOrder.value)
+  })
+}
+
 // Computed properties
 const filteredFamilies = computed(() => {
-  let filtered = families.value
-
-  // Apply search filter
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(family => {
-      return family.id.toLowerCase().includes(query) ||
-             family.marriage_place?.toLowerCase().includes(query) ||
-             family.summary?.toLowerCase().includes(query) ||
-             family.husband_name?.toLowerCase().includes(query) ||
-             family.wife_name?.toLowerCase().includes(query)
-    })
-  }
-
-  // Apply sorting
-  filtered.sort((a, b) => {
-    let aValue: string | number | undefined = a[sortBy.value]
-    let bValue: string | number | undefined = b[sortBy.value]
-
-    if (sortBy.value === 'marriage_date') {
-      aValue = aValue ? new Date(aValue).getTime() : 0
-      bValue = bValue ? new Date(bValue).getTime() : 0
-    } else if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
-    }
-
-    if (sortOrder.value === 'asc') {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-    } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
-    }
-  })
-
-  return filtered
+  const searchFiltered = applySearchFilter(families.value)
+  return applySorting(searchFiltered)
 })
 
 const paginatedFamilies = computed(() => {
