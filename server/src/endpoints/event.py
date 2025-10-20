@@ -7,7 +7,7 @@ from sqlmodel import Session
 from ..constants import EVENT_NOT_FOUND, FAMILY_NOT_FOUND, PERSON_NOT_FOUND
 from ..crud.event import event_crud
 from ..db import get_session
-from ..models.event import Event, EventCreate, EventRead, EventUpdate
+from ..models.event import Event, EventCreate, EventRead, EventUpdate, EventType
 
 router = APIRouter(prefix="/api/v1/events", tags=["events"])
 
@@ -111,6 +111,12 @@ def _validate_patch_event_relationships_and_dates(
         person_birth_date=person.birth_date if person else None,
         person_death_date=person.death_date if person else None,
     )
+
+
+@router.get("/types", response_model=List[str])
+def get_event_types():
+    """Get all available event types."""
+    return [event_type.value for event_type in EventType]
 
 
 @router.post("/", response_model=EventRead, status_code=201)

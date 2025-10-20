@@ -7,7 +7,7 @@ to avoid circular import issues.
 from .person import Person, PersonCreate, PersonRead, PersonUpdate, Sex
 from .family import Family, FamilyCreate, FamilyRead, FamilyUpdate
 from .child import Child, ChildCreate, ChildRead
-from .event import Event, EventCreate, EventRead, EventUpdate
+from .event import Event, EventCreate, EventRead, EventUpdate, EventType
 
 __all__ = [
     # Person models
@@ -30,4 +30,5 @@ __all__ = [
     "EventCreate",
     "EventRead",
     "EventUpdate",
+    "EventType",
 ]

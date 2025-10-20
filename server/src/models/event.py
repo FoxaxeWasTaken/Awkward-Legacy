@@ -1,6 +1,7 @@
 """Event model definitions for the genealogy application."""
 
 from datetime import date as date_type
+from enum import Enum
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -13,6 +14,28 @@ from ..constants import FAMILIES_TABLE_ID, PERSONS_TABLE_ID
 if TYPE_CHECKING:
     from .person import Person
     from .family import Family
+
+
+class EventType(str, Enum):
+    """Enumération des types d'événements."""
+    
+    # Événements de personne
+    BIRTH = "Birth"
+    BAPTISM = "Baptism"
+    DEATH = "Death"
+    BURIAL = "Burial"
+    
+    # Événements de famille
+    MARRIAGE = "Marriage"
+    COUPLE = "Couple"
+    ENGAGEMENT = "Engagement"
+    DIVORCE = "Divorce"
+    SEPARATION = "Separation"
+    COHABITATION = "Cohabitation"
+    MARRIAGE_ANNULMENT = "Marriage Annulment"
+    
+    # Autres événements
+    OTHER = "Other"
 
 
 class EventBase(SQLModel):
@@ -34,7 +57,7 @@ class EventBase(SQLModel):
             nullable=True,
         ),
     )
-    type: str = Field(max_length=50)
+    type: EventType = Field(max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)
@@ -66,7 +89,7 @@ class EventUpdate(SQLModel):
 
     person_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
     family_id: Optional[UUID] = Field(default=None, foreign_key=FAMILIES_TABLE_ID)
-    type: Optional[str] = Field(default=None, max_length=50)
+    type: Optional[EventType] = Field(default=None, max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)
