@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { familyService, type CreateFamily } from '@/services/familyService'
 import { personService } from '@/services/personService'
 import { childService } from '@/services/childService'
+import { eventService } from '@/services/eventService'
+import { FAMILY_EVENT_TYPES } from '@/types/event'
 import CreatePersonModal from '@/components/CreatePersonModal.vue'
 
 type PersonOption = {
@@ -20,6 +22,15 @@ const notes = ref<string>('')
 const children = ref<Array<{ id: string; label: string }>>([])
 const queryChild = ref('')
 const childOptions = ref<PersonOption[]>([])
+
+// Événements
+const events = ref<Array<{
+  type: string
+  date: string
+  place: string
+  description: string
+}>>([])
+const eventTypes = FAMILY_EVENT_TYPES
 
 const submitting = ref(false)
 const error = ref('')
@@ -119,6 +130,20 @@ function removeChild(childId: string) {
 function openCreateChildModal() {
   currentParentType.value = 'child'
   showCreatePersonModal.value = true
+}
+
+// Gestion des événements
+function addEvent() {
+  events.value.push({
+    type: 'Marriage',
+    date: '',
+    place: '',
+    description: ''
+  })
+}
+
+function removeEvent(index: number) {
+  events.value.splice(index, 1)
 }
 
 // Validation de la date de mariage
@@ -298,8 +323,30 @@ async function submit() {
       }
     }
     
+    // Créer les événements familiaux
+    if (events.value.length > 0) {
+      for (const event of events.value) {
+        try {
+          await eventService.createEvent({
+            family_id: familyId,
+            type: event.type,
+            date: event.date || null,
+            place: event.place || null,
+            description: event.description || null
+          })
+        } catch (eventError: any) {
+          console.error(`Erreur lors de l'ajout de l'événement ${event.type}:`, eventError)
+          // On continue même si un événement échoue
+        }
+      }
+    }
+    
     const childCount = children.value.length
-    success.value = `Famille créée${childCount > 0 ? ` avec ${childCount} enfant${childCount > 1 ? 's' : ''}` : ''}.`
+    const eventCount = events.value.length
+    let message = 'Famille créée'
+    if (childCount > 0) message += ` avec ${childCount} enfant${childCount > 1 ? 's' : ''}`
+    if (eventCount > 0) message += `${childCount > 0 ? ' et' : ' avec'} ${eventCount} événement${eventCount > 1 ? 's' : ''}`
+    success.value = message + '.'
     
     // Reset simple
     husbandId.value = ''
@@ -308,6 +355,7 @@ async function submit() {
     marriage_place.value = ''
     notes.value = ''
     children.value = []
+    events.value = []
     husbandOptions.value = []
     wifeOptions.value = []
     childOptions.value = []
@@ -435,6 +483,71 @@ async function submit() {
                 </button>
               </li>
             </ul>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Événements ({{ events.length }})</legend>
+        <div class="events-section">
+          <div class="button-group">
+            <button type="button" @click="addEvent" data-cy="add-event-button">
+              Ajouter un événement
+            </button>
+          </div>
+
+          <div v-if="events.length > 0" class="events-list">
+            <div v-for="(event, index) in events" :key="index" class="event-item" :data-cy="`event-${index}`">
+              <div class="event-row">
+                <div class="event-field">
+                  <label>Type d'événement</label>
+                  <select v-model="event.type" :data-cy="`event-type-${index}`">
+                    <option v-for="eventType in eventTypes" :key="eventType.value" :value="eventType.value">
+                      {{ eventType.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="event-field">
+                  <label>Date</label>
+                  <input 
+                    type="date" 
+                    v-model="event.date" 
+                    :data-cy="`event-date-${index}`"
+                  />
+                </div>
+
+                <div class="event-field">
+                  <label>Lieu</label>
+                  <input 
+                    v-model="event.place" 
+                    placeholder="Lieu de l'événement"
+                    :data-cy="`event-place-${index}`"
+                  />
+                </div>
+              </div>
+
+              <div class="event-row">
+                <div class="event-field event-field-full">
+                  <label>Description (optionnel)</label>
+                  <textarea 
+                    v-model="event.description" 
+                    placeholder="Description de l'événement"
+                    rows="2"
+                    :data-cy="`event-description-${index}`"
+                  ></textarea>
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                @click="removeEvent(index)" 
+                class="remove-btn event-remove-btn"
+                :data-cy="`remove-event-${index}`"
+              >
+                ✕ Supprimer
+              </button>
+            </div>
           </div>
         </div>
       </fieldset>
@@ -618,6 +731,74 @@ input, select, textarea { width: 100%; padding: 0.5em; box-sizing: border-box; }
 
 .remove-btn:hover {
   background: #d32f2f;
+}
+
+/* Styles pour la section événements */
+.events-section {
+  margin-top: 1em;
+}
+
+.events-list {
+  margin-top: 1.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.event-item {
+  position: relative;
+  padding: 1.5em;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.event-row {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 1em;
+}
+
+.event-row:last-child {
+  margin-bottom: 0;
+}
+
+.event-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-field-full {
+  flex: 1 1 100%;
+}
+
+.event-field label {
+  font-weight: 500;
+  margin-bottom: 0.4em;
+  color: #333;
+}
+
+.event-field input,
+.event-field select,
+.event-field textarea {
+  padding: 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  font-family: inherit;
+}
+
+.event-field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.event-remove-btn {
+  margin-top: 1em;
+  padding: 0.5em 1em;
+  font-size: 0.9em;
+  font-weight: normal;
 }
 </style>
 

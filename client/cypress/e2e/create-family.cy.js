@@ -540,5 +540,169 @@ describe('Create Family', () => {
     // Vérifier le message de succès
     cy.get('.success').should('contain.text', 'Famille créée avec 1 enfant')
   })
+
+  it('should create a family with events', () => {
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+    let createdPersonIds = []
+    let husbandId, wifeId
+
+    // Créer deux personnes via API pour les parents
+    cy.createTestPerson({
+      first_name: 'EventTest',
+      last_name: 'Father',
+      sex: 'M',
+      birth_date: '1970-01-01'
+    }).then((id) => {
+      husbandId = id
+      createdPersonIds.push(id)
+    })
+
+    cy.createTestPerson({
+      first_name: 'EventTest',
+      last_name: 'Mother',
+      sex: 'F',
+      birth_date: '1972-05-15'
+    }).then((id) => {
+      wifeId = id
+      createdPersonIds.push(id)
+    }).then(() => {
+      // Attendre que les deux personnes soient créées avant de visiter la page
+      cy.visit('/families/create')
+
+      // Sélectionner le mari
+      cy.intercept('GET', '**/api/v1/persons/search*').as('searchHusband')
+      cy.get('[data-cy="search-husband"]').type('EventTest')
+      cy.wait('@searchHusband')
+      cy.get('[data-cy="select-husband"]').find('option').then(($options) => {
+        // Trouver l'option contenant "Father"
+        const fatherOption = $options.filter((i, opt) => opt.text.includes('Father'))
+        if (fatherOption.length > 0) {
+          cy.get('[data-cy="select-husband"]').select(fatherOption.val())
+        }
+      })
+
+      // Sélectionner la femme
+      cy.intercept('GET', '**/api/v1/persons/search*').as('searchWife')
+      cy.get('[data-cy="search-wife"]').type('EventTest')
+      cy.wait('@searchWife')
+      cy.get('[data-cy="select-wife"]').find('option').then(($options) => {
+        // Trouver l'option contenant "Mother"
+        const motherOption = $options.filter((i, opt) => opt.text.includes('Mother'))
+        if (motherOption.length > 0) {
+          cy.get('[data-cy="select-wife"]').select(motherOption.val())
+        }
+      })
+    })
+
+    // Ajouter un événement de mariage
+    cy.get('[data-cy="add-event-button"]').click()
+    cy.get('[data-cy="event-0"]').should('exist')
+    cy.get('[data-cy="event-type-0"]').select('Marriage')
+    cy.get('[data-cy="event-date-0"]').type('2000-06-15')
+    cy.get('[data-cy="event-place-0"]').type('Paris, France')
+    cy.get('[data-cy="event-description-0"]').type('Cérémonie à l\'église Saint-Sulpice')
+
+    // Ajouter un deuxième événement
+    cy.get('[data-cy="add-event-button"]').click()
+    cy.get('[data-cy="event-1"]').should('exist')
+    cy.get('[data-cy="event-type-1"]').select('Engagement')
+    cy.get('[data-cy="event-date-1"]').type('1999-12-25')
+    cy.get('[data-cy="event-place-1"]').type('Lyon, France')
+
+    // Vérifier le compteur d'événements
+    cy.contains('Événements (2)').should('be.visible')
+
+    // Créer la famille
+    cy.intercept('POST', '**/api/v1/families').as('createFamily')
+    cy.intercept('POST', '**/api/v1/events').as('createEvent')
+    cy.get('[data-cy="submit-family"]').click()
+    cy.wait('@createFamily')
+    cy.wait('@createEvent')
+
+    // Vérifier le message de succès
+    cy.get('.success').should('contain.text', 'Famille créée avec 2 événements')
+
+    // Nettoyer les personnes créées
+    cy.then(() => {
+      createdPersonIds.forEach((personId) => {
+        cy.request({
+          method: 'DELETE',
+          url: `${apiUrl}/api/v1/persons/${personId}`,
+          failOnStatusCode: false
+        })
+      })
+    })
+  })
+
+  it('should allow removing events before submission', () => {
+    const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
+    let createdPersonIds = []
+
+    // Créer une personne pour le test
+    cy.createTestPerson({
+      first_name: 'RemoveEvent',
+      last_name: 'Test',
+      sex: 'M',
+      birth_date: '1980-01-01'
+    }).then((id) => {
+      createdPersonIds.push(id)
+    }).then(() => {
+      cy.visit('/families/create')
+
+      // Sélectionner un parent
+      cy.intercept('GET', '**/api/v1/persons/search*').as('searchPerson')
+      cy.get('[data-cy="search-husband"]').type('RemoveEvent')
+      cy.wait('@searchPerson')
+      cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
+        cy.get('[data-cy="select-husband"]').select($opt.val())
+      })
+    })
+
+    // Ajouter deux événements
+    cy.get('[data-cy="add-event-button"]').click()
+    cy.get('[data-cy="add-event-button"]').click()
+    cy.contains('Événements (2)').should('be.visible')
+
+    // Supprimer le premier événement
+    cy.get('[data-cy="remove-event-0"]').click()
+    cy.contains('Événements (1)').should('be.visible')
+    cy.get('[data-cy="event-0"]').should('exist')
+    cy.get('[data-cy="event-1"]').should('not.exist')
+
+    // Nettoyer les personnes créées
+    cy.then(() => {
+      createdPersonIds.forEach((personId) => {
+        cy.request({
+          method: 'DELETE',
+          url: `${apiUrl}/api/v1/persons/${personId}`,
+          failOnStatusCode: false
+        })
+      })
+    })
+  })
+
+  it('should validate event types are available', () => {
+    cy.visit('/families/create')
+
+    // Ajouter un événement
+    cy.get('[data-cy="add-event-button"]').click()
+
+    // Vérifier que tous les types d'événements sont disponibles
+    const expectedEventTypes = [
+      'Mariage',
+      'Couple',
+      'Fiançailles',
+      'Divorce',
+      'Séparation',
+      'Ménage commun',
+      'Annulation mariage'
+    ]
+
+    cy.get('[data-cy="event-type-0"]').then(($select) => {
+      expectedEventTypes.forEach((eventType) => {
+        cy.wrap($select).should('contain', eventType)
+      })
+    })
+  })
 })
 
