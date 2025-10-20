@@ -12,7 +12,7 @@ const uploadProgress = ref(0)
 const selectedFile = ref<File | null>(null)
 const uploadResult = ref<UploadResult | null>(null)
 const error = ref('')
-const isSuccess = ref(false)
+const isSuccess = ref<boolean>(false)
 
 const handleDragOver = (e: DragEvent) => {
   e.preventDefault()
@@ -61,7 +61,7 @@ const handleFileSelect = (file: File) => {
 }
 
 // Helper functions to reduce complexity
-const startProgressSimulation = (): NodeJS.Timeout => {
+const startProgressSimulation = (): ReturnType<typeof setInterval> => {
   return setInterval(() => {
     if (uploadProgress.value < 90) {
       uploadProgress.value += Math.random() * 10
@@ -80,7 +80,7 @@ const handleUploadSuccess = (result: UploadResult) => {
 }
 
 const isErrorWithResponse = (err: unknown): err is { response?: { data?: { detail?: string } } } => {
-  return err && typeof err === 'object' && 'response' in err
+  return Boolean(err && typeof err === 'object' && 'response' in err)
 }
 
 const extractErrorMessage = (err: unknown): string => {
@@ -221,19 +221,19 @@ onMounted(() => {
         <div class="success-summary">
           <div class="summary-item">
             <span class="summary-label">Persons:</span>
-            <span class="summary-value">{{ uploadResult.persons }}</span>
+            <span class="summary-value">{{ uploadResult.persons_created }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">Families:</span>
-            <span class="summary-value">{{ uploadResult.families }}</span>
+            <span class="summary-value">{{ uploadResult.families_created }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">Events:</span>
-            <span class="summary-value">{{ uploadResult.events }}</span>
+            <span class="summary-value">{{ uploadResult.events_created }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">Children:</span>
-            <span class="summary-value">{{ uploadResult.children }}</span>
+            <span class="summary-value">{{ uploadResult.children_created }}</span>
           </div>
         </div>
         <p class="success-message">

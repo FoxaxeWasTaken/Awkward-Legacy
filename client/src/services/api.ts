@@ -6,7 +6,8 @@ import type {
   FamilySearchParams,
   UploadResult,
   FamilyRead,
-  FamilyManagementParams
+  FamilyManagementParams,
+  FamilyDetail
 } from '../types/family'
 
 class ApiService {
@@ -118,7 +119,7 @@ class ApiService {
     return detailResponse.data
   }
 
-  private buildPersonName(person: any): string {
+  private buildPersonName(person: { first_name?: string; last_name?: string } | null): string {
     if (!person) return 'Unknown'
     const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim()
     return fullName || 'Unknown'
@@ -131,8 +132,8 @@ class ApiService {
   private async processFamilyWithDetails(family: FamilyRead): Promise<FamilySearchResult> {
     try {
       const familyDetail = await this.fetchFamilyDetails(family.id)
-      const husbandName = this.buildPersonName(familyDetail.husband)
-      const wifeName = this.buildPersonName(familyDetail.wife)
+      const husbandName = this.buildPersonName(familyDetail.husband || null)
+      const wifeName = this.buildPersonName(familyDetail.wife || null)
       
       return {
         id: family.id,
@@ -145,8 +146,8 @@ class ApiService {
       }
     } catch (detailError) {
       console.warn(`Failed to fetch details for family ${family.id}:`, detailError)
-      const husbandDisplayName = this.buildDisplayName(family.husband_id)
-      const wifeDisplayName = this.buildDisplayName(family.wife_id)
+      const husbandDisplayName = this.buildDisplayName(family.husband_id || null)
+      const wifeDisplayName = this.buildDisplayName(family.wife_id || null)
       
       return {
         id: family.id,

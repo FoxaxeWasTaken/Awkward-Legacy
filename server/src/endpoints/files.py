@@ -110,6 +110,7 @@ def validate_family_exists(session: Session, family_id: UUID) -> None:
     if not family:
         raise HTTPException(status_code=404, detail="Family not found")
 
+
 def get_family_detail_safe(session: Session, family_id: UUID):
     """Get family detail with error handling."""
     family_detail = family_crud.get_family_detail(session, family_id)
@@ -117,33 +118,36 @@ def get_family_detail_safe(session: Session, family_id: UUID):
         raise HTTPException(status_code=404, detail="Family not found")
     return family_detail
 
+
 def build_family_content_lines(family_detail, family_id: UUID) -> list[str]:
     """Build the content lines for the GeneWeb file."""
     lines = [f"# Family {family_id}"]
-    
+
     if family_detail.husband:
-        first_name = family_detail.husband.get('first_name', '')
-        last_name = family_detail.husband.get('last_name', '')
+        first_name = family_detail.husband.get("first_name", "")
+        last_name = family_detail.husband.get("last_name", "")
         lines.append(f"# Husband: {first_name} {last_name}")
-    
+
     if family_detail.wife:
-        first_name = family_detail.wife.get('first_name', '')
-        last_name = family_detail.wife.get('last_name', '')
+        first_name = family_detail.wife.get("first_name", "")
+        last_name = family_detail.wife.get("last_name", "")
         lines.append(f"# Wife: {first_name} {last_name}")
-    
+
     if family_detail.marriage_date:
         lines.append(f"# Marriage: {family_detail.marriage_date}")
-    
+
     if family_detail.marriage_place:
         lines.append(f"# Place: {family_detail.marriage_place}")
-    
+
     return lines
+
 
 def create_temp_file(content_lines: list[str]) -> str:
     """Create a temporary file with the given content."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".gw", delete=False) as temp_file:
         temp_file.write("\n".join(content_lines))
         return temp_file.name
+
 
 def generate_filename(family_detail, family_id: UUID) -> str:
     """Generate a filename for the exported family file."""
@@ -159,6 +163,7 @@ def generate_filename(family_detail, family_id: UUID) -> str:
     )
     return f"family_{husband_name}_{wife_name}_{family_id}.gw"
 
+
 @router.get("/export/family/{family_id}", response_class=FileResponse)
 async def export_family_file(
     family_id: UUID,
@@ -172,7 +177,7 @@ async def export_family_file(
     try:
         validate_family_exists(session, family_id)
         family_detail = get_family_detail_safe(session, family_id)
-        
+
         content_lines = build_family_content_lines(family_detail, family_id)
         temp_file_path = create_temp_file(content_lines)
         filename = generate_filename(family_detail, family_id)
