@@ -79,10 +79,13 @@ const handleUploadSuccess = (result: UploadResult) => {
   }, 2000)
 }
 
+const isErrorWithResponse = (err: unknown): err is { response?: { data?: { detail?: string } } } => {
+  return err && typeof err === 'object' && 'response' in err
+}
+
 const extractErrorMessage = (err: unknown): string => {
-  if (err && typeof err === 'object' && 'response' in err) {
-    const response = (err as { response?: { data?: { detail?: string } } }).response
-    return response?.data?.detail || 'Failed to upload file. Please try again.'
+  if (isErrorWithResponse(err)) {
+    return err.response?.data?.detail || 'Failed to upload file. Please try again.'
   }
   return 'Failed to upload file. Please try again.'
 }

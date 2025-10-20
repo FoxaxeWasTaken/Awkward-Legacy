@@ -17,12 +17,21 @@ const itemsPerPage = ref(20)
 const totalItems = ref(0)
 
 // Helper functions to reduce complexity
+const matchesField = (field: string | undefined, query: string): boolean => {
+  return field?.toLowerCase().includes(query) ?? false
+}
+
 const matchesSearchQuery = (family: FamilySearchResult, query: string): boolean => {
-  return family.id.toLowerCase().includes(query) ||
-         family.marriage_place?.toLowerCase().includes(query) ||
-         family.summary?.toLowerCase().includes(query) ||
-         family.husband_name?.toLowerCase().includes(query) ||
-         family.wife_name?.toLowerCase().includes(query)
+  return matchesField(family.id, query) ||
+         matchesField(family.marriage_place, query) ||
+         matchesField(family.summary, query) ||
+         matchesField(family.husband_name, query) ||
+         matchesField(family.wife_name, query)
+}
+
+type SortConfig = {
+  field: string
+  order: 'asc' | 'desc'
 }
 
 const getSortValue = (family: FamilySearchResult, sortBy: string): string | number => {
@@ -39,8 +48,8 @@ const getSortValue = (family: FamilySearchResult, sortBy: string): string | numb
   return value || ''
 }
 
-const compareValues = (aValue: string | number, bValue: string | number, sortOrder: string): number => {
-  if (sortOrder === 'asc') {
+const compareValues = (aValue: string | number, bValue: string | number, config: SortConfig): number => {
+  if (config.order === 'asc') {
     return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
   }
   return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
@@ -56,10 +65,15 @@ const applySearchFilter = (families: FamilySearchResult[]): FamilySearchResult[]
 }
 
 const applySorting = (families: FamilySearchResult[]): FamilySearchResult[] => {
+  const config: SortConfig = {
+    field: sortBy.value,
+    order: sortOrder.value
+  }
+  
   return families.sort((a, b) => {
-    const aValue = getSortValue(a, sortBy.value)
-    const bValue = getSortValue(b, sortBy.value)
-    return compareValues(aValue, bValue, sortOrder.value)
+    const aValue = getSortValue(a, config.field)
+    const bValue = getSortValue(b, config.field)
+    return compareValues(aValue, bValue, config)
   })
 }
 
