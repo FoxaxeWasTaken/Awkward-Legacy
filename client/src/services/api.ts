@@ -132,7 +132,7 @@ class ApiService {
       for (const family of response.data) {
         try {
           // Get family detail to get actual names
-          const detailResponse: AxiosResponse<any> = await this.api.get(
+          const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
             `/api/v1/families/${family.id}/detail`
           )
           
@@ -153,7 +153,7 @@ class ApiService {
             children_count: familyDetail.children?.length || 0,
             summary: `${husbandName} & ${wifeName}`
           })
-        } catch (detailError) {
+        } catch (_detailError) {
           // If detail fetch fails, fall back to ID-based names
           familiesWithNames.push({
             id: family.id,

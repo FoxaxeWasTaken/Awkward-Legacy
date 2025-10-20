@@ -3,10 +3,6 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const navigateToSearch = () => {
-  router.push('/manage')
-}
-
 const navigateToUpload = () => {
   router.push('/upload')
 }
@@ -21,20 +17,6 @@ const navigateToManage = () => {
 
     <div class="welcome-actions">
       <div class="action-cards">
-        <div class="action-card search-card" @click="navigateToSearch">
-          <div class="card-icon">🔍</div>
-          <h3 class="card-title">Search Families</h3>
-          <p class="card-description">
-            Search and explore existing family trees in the database
-          </p>
-          <div class="card-features">
-            <span class="feature">• Browse family trees</span>
-            <span class="feature">• View family details</span>
-            <span class="feature">• Interactive visualization</span>
-          </div>
-          <button class="card-button">Start Searching</button>
-        </div>
-
         <div class="action-card upload-card" @click="navigateToUpload">
           <div class="card-icon">📁</div>
           <h3 class="card-title">Upload Family File</h3>
@@ -50,17 +32,18 @@ const navigateToManage = () => {
         </div>
 
         <div class="action-card manage-card" @click="navigateToManage">
-          <div class="card-icon">📊</div>
-          <h3 class="card-title">Manage Families</h3>
+          <div class="card-icon">🔍</div>
+          <h3 class="card-title">Search & Manage Families</h3>
           <p class="card-description">
-            View, filter, and manage all families in the database
+            Search, explore, and manage all families in the database
           </p>
           <div class="card-features">
+            <span class="feature">• Browse family trees</span>
             <span class="feature">• Advanced filtering</span>
-            <span class="feature">• Bulk operations</span>
+            <span class="feature">• Interactive visualization</span>
             <span class="feature">• Data export</span>
           </div>
-          <button class="card-button">Manage Data</button>
+          <button class="card-button">Explore Families</button>
         </div>
       </div>
     </div>
@@ -108,9 +91,12 @@ const navigateToManage = () => {
 
 .action-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2rem;
   margin-bottom: 4rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .action-card {
@@ -126,10 +112,6 @@ const navigateToManage = () => {
 .action-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.search-card:hover {
-  border-color: #3498db;
 }
 
 .upload-card:hover {

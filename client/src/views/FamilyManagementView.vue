@@ -34,8 +34,8 @@ const filteredFamilies = computed(() => {
 
   // Apply sorting
   filtered.sort((a, b) => {
-    let aValue: any = a[sortBy.value]
-    let bValue: any = b[sortBy.value]
+    let aValue: string | number | undefined = a[sortBy.value]
+    let bValue: string | number | undefined = b[sortBy.value]
 
     if (sortBy.value === 'marriage_date') {
       aValue = aValue ? new Date(aValue).getTime() : 0

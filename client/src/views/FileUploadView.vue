@@ -153,13 +153,13 @@ onMounted(() => {
             class="file-input"
             id="file-input"
           />
-          <label for="file-input" class="file-input-label">
-            Choose File
-          </label>
         </div>
         <div class="upload-requirements">
           <p><strong>Supported formats:</strong> .gw files only</p>
           <p><strong>Maximum size:</strong> 10MB</p>
+          <label for="file-input" class="file-input-label">
+            Choose File
+          </label>
         </div>
       </div>
 
@@ -373,6 +373,12 @@ onMounted(() => {
   border-top: 1px solid #ecf0f1;
   color: #7f8c8d;
   font-size: 0.9rem;
+  text-align: center;
+}
+
+.upload-requirements .file-input-label {
+  margin-top: 1rem;
+  display: inline-block;
 }
 
 .file-selected {
