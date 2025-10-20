@@ -110,6 +110,56 @@ class ApiService {
     return response.data
   }
 
+  // Helper methods for family management
+  private async fetchFamilyDetails(familyId: string): Promise<FamilyDetail> {
+    const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
+      `/api/v1/families/${familyId}/detail`
+    )
+    return detailResponse.data
+  }
+
+  private buildPersonName(person: any): string {
+    if (!person) return 'Unknown'
+    const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim()
+    return fullName || 'Unknown'
+  }
+
+  private buildDisplayName(personId: string | null): string {
+    return personId ? `Person ${personId.slice(0, 8)}` : 'Unknown'
+  }
+
+  private async processFamilyWithDetails(family: FamilyRead): Promise<FamilySearchResult> {
+    try {
+      const familyDetail = await this.fetchFamilyDetails(family.id)
+      const husbandName = this.buildPersonName(familyDetail.husband)
+      const wifeName = this.buildPersonName(familyDetail.wife)
+      
+      return {
+        id: family.id,
+        husband_name: husbandName,
+        wife_name: wifeName,
+        marriage_date: family.marriage_date,
+        marriage_place: family.marriage_place,
+        children_count: familyDetail.children?.length || 0,
+        summary: `${husbandName} & ${wifeName}`
+      }
+    } catch (detailError) {
+      console.warn(`Failed to fetch details for family ${family.id}:`, detailError)
+      const husbandDisplayName = this.buildDisplayName(family.husband_id)
+      const wifeDisplayName = this.buildDisplayName(family.wife_id)
+      
+      return {
+        id: family.id,
+        husband_name: husbandDisplayName,
+        wife_name: wifeDisplayName,
+        marriage_date: family.marriage_date,
+        marriage_place: family.marriage_place,
+        children_count: 0,
+        summary: `${husbandDisplayName} & ${wifeDisplayName}`
+      }
+    }
+  }
+
   // Family management methods
   async getAllFamiliesForManagement(
     params: FamilyManagementParams = {}
@@ -126,45 +176,12 @@ class ApiService {
         }
       )
       
-      // For each family, get the detailed information to extract names
+      // Process each family to get detailed information
       const familiesWithNames: FamilySearchResult[] = []
       
       for (const family of response.data) {
-        try {
-          // Get family detail to get actual names
-          const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
-            `/api/v1/families/${family.id}/detail`
-          )
-          
-          const familyDetail = detailResponse.data
-          const husbandName = familyDetail.husband 
-            ? `${familyDetail.husband.first_name || ''} ${familyDetail.husband.last_name || ''}`.trim() || 'Unknown'
-            : 'Unknown'
-          const wifeName = familyDetail.wife 
-            ? `${familyDetail.wife.first_name || ''} ${familyDetail.wife.last_name || ''}`.trim() || 'Unknown'
-            : 'Unknown'
-          
-          familiesWithNames.push({
-            id: family.id,
-            husband_name: husbandName,
-            wife_name: wifeName,
-            marriage_date: family.marriage_date,
-            marriage_place: family.marriage_place,
-            children_count: familyDetail.children?.length || 0,
-            summary: `${husbandName} & ${wifeName}`
-          })
-        } catch (_detailError) {
-          // If detail fetch fails, fall back to ID-based names
-          familiesWithNames.push({
-            id: family.id,
-            husband_name: family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown',
-            wife_name: family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown',
-            marriage_date: family.marriage_date,
-            marriage_place: family.marriage_place,
-            children_count: 0,
-            summary: `${family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown'} & ${family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown'}`
-          })
-        }
+        const familyResult = await this.processFamilyWithDetails(family)
+        familiesWithNames.push(familyResult)
       }
       
       return familiesWithNames

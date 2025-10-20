@@ -48,11 +48,23 @@ const getSortValue = (family: FamilySearchResult, sortBy: string): string | numb
   return value || ''
 }
 
+const compareAscending = (aValue: string | number, bValue: string | number): number => {
+  if (aValue < bValue) return -1
+  if (aValue > bValue) return 1
+  return 0
+}
+
+const compareDescending = (aValue: string | number, bValue: string | number): number => {
+  if (aValue > bValue) return -1
+  if (aValue < bValue) return 1
+  return 0
+}
+
 const compareValues = (aValue: string | number, bValue: string | number, config: SortConfig): number => {
   if (config.order === 'asc') {
-    return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+    return compareAscending(aValue, bValue)
   }
-  return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+  return compareDescending(aValue, bValue)
 }
 
 const applySearchFilter = (families: FamilySearchResult[]): FamilySearchResult[] => {
@@ -150,14 +162,14 @@ const downloadFamilyFile = async (familyId: string) => {
     const blob = await apiService.downloadFamilyFile(familyId)
     
     // Create download link
-    const url = window.URL.createObjectURL(blob)
+    const url = globalThis.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = `family_${familyId}.gw`
     document.body.appendChild(link)
     link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
+    link.remove()
+    globalThis.URL.revokeObjectURL(url)
   } catch (err: unknown) {
     console.error('Failed to download family file:', err)
     error.value = 'Failed to download family file. Please try again.'
@@ -427,10 +439,9 @@ onMounted(() => {
 .management-controls {
   max-width: 1200px;
   margin: 0 auto 2rem;
-  padding: 0 2rem;
+  padding: 2rem;
   background: white;
   border-radius: 12px;
-  padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 

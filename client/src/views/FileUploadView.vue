@@ -603,10 +603,9 @@ onMounted(() => {
 .upload-help {
   max-width: 800px;
   margin: 4rem auto 0;
-  padding: 0 2rem;
+  padding: 2rem;
   background: white;
   border-radius: 12px;
-  padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 

@@ -1,0 +1,317 @@
+client/src/views/FamilyManagementView.vue
+@@ -0,0 +1,840 @@
+<script setup lang="ts">
+@codescene-delta-analysis codescene-delta-analysis bot 6 minutes ago
+❌ New issue: String Heavy Function Arguments
+In this module, 40.0% of all arguments to its 17 functions are strings. The threshold for string arguments is 39.0%
+
+===
+
+          familiesWithNames.push({
+ 
+            id: family.id,
+ 
+            husband_name: family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown',
+ 
+            wife_name: family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown',
+ 
+            marriage_date: family.marriage_date,
+ 
+            marriage_place: family.marriage_place,
+ 
+            children_count: 0,
+ 
+            summary: 
+`${family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown'} & ${family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown'}`
+ 
+Refactor this code to not use nested template literals.
+
+===
+
+const compareValues = (aValue: string | number, bValue: string | number, sortOrder: string): number => {
+ 
+  if (sortOrder === 'asc') {
+ 
+    return aValue < bValue ? -1 : aValue
+> bValue ? 1 : 0
+ 
+Extract this nested ternary operation into an independent statement.
+ 
+  }
+ 
+  return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+ 
+}
+
+===
+
+const compareValues = (aValue: string | number, bValue: string | number, sortOrder: string): number => {
+ 
+    if (sortOrder === 'asc') {
+   
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+   
+    }
+   
+    return aValue > bValue ? -1 : aValue
+  < bValue ? 1 : 0
+   
+  Extract this nested ternary operation into an independent statement.
+   
+  }
+
+===
+
+    const url = window
+.URL.createObjectURL(blob)
+ 
+Prefer `globalThis` over `window`.
+ 
+    const link = document.createElement('a')
+ 
+    link.href = url
+ 
+    link.download = `family_${familyId}.gw`
+ 
+    document.body.appendChild(link)
+ 
+    link.click()
+ 
+    document.body.removeChild(link)
+ 
+    window.URL.revokeObjectURL(url)
+ 
+  } catch (err: unknown) {
+ 
+    console.error('Failed to download family file:', err)
+ 
+    error.value = 'Failed to download family file. Please try again.'
+ 
+  }
+ 
+}
+
+===
+
+const viewFamilyTree = (familyId: string) => {
+ 
+  router
+.push(`/family/${familyId}`)
+ 
+Prefer `childNode.remove()` over `parentNode.removeChild(childNode)`.
+ 
+}
+
+===
+
+const viewFamilyTree = (familyId: string) => {
+ 
+  router.push(`/family/${familyId}`)
+ 
+}
+ 
+Prefer `globalThis` over `window`.
+ 
+const downloadFamilyFile = async (familyId: string) => {
+ 
+  try {
+ 
+    const blob = await apiService.downloadFamilyFile(familyId)
+ 
+    
+ 
+    // Create download link
+ 
+Covered code
+ 
+    const url = window.URL.createObjectURL(blob)
+ 
+    const link = document.createElement('a')
+ 
+    link.href = url
+ 
+    link.download = `family_${familyId}.gw`
+ 
+    document.body.appendChild(link)
+ 
+    link.click()
+ 
+    document.body.removeChild(link)
+ 
+    window.URL.revokeObjectURL(url)
+ 
+  } catch (err: unknown) {
+ 
+    console.error('Failed to download family file:', err)
+ 
+    error.value = 'Failed to download family file. Please try again.'
+ 
+  }
+ 
+}
+
+===
+
+.back-button:hover {
+ 
+  background: white;
+ 
+  transform: translateY(-1px);
+ 
+}
+ 
+.management-title {
+ 
+  font-size: 2.5rem;
+ 
+  font-weight: 700;
+ 
+  color: #2c3e50;
+ 
+  margin-bottom: 1rem;
+ 
+}
+ 
+Unexpected duplicate "padding"
+ 
+.management-subtitle {
+ 
+  font-size: 1.2rem;
+ 
+  color: #7f8c8d;
+ 
+  max-width: 600px;
+ 
+  margin: 0 auto;
+ 
+}
+ 
+.management-controls {
+ 
+  max-width: 1200px;
+ 
+  margin: 0 auto 2rem;
+ 
+  padding: 0 2rem;
+ 
+  background: white;
+ 
+  border-radius: 12px;
+ 
+  padding: 2rem;
+ 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+ 
+}
+
+===
+
+.upload-help {
+ 
+  max-width: 800px;
+ 
+  margin: 4rem auto 0;
+ 
+  padding: 0 2re
+m;
+ 
+Unexpected duplicate "padding"
+ 
+  background: white;
+ 
+  border-radius: 12px;
+ 
+  padding: 2rem;
+ 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+ 
+}
+
+===
+
+  async getAllFamiliesForManagement
+(
+ 
+Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+ 
+    params: FamilyManagementParams = {}
+ 
+  ): Promise<FamilySearchResult[]> {
+ 
+    try {
+ 
+      // Get basic families first
+ 
+Uncovered code
+ 
+      const response: AxiosResponse<FamilyRead[]> = await this.api.get(
+ 
+        '/api/v1/families',
+ 
+        {
+ 
+          params: {
+ 
+            skip: params.skip || 0,
+ 
+            limit: Math.min(params.limit || 100, 1000),
+ 
+          },
+ 
+        }
+ 
+      )
+
+===
+
+          familiesWithNames.push({
+ 
+            id: family.id,
+ 
+            husband_name: husbandName,
+ 
+            wife_name: wifeName,
+ 
+            marriage_date: family.marriage_date,
+ 
+            marriage_place: family.marriage_place,
+ 
+            children_count: familyDetail.children?.length || 0,
+ 
+            summary: `${husbandName} & ${wifeName}`
+ 
+          })
+ 
+        } catch
+(_detailError) {
+ 
+Handle this exception or don't catch it at all.
+ 
+          // If detail fetch fails, fall back to ID-based names
+ 
+Uncovered code
+ 
+          familiesWithNames.push({
+ 
+            id: family.id,
+ 
+            husband_name: family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown',
+ 
+            wife_name: family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown',
+ 
+            marriage_date: family.marriage_date,
+ 
+            marriage_place: family.marriage_place,
+ 
+            children_count: 0,
+ 
+            summary: `${family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown'} & ${family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown'}`
+ 
+          })
+ 
+        }
+ 
+      }
+
+===
+
