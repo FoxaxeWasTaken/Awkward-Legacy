@@ -22,10 +22,33 @@ const searchError = ref('')
 const healthError = ref('')
 const resultsLimit = ref(20)
 
-const handleSearch = async () => {
-  // Clear previous results and errors
+// Helper function to extract error message from API response
+const extractSearchErrorMessage = (error: unknown): string => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const apiError = error as { response?: { data?: { detail?: string } } }
+    return apiError.response?.data?.detail || 'Failed to search families. Please try again.'
+  }
+  return 'Failed to search families. Please try again.'
+}
+
+// Helper function to clear search state
+const clearSearchState = () => {
   searchResults.value = []
   searchError.value = ''
+}
+
+// Helper function to perform the actual search
+const performSearch = async (): Promise<void> => {
+  const results = await apiService.searchFamilies({
+    q: searchQuery.value.trim(),
+    limit: resultsLimit.value
+  })
+  searchResults.value = results
+}
+
+const handleSearch = async () => {
+  // Clear previous results and errors
+  clearSearchState()
   
   if (!searchQuery.value.trim()) {
     // Handle empty search gracefully - just return without making API call
@@ -35,22 +58,10 @@ const handleSearch = async () => {
   isSearching.value = true
   
   try {
-    // Make API call to search families
-    const results = await apiService.searchFamilies({
-      q: searchQuery.value.trim(),
-      limit: resultsLimit.value
-    })
-    
-    searchResults.value = results
+    await performSearch()
   } catch (error) {
     console.error('Search error:', error)
-    // Extract error message from API response
-    if (error && typeof error === 'object' && 'response' in error) {
-      const apiError = error as { response?: { data?: { detail?: string } } }
-      searchError.value = apiError.response?.data?.detail || 'Failed to search families. Please try again.'
-    } else {
-      searchError.value = 'Failed to search families. Please try again.'
-    }
+    searchError.value = extractSearchErrorMessage(error)
   } finally {
     isSearching.value = false
   }
