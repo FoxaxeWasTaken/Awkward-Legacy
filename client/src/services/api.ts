@@ -177,13 +177,10 @@ class ApiService {
         }
       )
       
-      // Process each family to get detailed information
-      const familiesWithNames: FamilySearchResult[] = []
-      
-      for (const family of response.data) {
-        const familyResult = await this.processFamilyWithDetails(family)
-        familiesWithNames.push(familyResult)
-      }
+      // Process each family to get detailed information in parallel
+      const familiesWithNames: FamilySearchResult[] = await Promise.all(
+        response.data.map(family => this.processFamilyWithDetails(family))
+      )
       
       return familiesWithNames
     } catch (error) {

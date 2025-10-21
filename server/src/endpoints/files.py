@@ -146,6 +146,7 @@ def create_temp_file(content_lines: list[str]) -> str:
     """Create a temporary file with the given content."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".gw", delete=False) as temp_file:
         temp_file.write("\n".join(content_lines))
+        temp_file.flush()  # Ensure content is written
         return temp_file.name
 
 
@@ -174,6 +175,7 @@ async def export_family_file(
 
     Returns a .gw file containing the family, related persons, children, and events.
     """
+    temp_file_path = None
     try:
         validate_family_exists(session, family_id)
         family_detail = get_family_detail_safe(session, family_id)
@@ -188,6 +190,12 @@ async def export_family_file(
     except HTTPException:
         raise
     except Exception as e:
+        # Clean up temp file on error
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass  # Ignore cleanup errors
         raise HTTPException(status_code=500, detail=f"Error exporting family: {str(e)}")
 
 

@@ -1,0 +1,630 @@
+Copilot:
+server/src/endpoints/files.py
+Outdated
+Comment on lines 145 to 147
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".gw", delete=False
+        ) as temp_file:
+Copilot AI
+9 hours ago
+The temporary file is created with delete=False but is never explicitly deleted after use. This could lead to accumulation of temporary files on the server. Consider using a cleanup mechanism or context manager that ensures deletion after the response is sent.
+
+===
+
+Copilot:
+client/src/services/api.ts
+Outdated
+Comment on lines 129 to 169
+      // For each family, get the detailed information to extract names
+      const familiesWithNames: FamilySearchResult[] = []
+
+      for (const family of response.data) {
+        try {
+          // Get family detail to get actual names
+          const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
+            `/api/v1/families/${family.id}/detail`
+          )
+
+          const familyDetail = detailResponse.data
+          const husbandName = familyDetail.husband 
+            ? `${familyDetail.husband.first_name || ''} ${familyDetail.husband.last_name || ''}`.trim() || 'Unknown'
+            : 'Unknown'
+          const wifeName = familyDetail.wife 
+            ? `${familyDetail.wife.first_name || ''} ${familyDetail.wife.last_name || ''}`.trim() || 'Unknown'
+            : 'Unknown'
+
+          familiesWithNames.push({
+            id: family.id,
+            husband_name: husbandName,
+            wife_name: wifeName,
+            marriage_date: family.marriage_date,
+            marriage_place: family.marriage_place,
+            children_count: familyDetail.children?.length || 0,
+            summary: `${husbandName} & ${wifeName}`
+          })
+        } catch (_detailError) {
+          // If detail fetch fails, fall back to ID-based names
+          familiesWithNames.push({
+            id: family.id,
+            husband_name: family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown',
+            wife_name: family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown',
+            marriage_date: family.marriage_date,
+            marriage_place: family.marriage_place,
+            children_count: 0,
+            summary: `${family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown'} & ${family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown'}`
+          })
+        }
+      }
+
+Copilot AI
+9 hours ago
+Fetching family details sequentially in a loop creates an N+1 query pattern. This will result in poor performance when loading many families. Consider implementing a batch endpoint that returns families with names in a single request, or use Promise.all() to fetch details in parallel.
+
+Suggested change
+      // For each family, get the detailed information to extract names
+      const familiesWithNames: FamilySearchResult[] = []
+      
+      for (const family of response.data) {
+        try {
+          // Get family detail to get actual names
+          const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
+            `/api/v1/families/${family.id}/detail`
+          )
+          
+          const familyDetail = detailResponse.data
+          const husbandName = familyDetail.husband 
+            ? `${familyDetail.husband.first_name || ''} ${familyDetail.husband.last_name || ''}`.trim() || 'Unknown'
+            : 'Unknown'
+          const wifeName = familyDetail.wife 
+            ? `${familyDetail.wife.first_name || ''} ${familyDetail.wife.last_name || ''}`.trim() || 'Unknown'
+            : 'Unknown'
+          
+          familiesWithNames.push({
+            id: family.id,
+            husband_name: husbandName,
+            wife_name: wifeName,
+            marriage_date: family.marriage_date,
+            marriage_place: family.marriage_place,
+            children_count: familyDetail.children?.length || 0,
+            summary: `${husbandName} & ${wifeName}`
+          })
+        } catch (_detailError) {
+          // If detail fetch fails, fall back to ID-based names
+          familiesWithNames.push({
+            id: family.id,
+            husband_name: family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown',
+            wife_name: family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown',
+            marriage_date: family.marriage_date,
+            marriage_place: family.marriage_place,
+            children_count: 0,
+            summary: `${family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown'} & ${family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown'}`
+          })
+        }
+      }
+      
+      // For each family, get the detailed information to extract names in parallel
+      const familiesWithNames: FamilySearchResult[] = await Promise.all(
+        response.data.map(async (family) => {
+          try {
+            // Get family detail to get actual names
+            const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
+              `/api/v1/families/${family.id}/detail`
+            )
+            const familyDetail = detailResponse.data
+            const husbandName = familyDetail.husband 
+              ? `${familyDetail.husband.first_name || ''} ${familyDetail.husband.last_name || ''}`.trim() || 'Unknown'
+              : 'Unknown'
+            const wifeName = familyDetail.wife 
+              ? `${familyDetail.wife.first_name || ''} ${familyDetail.wife.last_name || ''}`.trim() || 'Unknown'
+              : 'Unknown'
+            return {
+              id: family.id,
+              husband_name: husbandName,
+              wife_name: wifeName,
+              marriage_date: family.marriage_date,
+              marriage_place: family.marriage_place,
+              children_count: familyDetail.children?.length || 0,
+              summary: `${husbandName} & ${wifeName}`
+            }
+          } catch (_detailError) {
+            // If detail fetch fails, fall back to ID-based names
+            return {
+              id: family.id,
+              husband_name: family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown',
+              wife_name: family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown',
+              marriage_date: family.marriage_date,
+              marriage_place: family.marriage_place,
+              children_count: 0,
+              summary: `${family.husband_id ? `Person ${family.husband_id.slice(0, 8)}` : 'Unknown'} & ${family.wife_id ? `Person ${family.wife_id.slice(0, 8)}` : 'Unknown'}`
+            }
+          }
+        })
+      )
+      
+===
+
+Errors
+AssertionError
+33
+Timed out retrying after 4000ms: Expected to find element: input[placeholder*="Enter family name"], but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould enable search button when text is entered
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould disable search button when input is cleared
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould trim whitespace from search query
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould support Enter key for search
+
+Family Search - Enhanced E2E TestsSuccessful Searchshould display search results with single family
+family-search-to-tree.cy.js
+Linux
+•
+Electron 136
+•
+00:54
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould complete full search to family tree navigation
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould maintain search state when navigating back
+
+Family Search to Family Tree Navigation - E2E TestsMultiple Family Navigationshould navigate between different families
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould perform new search from family tree back button
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould clear search when navigating back and typing new query
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould perform a family search
+
+Family Search and Visualizationshould handle search with no results
+
+Family Search and Visualizationshould handle API errors gracefully
+
+Family Search and Visualizationshould navigate to family tree view
+
+Family Search and Visualizationshould be responsive on mobile devices
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Family Search' within the selector: 'h2' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display all main UI elements
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould display the main search interface
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Welcome to Family Search' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display welcome state
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould show welcome state initially
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find element: select, but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould allow changing results limit
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould use selected limit in API request
+AssertionError
+1
+Timed out retrying after 4000ms: Expected to find content: 'Search' within the element: <button.card-button> but never did.
+
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould handle empty search gracefully
+
+===
+
+Errors
+AssertionError
+33
+Timed out retrying after 4000ms: Expected to find element: input[placeholder*="Enter family name"], but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould enable search button when text is entered
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould disable search button when input is cleared
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould trim whitespace from search query
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould support Enter key for search
+
+Family Search - Enhanced E2E TestsSuccessful Searchshould display search results with single family
+family-search-to-tree.cy.js
+Linux
+•
+Electron 136
+•
+00:54
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould complete full search to family tree navigation
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould maintain search state when navigating back
+
+Family Search to Family Tree Navigation - E2E TestsMultiple Family Navigationshould navigate between different families
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould perform new search from family tree back button
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould clear search when navigating back and typing new query
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould perform a family search
+
+Family Search and Visualizationshould handle search with no results
+
+Family Search and Visualizationshould handle API errors gracefully
+
+Family Search and Visualizationshould navigate to family tree view
+
+Family Search and Visualizationshould be responsive on mobile devices
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Family Search' within the selector: 'h2' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display all main UI elements
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould display the main search interface
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Welcome to Family Search' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display welcome state
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould show welcome state initially
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find element: select, but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:02
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould allow changing results limit
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould use selected limit in API request
+AssertionError
+1
+Timed out retrying after 4000ms: Expected to find content: 'Search' within the element: <button.card-button> but never did.
+
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould handle empty search gracefully
+
+===
+
+Errors
+AssertionError
+33
+Timed out retrying after 4000ms: Expected to find element: input[placeholder*="Enter family name"], but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:04
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould enable search button when text is entered
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould disable search button when input is cleared
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould trim whitespace from search query
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould support Enter key for search
+
+Family Search - Enhanced E2E TestsSuccessful Searchshould display search results with single family
+family-search-to-tree.cy.js
+Linux
+•
+Electron 136
+•
+00:54
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould complete full search to family tree navigation
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould maintain search state when navigating back
+
+Family Search to Family Tree Navigation - E2E TestsMultiple Family Navigationshould navigate between different families
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould perform new search from family tree back button
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould clear search when navigating back and typing new query
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould perform a family search
+
+Family Search and Visualizationshould handle search with no results
+
+Family Search and Visualizationshould handle API errors gracefully
+
+Family Search and Visualizationshould navigate to family tree view
+
+Family Search and Visualizationshould be responsive on mobile devices
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Family Search' within the selector: 'h2' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:04
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display all main UI elements
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould display the main search interface
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Welcome to Family Search' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:04
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display welcome state
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould show welcome state initially
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find element: select, but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:04
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould allow changing results limit
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould use selected limit in API request
+AssertionError
+1
+Timed out retrying after 4000ms: Expected to find content: 'Search' within the element: <button.card-button> but never did.
+
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:41
+
+Family Search and Visualizationshould handle empty search gracefully
+
+===
+
+Errors
+AssertionError
+33
+Timed out retrying after 4000ms: Expected to find element: input[placeholder*="Enter family name"], but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:03
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould enable search button when text is entered
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould disable search button when input is cleared
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould trim whitespace from search query
+
+Family Search - Enhanced E2E TestsSearch Input Behaviorshould support Enter key for search
+
+Family Search - Enhanced E2E TestsSuccessful Searchshould display search results with single family
+family-search-to-tree.cy.js
+Linux
+•
+Electron 136
+•
+00:53
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould complete full search to family tree navigation
+
+Family Search to Family Tree Navigation - E2E TestsSearch to Family Tree Navigation Flowshould maintain search state when navigating back
+
+Family Search to Family Tree Navigation - E2E TestsMultiple Family Navigationshould navigate between different families
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould perform new search from family tree back button
+
+Family Search to Family Tree Navigation - E2E TestsSearch Integrationshould clear search when navigating back and typing new query
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould perform a family search
+
+Family Search and Visualizationshould handle search with no results
+
+Family Search and Visualizationshould handle API errors gracefully
+
+Family Search and Visualizationshould navigate to family tree view
+
+Family Search and Visualizationshould be responsive on mobile devices
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Family Search' within the selector: 'h2' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:03
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display all main UI elements
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould display the main search interface
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find content: 'Welcome to Family Search' but never did.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:03
+
+Family Search - Enhanced E2E TestsInitial Page Loadshould display welcome state
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould show welcome state initially
+AssertionError
+2
+Timed out retrying after 4000ms: Expected to find element: select, but never found it.
+
+family-search-enhanced.cy.js
+Linux
+•
+Electron 136
+•
+02:03
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould allow changing results limit
+
+Family Search - Enhanced E2E TestsResults Limit Selectionshould use selected limit in API request
+AssertionError
+1
+Timed out retrying after 4000ms: Expected to find content: 'Search' within the element: <button.card-button> but never did.
+
+family-search.cy.js
+Linux
+•
+Electron 136
+•
+00:40
+
+Family Search and Visualizationshould handle empty search gracefully
