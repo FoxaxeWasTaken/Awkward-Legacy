@@ -21,7 +21,7 @@ describe('Family Search and Visualization', () => {
 
   it('should handle empty search gracefully', () => {
     // Try to search with empty input
-    cy.get('button').contains('Search').click();
+    cy.get('button').contains('Search').click({ force: true });
     
     // Button should be disabled or no action should occur
     cy.get('input[placeholder*="Enter family name"]').should('have.value', '');

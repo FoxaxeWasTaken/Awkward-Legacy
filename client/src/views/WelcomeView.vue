@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import apiService from '../services/api'
 import type { FamilySearchResult } from '../types/family'
@@ -19,25 +19,38 @@ const searchQuery = ref('')
 const searchResults = ref<FamilySearchResult[]>([])
 const isSearching = ref(false)
 const searchError = ref('')
+const healthError = ref('')
 const resultsLimit = ref(20)
 
 const handleSearch = async () => {
-  if (!searchQuery.value.trim()) return
+  // Clear previous results and errors
+  searchResults.value = []
+  searchError.value = ''
+  
+  if (!searchQuery.value.trim()) {
+    // Handle empty search gracefully - just return without making API call
+    return
+  }
   
   isSearching.value = true
-  searchError.value = ''
   
   try {
     // Make API call to search families
     const results = await apiService.searchFamilies({
-      name: searchQuery.value.trim(),
+      q: searchQuery.value.trim(),
       limit: resultsLimit.value
     })
     
     searchResults.value = results
   } catch (error) {
     console.error('Search error:', error)
-    searchError.value = 'Failed to search families. Please try again.'
+    // Extract error message from API response
+    if (error && typeof error === 'object' && 'response' in error) {
+      const apiError = error as { response?: { data?: { detail?: string } } }
+      searchError.value = apiError.response?.data?.detail || 'Failed to search families. Please try again.'
+    } else {
+      searchError.value = 'Failed to search families. Please try again.'
+    }
   } finally {
     isSearching.value = false
   }
@@ -47,18 +60,68 @@ const _clearSearch = () => {
   searchQuery.value = ''
   searchResults.value = []
   searchError.value = ''
+  healthError.value = ''
+  
+  // Clear sessionStorage
+  sessionStorage.removeItem('searchQuery')
+  sessionStorage.removeItem('searchResults')
 }
 
 const navigateToFamily = (familyId: string) => {
   router.push(`/family/${familyId}`)
 }
 
+// Watch for search query changes to clear results
+watch(searchQuery, (newQuery, oldQuery) => {
+  if (newQuery !== oldQuery && newQuery.trim() === '') {
+    searchResults.value = []
+    searchError.value = ''
+  }
+})
+
 // Health check on mount
 onMounted(async () => {
   try {
-    await apiService.checkHealth()
+    const isHealthy = await apiService.healthCheck()
+    if (!isHealthy) {
+      healthError.value = 'Unable to connect to the server'
+    }
   } catch (error) {
     console.warn('Health check failed:', error)
+    healthError.value = 'Unable to connect to the server'
+  }
+  
+  // Restore search state from sessionStorage
+  const savedSearchQuery = sessionStorage.getItem('searchQuery')
+  const savedSearchResults = sessionStorage.getItem('searchResults')
+  
+  if (savedSearchQuery) {
+    searchQuery.value = savedSearchQuery
+  }
+  
+  if (savedSearchResults) {
+    try {
+      searchResults.value = JSON.parse(savedSearchResults)
+    } catch (error) {
+      console.warn('Failed to parse saved search results:', error)
+    }
+  }
+})
+
+// Save search state to sessionStorage
+watch(searchQuery, (newQuery) => {
+  if (newQuery.trim()) {
+    sessionStorage.setItem('searchQuery', newQuery)
+  } else {
+    sessionStorage.removeItem('searchQuery')
+  }
+})
+
+watch(searchResults, (newResults) => {
+  if (newResults.length > 0) {
+    sessionStorage.setItem('searchResults', JSON.stringify(newResults))
+  } else {
+    sessionStorage.removeItem('searchResults')
   }
 })
 </script>
@@ -103,7 +166,7 @@ onMounted(async () => {
       </div>
 
       <!-- Welcome state -->
-      <div v-if="!searchResults.length && !searchQuery" class="welcome-state">
+      <div v-if="!searchResults.length && !searchError" class="welcome-state">
         <h3>Welcome to Family Search</h3>
         <p>Enter a family name above to search</p>
         <div class="search-examples">
@@ -123,20 +186,44 @@ onMounted(async () => {
           <div 
             v-for="family in searchResults" 
             :key="family.id"
-            class="result-item"
-            @click="navigateToFamily(family.id)"
+            class="result-item family-card"
           >
             <h4>{{ family.summary }}</h4>
-            <p>Marriage: {{ family.marriage_date || 'Unknown' }}</p>
-            <p>Place: {{ family.marriage_place || 'Unknown' }}</p>
-            <p>Children: {{ family.children_count }}</p>
+            <div class="family-details">
+              <p><strong>Husband:</strong> {{ family.husband_name || 'Unknown' }}</p>
+              <p><strong>Wife:</strong> {{ family.wife_name || 'Unknown' }}</p>
+              <p><strong>Married:</strong> {{ family.marriage_date || 'Unknown' }}</p>
+              <p><strong>Place:</strong> {{ family.marriage_place || 'Unknown' }}</p>
+              <p><strong>Children:</strong> {{ family.children_count || 0 }} children</p>
+            </div>
+            <button 
+              class="card-button"
+              @click="navigateToFamily(family.id)"
+            >
+              View Details
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Error state -->
+      <!-- No results state -->
+      <div v-if="searchQuery && !searchResults.length && !searchError && !isSearching" class="no-results">
+        <p>No Families Found</p>
+        <p>No families match your search criteria</p>
+      </div>
+
+      <!-- Health error state -->
+      <div v-if="healthError" class="error-message">
+        <h4>Connection Error</h4>
+        <p>{{ healthError }}</p>
+        <button @click="_clearSearch" class="retry-button">Try Again</button>
+      </div>
+
+      <!-- Search error state -->
       <div v-if="searchError" class="error-message">
-        {{ searchError }}
+        <h4>Search Error</h4>
+        <p>{{ searchError }}</p>
+        <button @click="_clearSearch" class="retry-button">Try Again</button>
       </div>
 
       <!-- Loading state -->
