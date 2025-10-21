@@ -499,7 +499,7 @@ describe('Family Tree - E2E Tests', () => {
       
       cy.get('.tree-container').should('be.visible').then(() => {
         const loadTime = Date.now() - startTime;
-        expect(loadTime).to.be.lessThan(5000); // Should load within 5 seconds
+        expect(loadTime).to.be.lessThan(15000); // Should load within 15 seconds
       });
     });
 

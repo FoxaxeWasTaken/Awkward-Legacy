@@ -99,8 +99,8 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
       body: { status: 'healthy' }
     }).as('healthCheck');
 
-    // Visit the home page
-    cy.visit('/');
+    // Visit the manage page where search functionality is located
+    cy.visit('/manage');
   });
 
   describe('Search to Family Tree Navigation Flow', () => {
@@ -220,7 +220,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
 
     it('should handle browser back/forward navigation', () => {
       // Start at search page
-      cy.visit('/');
+      cy.visit('/manage');
       
       // Navigate to family tree
       cy.visit('/family/family-1');

@@ -6,7 +6,7 @@ describe('Family Search and Visualization', () => {
 
   it('should display the main homepage interface', () => {
     // Check that the main elements are present
-    cy.contains('h1', 'Geneweb').should('be.visible');
+    cy.contains('h1', '🏛️ Geneweb').should('be.visible');
     cy.contains('Upload Family File').should('be.visible');
     cy.contains('Search & Manage Families').should('be.visible');
   });
@@ -15,7 +15,7 @@ describe('Family Search and Visualization', () => {
     // Check that action cards are present
     cy.contains('Upload Family File').should('be.visible');
     cy.contains('Search & Manage Families').should('be.visible');
-    cy.contains('Choose File').should('be.visible');
+    cy.contains('Upload File').should('be.visible');
     cy.contains('Explore Families').should('be.visible');
   });
 
@@ -32,8 +32,54 @@ describe('Family Search and Visualization', () => {
     // Navigate to manage page first
     cy.visit('/manage');
     
-    // Mock API response for family search
-    cy.intercept('GET', '/api/v1/families/search*', {
+    // Mock API response for loading families
+    cy.intercept('GET', '/api/v1/families', {
+      statusCode: 200,
+      body: [
+        {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          husband_name: 'John Doe',
+          wife_name: 'Jane Smith',
+          marriage_date: '2005-06-20',
+          marriage_place: 'New York City',
+          children_count: 2,
+          summary: 'John Doe & Jane Smith (2005)'
+        },
+        {
+          id: '223e4567-e89b-12d3-a456-426614174001',
+          husband_name: 'Bob Wilson',
+          wife_name: 'Alice Brown',
+          marriage_date: '2010-03-15',
+          marriage_place: 'Boston, MA',
+          children_count: 1,
+          summary: 'Bob Wilson & Alice Brown (2010)'
+        }
+      ]
+    }).as('loadFamilies');
+
+    // Wait for the page to load and show the table
+    cy.get('.families-table').should('be.visible');
+    
+    // Wait a bit for the API call to complete
+    cy.wait(1000);
+
+    // Perform search (client-side filtering)
+    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('John');
+    cy.get('button').contains('Search').click();
+
+    // Check that filtered results are displayed in the table
+    cy.get('.families-table tbody tr').should('have.length', 1);
+    cy.contains('John Doe').should('be.visible');
+    cy.contains('Jane Smith').should('be.visible');
+    cy.contains('New York City').should('be.visible');
+  });
+
+  it('should handle search with no results', () => {
+    // Navigate to manage page first
+    cy.visit('/manage');
+    
+    // Mock API response with some families
+    cy.intercept('GET', '/api/v1/families', {
       statusCode: 200,
       body: [
         {
@@ -46,69 +92,37 @@ describe('Family Search and Visualization', () => {
           summary: 'John Doe & Jane Smith (2005)'
         }
       ]
-    }).as('familySearch');
+    }).as('loadFamilies');
 
-    // Perform search
-    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('John');
-    cy.get('button').contains('Search').click();
-
-    // Wait for API call
-    cy.wait('@familySearch');
-
-    // Check that results are displayed
-    cy.contains('Search Results (1)').should('be.visible');
-    cy.contains('John Doe & Jane Smith (2005)').should('be.visible');
-    cy.contains('Husband:').should('be.visible');
-    cy.contains('John Doe').should('be.visible');
-    cy.contains('Wife:').should('be.visible');
-    cy.contains('Jane Smith').should('be.visible');
-    cy.contains('Children:').should('be.visible');
-    cy.contains('2').should('be.visible');
-  });
-
-  it('should handle search with no results', () => {
-    // Navigate to manage page first
-    cy.visit('/manage');
+    // Wait for the page to load and show the table
+    cy.get('.families-table').should('be.visible');
     
-    // Mock API response with no results (empty array, not 404)
-    cy.intercept('GET', '/api/v1/families/search*', {
-      statusCode: 200,
-      body: []
-    }).as('noResults');
+    // Wait a bit for the API call to complete
+    cy.wait(1000);
 
-    // Perform search
+    // Perform search for non-existent family
     cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Nonexistent');
     cy.get('button').contains('Search').click();
 
-    // Wait for API call
-    cy.wait('@noResults');
-
-    // Check that no results message is displayed
-    cy.contains('No Families Found').should('be.visible');
-    cy.contains('No families match your search criteria').should('be.visible');
+    // Check that no results are displayed in the table
+    cy.get('.families-table tbody tr').should('have.length', 0);
+    // The table should be empty, showing no rows
   });
 
   it('should handle API errors gracefully', () => {
     // Navigate to manage page first
     cy.visit('/manage');
     
-    // Mock API error response
-    cy.intercept('GET', '/api/v1/families/search*', {
+    // Mock API error response for loading families
+    cy.intercept('GET', '/api/v1/families', {
       statusCode: 500,
       body: {
         detail: 'Internal server error'
       }
     }).as('apiError');
 
-    // Perform search
-    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Test');
-    cy.get('button').contains('Search').click();
-
-    // Wait for API call
-    cy.wait('@apiError');
-
-    // Check that error message is displayed
-    cy.contains('Search Error').should('be.visible');
+    // Wait for error state to appear
+    cy.contains('Error Loading Families').should('be.visible');
     cy.contains('Internal server error').should('be.visible');
     cy.get('button').contains('Try Again').should('be.visible');
   });
@@ -117,8 +131,8 @@ describe('Family Search and Visualization', () => {
     // Navigate to manage page first
     cy.visit('/manage');
     
-    // Mock API responses
-    cy.intercept('GET', '/api/v1/families/search*', {
+    // Mock API responses for loading families
+    cy.intercept('GET', '/api/v1/families', {
       statusCode: 200,
       body: [
         {
@@ -131,7 +145,7 @@ describe('Family Search and Visualization', () => {
           summary: 'John Doe & Jane Smith (2005)'
         }
       ]
-    }).as('familySearch');
+    }).as('loadFamilies');
 
     cy.intercept('GET', '/api/v1/families/123e4567-e89b-12d3-a456-426614174000/detail', {
       statusCode: 200,
@@ -174,15 +188,16 @@ describe('Family Search and Visualization', () => {
       }
     }).as('familyDetail');
 
-    // Perform search
-    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('John');
-    cy.get('button').contains('Search').click();
+    // Wait for the page to load and show the table
+    cy.get('.families-table').should('be.visible');
+    
+    // Wait a bit for the API call to complete
+    cy.wait(1000);
 
-    // Wait for search results
-    cy.wait('@familySearch');
-
-    // Click on family card to view details
-    cy.contains('View Details').click();
+    // Click on the "View Tree" button in the table
+    cy.get('.families-table tbody tr').first().within(() => {
+      cy.get('button').contains('View Tree').click();
+    });
 
     // Wait for family detail API call
     cy.wait('@familyDetail');
@@ -316,8 +331,11 @@ describe('Family Search and Visualization', () => {
     // Set mobile viewport
     cy.viewport(375, 667);
 
+    // Navigate to manage page
+    cy.visit('/manage');
+
     // Check that elements are still visible and functional
-    cy.contains('Family Search').should('be.visible');
+    cy.contains('Family Search & Management').should('be.visible');
     cy.get('input[placeholder*="Search families by name, place, or notes"]').should('be.visible');
     cy.get('button').contains('Search').should('be.visible');
 
