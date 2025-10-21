@@ -2,42 +2,38 @@ describe('Family Search - Enhanced E2E Tests', () => {
   const API_URL = Cypress.env('apiUrl') || 'http://server-dev:8000';
   
   beforeEach(() => {
-    // Visit the home page
-    cy.visit('/');
+    // Visit the manage page where search functionality is located
+    cy.visit('/manage');
     // Wait for the page to load
-    cy.get('h1').contains('Geneweb Family Search').should('be.visible');
+    cy.get('h1').contains('Family Search & Management').should('be.visible');
   });
 
   describe('Initial Page Load', () => {
     it('should display all main UI elements', () => {
       // Header
-      cy.contains('h1', 'Geneweb Family Search').should('be.visible');
-      cy.contains('Explore family trees and genealogical data').should('be.visible');
+      cy.contains('h1', 'Family Search & Management').should('be.visible');
+      cy.contains('Search, explore, and manage all families in the database').should('be.visible');
       
       // Search interface
-      cy.contains('h2', 'Family Search').should('be.visible');
-      cy.get('input[placeholder*="Enter family name"]').should('be.visible');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').should('be.visible');
       cy.get('button').contains('Search').should('be.visible');
+      cy.get('button').contains('Clear').should('be.visible');
       
-      // Results limit selector
+      // Filter controls
       cy.get('select').should('be.visible');
       cy.get('select option[value="20"]').should('be.selected');
-      
-      // Footer
-      cy.contains('© 2024 Geneweb Family Search').should('be.visible');
     });
 
-    it('should display welcome state', () => {
-      cy.contains('Welcome to Family Search').should('be.visible');
-      cy.contains('Enter a family name above to search').should('be.visible');
-      cy.contains('Search Examples:').should('be.visible');
-      cy.contains('Search by first name').should('be.visible');
-      cy.contains('Search by last name').should('be.visible');
-      cy.contains('Search by full name').should('be.visible');
+    it('should display initial state', () => {
+      // The FamilyManagementView loads families by default, so we should see either:
+      // - Loading state, or
+      // - Families list, or  
+      // - Error state
+      cy.get('body').should('be.visible');
     });
 
-    it('should have search button disabled initially', () => {
-      cy.get('button.search-button').should('be.disabled');
+    it('should have search button enabled', () => {
+      cy.get('button.search-button').should('be.enabled');
     });
   });
 

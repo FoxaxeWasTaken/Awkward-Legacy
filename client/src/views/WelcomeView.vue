@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import apiService from '../services/api'
-import type { FamilySearchResult } from '../types/family'
 
 const router = useRouter()
 
@@ -13,267 +10,45 @@ const navigateToUpload = () => {
 const navigateToManage = () => {
   router.push('/manage')
 }
-
-// Search functionality
-const searchQuery = ref('')
-const searchResults = ref<FamilySearchResult[]>([])
-const isSearching = ref(false)
-const searchError = ref('')
-const healthError = ref('')
-const resultsLimit = ref(20)
-
-// Helper function to check if error has response structure
-const isErrorWithResponse = (error: unknown): error is { response?: { data?: { detail?: string } } } => {
-  return Boolean(error && typeof error === 'object' && 'response' in error)
-}
-
-// Helper function to extract error message from API response
-const extractSearchErrorMessage = (error: unknown): string => {
-  if (isErrorWithResponse(error)) {
-    return error.response?.data?.detail || 'Failed to search families. Please try again.'
-  }
-  return 'Failed to search families. Please try again.'
-}
-
-// Helper function to clear search state
-const clearSearchState = () => {
-  searchResults.value = []
-  searchError.value = ''
-}
-
-// Helper function to perform the actual search
-const performSearch = async (): Promise<void> => {
-  const results = await apiService.searchFamilies({
-    q: searchQuery.value.trim(),
-    limit: resultsLimit.value
-  })
-  searchResults.value = results
-}
-
-const handleSearch = async () => {
-  // Clear previous results and errors
-  clearSearchState()
-  
-  if (!searchQuery.value.trim()) {
-    // Handle empty search gracefully - just return without making API call
-    return
-  }
-  
-  isSearching.value = true
-  
-  try {
-    await performSearch()
-  } catch (error) {
-    console.error('Search error:', error)
-    searchError.value = extractSearchErrorMessage(error)
-  } finally {
-    isSearching.value = false
-  }
-}
-
-const _clearSearch = () => {
-  searchQuery.value = ''
-  searchResults.value = []
-  searchError.value = ''
-  healthError.value = ''
-  
-  // Clear sessionStorage
-  sessionStorage.removeItem('searchQuery')
-  sessionStorage.removeItem('searchResults')
-}
-
-const navigateToFamily = (familyId: string) => {
-  router.push(`/family/${familyId}`)
-}
-
-// Watch for search query changes to clear results
-watch(searchQuery, (newQuery, oldQuery) => {
-  if (newQuery !== oldQuery && newQuery.trim() === '') {
-    searchResults.value = []
-    searchError.value = ''
-  }
-})
-
-// Health check on mount
-onMounted(async () => {
-  try {
-    const isHealthy = await apiService.healthCheck()
-    if (!isHealthy) {
-      healthError.value = 'Unable to connect to the server'
-    }
-  } catch (error) {
-    console.warn('Health check failed:', error)
-    healthError.value = 'Unable to connect to the server'
-  }
-  
-  // Restore search state from sessionStorage
-  const savedSearchQuery = sessionStorage.getItem('searchQuery')
-  const savedSearchResults = sessionStorage.getItem('searchResults')
-  
-  if (savedSearchQuery) {
-    searchQuery.value = savedSearchQuery
-  }
-  
-  if (savedSearchResults) {
-    try {
-      searchResults.value = JSON.parse(savedSearchResults)
-    } catch (error) {
-      console.warn('Failed to parse saved search results:', error)
-    }
-  }
-})
-
-// Save search state to sessionStorage
-watch(searchQuery, (newQuery) => {
-  if (newQuery.trim()) {
-    sessionStorage.setItem('searchQuery', newQuery)
-  } else {
-    sessionStorage.removeItem('searchQuery')
-  }
-})
-
-watch(searchResults, (newResults) => {
-  if (newResults.length > 0) {
-    sessionStorage.setItem('searchResults', JSON.stringify(newResults))
-  } else {
-    sessionStorage.removeItem('searchResults')
-  }
-})
 </script>
 
 <template>
   <div class="welcome-view">
     <!-- Header -->
     <div class="welcome-header">
-      <h1>Geneweb Family Search</h1>
-      <p>Explore family trees and genealogical data</p>
-    </div>
-
-    <!-- Family Search Section -->
-    <div class="search-section">
-      <h2>Family Search</h2>
-      <div class="search-input-group">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Enter family name"
-          class="search-input"
-          @keyup.enter="handleSearch"
-        />
-        <button 
-          @click="handleSearch" 
-          class="search-button"
-          :disabled="!searchQuery.trim() || isSearching"
-        >
-          Search
-        </button>
-      </div>
-      
-      <!-- Results limit selector -->
-      <div class="results-limit">
-        <label for="results-limit">Results limit:</label>
-        <select id="results-limit" v-model="resultsLimit">
-          <option value="10">10</option>
-          <option value="20" selected>20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-      </div>
-
-      <!-- Welcome state -->
-      <div v-if="!searchResults.length && !searchError" class="welcome-state">
-        <h3>Welcome to Family Search</h3>
-        <p>Enter a family name above to search</p>
-        <div class="search-examples">
-          <h4>Search Examples:</h4>
-          <ul>
-            <li>Search by first name</li>
-            <li>Search by last name</li>
-            <li>Search by full name</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Search results -->
-      <div v-if="searchResults.length > 0" class="search-results">
-        <h3>Search Results ({{ searchResults.length }})</h3>
-        <div class="results-list">
-          <div 
-            v-for="family in searchResults" 
-            :key="family.id"
-            class="result-item family-card"
-          >
-            <h4>{{ family.summary }}</h4>
-            <div class="family-details">
-              <p><strong>Husband:</strong> {{ family.husband_name || 'Unknown' }}</p>
-              <p><strong>Wife:</strong> {{ family.wife_name || 'Unknown' }}</p>
-              <p><strong>Married:</strong> {{ family.marriage_date || 'Unknown' }}</p>
-              <p><strong>Place:</strong> {{ family.marriage_place || 'Unknown' }}</p>
-              <p><strong>Children:</strong> {{ family.children_count || 0 }} children</p>
-            </div>
-            <button 
-              class="card-button"
-              @click="navigateToFamily(family.id)"
-            >
-              View Details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- No results state -->
-      <div v-if="searchQuery && !searchResults.length && !searchError && !isSearching" class="no-results">
-        <p>No Families Found</p>
-        <p>No families match your search criteria</p>
-      </div>
-
-      <!-- Health error state -->
-      <div v-if="healthError" class="error-message">
-        <h4>Connection Error</h4>
-        <p>{{ healthError }}</p>
-        <button @click="_clearSearch" class="retry-button">Try Again</button>
-      </div>
-
-      <!-- Search error state -->
-      <div v-if="searchError" class="error-message">
-        <h4>Search Error</h4>
-        <p>{{ searchError }}</p>
-        <button @click="_clearSearch" class="retry-button">Try Again</button>
-      </div>
-
-      <!-- Loading state -->
-      <div v-if="isSearching" class="loading-message">
-        Searching families...
-      </div>
     </div>
 
     <div class="welcome-actions">
       <div class="action-cards">
         <div class="action-card upload-card" @click="navigateToUpload">
-          <div class="card-icon">📁</div>
-          <h3 class="card-title">Upload Family File</h3>
-          <p class="card-description">
-            Upload and import your GeneWeb (.gw) files to the database
-          </p>
-          <div class="card-features">
-            <span class="feature">• Drag & drop upload</span>
-            <span class="feature">• Automatic parsing</span>
-            <span class="feature">• Instant preview</span>
+          <div class="card-content">
+            <div class="card-icon">📁</div>
+            <h3 class="card-title">Upload Family File</h3>
+            <p class="card-description">
+              Upload and import your GeneWeb (.gw) files to the database
+            </p>
+            <div class="card-features">
+              <span class="feature">• Drag & drop upload</span>
+              <span class="feature">• Automatic parsing</span>
+              <span class="feature">• Instant preview</span>
+            </div>
           </div>
           <button class="card-button">Upload File</button>
         </div>
 
         <div class="action-card manage-card" @click="navigateToManage">
-          <div class="card-icon">🔍</div>
-          <h3 class="card-title">Search & Manage Families</h3>
-          <p class="card-description">
-            Search, explore, and manage all families in the database
-          </p>
-          <div class="card-features">
-            <span class="feature">• Browse family trees</span>
-            <span class="feature">• Advanced filtering</span>
-            <span class="feature">• Interactive visualization</span>
-            <span class="feature">• Data export</span>
+          <div class="card-content">
+            <div class="card-icon">🔍</div>
+            <h3 class="card-title">Search & Manage Families</h3>
+            <p class="card-description">
+              Search, explore, and manage all families in the database
+            </p>
+            <div class="card-features">
+              <span class="feature">• Browse family trees</span>
+              <span class="feature">• Advanced filtering</span>
+              <span class="feature">• Interactive visualization</span>
+              <span class="feature">• Data export</span>
+            </div>
           </div>
           <button class="card-button">Explore Families</button>
         </div>
@@ -305,11 +80,6 @@ watch(searchResults, (newResults) => {
         </div>
       </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="welcome-footer">
-      <p>© 2024 Geneweb Family Search</p>
-    </footer>
   </div>
 </template>
 
@@ -537,6 +307,9 @@ watch(searchResults, (newResults) => {
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .action-card:hover {
@@ -572,13 +345,13 @@ watch(searchResults, (newResults) => {
 
 .card-features {
   margin-bottom: 2rem;
+  flex-grow: 1;
 }
 
-.feature {
-  display: block;
-  color: #7f8c8d;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+.card-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-button {
@@ -592,7 +365,16 @@ watch(searchResults, (newResults) => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: auto;
 }
+
+.feature {
+  display: block;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
 
 .card-button:hover {
   transform: translateY(-2px);

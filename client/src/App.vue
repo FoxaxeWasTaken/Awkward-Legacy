@@ -13,7 +13,7 @@ onMounted(() => {
   <div id="app">
     <header class="app-header">
       <div class="header-content">
-        <h1 class="app-title">🏛️ Geneweb Family Search</h1>
+        <h1 class="app-title">🏛️ Geneweb</h1>
         <p class="app-subtitle">Explore family trees and genealogical data</p>
       </div>
     </header>

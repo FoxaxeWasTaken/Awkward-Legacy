@@ -7,7 +7,7 @@ import FamilyManagementView from '../views/FamilyManagementView.vue'
 const routes = [
   {
     path: '/',
-    name: 'home',
+    name: 'welcome',
     component: WelcomeView,
   },
   {
