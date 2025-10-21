@@ -28,18 +28,13 @@ const handleSearch = async () => {
   searchError.value = ''
   
   try {
-    const results = await apiService.getAllFamiliesForManagement({
+    // Make API call to search families
+    const results = await apiService.searchFamilies({
+      name: searchQuery.value.trim(),
       limit: resultsLimit.value
     })
     
-    // Filter results based on search query
-    const query = searchQuery.value.toLowerCase()
-    searchResults.value = results.filter(family => 
-      family.husband_name?.toLowerCase().includes(query) ||
-      family.wife_name?.toLowerCase().includes(query) ||
-      family.marriage_place?.toLowerCase().includes(query) ||
-      family.summary?.toLowerCase().includes(query)
-    )
+    searchResults.value = results
   } catch (error) {
     console.error('Search error:', error)
     searchError.value = 'Failed to search families. Please try again.'
@@ -48,7 +43,7 @@ const handleSearch = async () => {
   }
 }
 
-const clearSearch = () => {
+const _clearSearch = () => {
   searchQuery.value = ''
   searchResults.value = []
   searchError.value = ''
