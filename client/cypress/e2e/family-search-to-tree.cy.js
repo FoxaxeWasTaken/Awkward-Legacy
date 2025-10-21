@@ -106,7 +106,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
   describe('Search to Family Tree Navigation Flow', () => {
     it('should complete full search to family tree navigation', () => {
       // Step 1: Perform search
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       
       cy.wait('@searchFamilies');
@@ -148,7 +148,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
 
     it('should maintain search state when navigating back', () => {
       // Perform search
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -161,14 +161,14 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
       
       // Verify search results are still displayed
       cy.get('.family-card').should('have.length', 2);
-      cy.get('input[placeholder*="Enter family name"]').should('have.value', 'Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').should('have.value', 'Smith');
     });
   });
 
   describe('Multiple Family Navigation', () => {
     it('should navigate between different families', () => {
       // Search for families
-      cy.get('input[placeholder*="Enter family name"]').type('family');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('family');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -259,7 +259,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
       cy.get('.back-button').click();
       
       // Perform new search
-      cy.get('input[placeholder*="Enter family name"]').clear().type('Johnson');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').clear().type('Johnson');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -269,7 +269,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
 
     it('should clear search when navigating back and typing new query', () => {
       // Perform initial search
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -281,7 +281,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
       cy.get('.back-button').click();
       
       // Start typing new search (should clear previous results)
-      cy.get('input[placeholder*="Enter family name"]').clear().type('Johnson');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').clear().type('Johnson');
       
       // Results should be cleared while typing
       cy.get('.family-card').should('not.exist');
@@ -292,7 +292,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
   describe('Error Handling in Navigation Flow', () => {
     it('should handle API error during family detail loading', () => {
       // Perform search successfully
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -317,7 +317,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
 
     it('should handle network timeout during navigation', () => {
       // Perform search
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -341,7 +341,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
       const startTime = Date.now();
       
       // Perform search
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -358,7 +358,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
 
     it('should maintain scroll position when navigating back', () => {
       // Perform search
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').click();
       cy.wait('@searchFamilies');
       
@@ -380,7 +380,7 @@ describe('Family Search to Family Tree Navigation - E2E Tests', () => {
   describe('Accessibility in Navigation Flow', () => {
     it('should be keyboard navigable throughout the flow', () => {
       // Tab to search input
-      cy.get('input[placeholder*="Enter family name"]').focus().type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').focus().type('Smith');
       
       // Tab to search button and activate
       cy.get('button.search-button').focus().type('{enter}');

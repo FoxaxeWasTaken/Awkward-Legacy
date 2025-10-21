@@ -4,30 +4,34 @@ describe('Family Search and Visualization', () => {
     cy.visit('/');
   });
 
-  it('should display the main search interface', () => {
+  it('should display the main homepage interface', () => {
     // Check that the main elements are present
-    cy.contains('h1', 'Geneweb Family Search').should('be.visible');
-    cy.contains('h2', 'Family Search').should('be.visible');
-    cy.get('input[placeholder*="Enter family name"]').should('be.visible');
-    cy.get('button').contains('Search').should('be.visible');
+    cy.contains('h1', 'Geneweb').should('be.visible');
+    cy.contains('Upload Family File').should('be.visible');
+    cy.contains('Search & Manage Families').should('be.visible');
   });
 
-  it('should show welcome state initially', () => {
-    // Check welcome state elements
-    cy.contains('Welcome to Family Search').should('be.visible');
-    cy.contains('Enter a family name above to search').should('be.visible');
-    cy.contains('Search Examples:').should('be.visible');
+  it('should show action cards on homepage', () => {
+    // Check that action cards are present
+    cy.contains('Upload Family File').should('be.visible');
+    cy.contains('Search & Manage Families').should('be.visible');
+    cy.contains('Choose File').should('be.visible');
+    cy.contains('Explore Families').should('be.visible');
   });
 
-  it('should handle empty search gracefully', () => {
-    // Try to search with empty input
-    cy.get('button').contains('Search').click({ force: true });
+  it('should navigate to manage page when clicking Explore Families', () => {
+    // Click the Explore Families button
+    cy.contains('Explore Families').click();
     
-    // Button should be disabled or no action should occur
-    cy.get('input[placeholder*="Enter family name"]').should('have.value', '');
+    // Should navigate to manage page
+    cy.url().should('include', '/manage');
+    cy.contains('Family Search & Management').should('be.visible');
   });
 
-  it('should perform a family search', () => {
+  it('should perform a family search on manage page', () => {
+    // Navigate to manage page first
+    cy.visit('/manage');
+    
     // Mock API response for family search
     cy.intercept('GET', '/api/v1/families/search*', {
       statusCode: 200,
@@ -45,7 +49,7 @@ describe('Family Search and Visualization', () => {
     }).as('familySearch');
 
     // Perform search
-    cy.get('input[placeholder*="Enter family name"]').type('John');
+    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('John');
     cy.get('button').contains('Search').click();
 
     // Wait for API call
@@ -63,6 +67,9 @@ describe('Family Search and Visualization', () => {
   });
 
   it('should handle search with no results', () => {
+    // Navigate to manage page first
+    cy.visit('/manage');
+    
     // Mock API response with no results (empty array, not 404)
     cy.intercept('GET', '/api/v1/families/search*', {
       statusCode: 200,
@@ -70,7 +77,7 @@ describe('Family Search and Visualization', () => {
     }).as('noResults');
 
     // Perform search
-    cy.get('input[placeholder*="Enter family name"]').type('Nonexistent');
+    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Nonexistent');
     cy.get('button').contains('Search').click();
 
     // Wait for API call
@@ -82,6 +89,9 @@ describe('Family Search and Visualization', () => {
   });
 
   it('should handle API errors gracefully', () => {
+    // Navigate to manage page first
+    cy.visit('/manage');
+    
     // Mock API error response
     cy.intercept('GET', '/api/v1/families/search*', {
       statusCode: 500,
@@ -91,7 +101,7 @@ describe('Family Search and Visualization', () => {
     }).as('apiError');
 
     // Perform search
-    cy.get('input[placeholder*="Enter family name"]').type('Test');
+    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Test');
     cy.get('button').contains('Search').click();
 
     // Wait for API call
@@ -104,6 +114,9 @@ describe('Family Search and Visualization', () => {
   });
 
   it('should navigate to family tree view', () => {
+    // Navigate to manage page first
+    cy.visit('/manage');
+    
     // Mock API responses
     cy.intercept('GET', '/api/v1/families/search*', {
       statusCode: 200,
@@ -162,7 +175,7 @@ describe('Family Search and Visualization', () => {
     }).as('familyDetail');
 
     // Perform search
-    cy.get('input[placeholder*="Enter family name"]').type('John');
+    cy.get('input[placeholder*="Search families by name, place, or notes"]').type('John');
     cy.get('button').contains('Search').click();
 
     // Wait for search results
@@ -305,7 +318,7 @@ describe('Family Search and Visualization', () => {
 
     // Check that elements are still visible and functional
     cy.contains('Family Search').should('be.visible');
-    cy.get('input[placeholder*="Enter family name"]').should('be.visible');
+    cy.get('input[placeholder*="Search families by name, place, or notes"]').should('be.visible');
     cy.get('button').contains('Search').should('be.visible');
 
     // Check that search form is responsive

@@ -44,7 +44,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: { status: 'ok' }
       }).as('healthCheck');
       
-      cy.visit('/');
+      cy.visit('/manage');
       cy.wait('@healthCheck');
     });
 
@@ -53,7 +53,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         forceNetworkError: true
       }).as('healthCheckFail');
       
-      cy.visit('/');
+      cy.visit('/manage');
       cy.wait('@healthCheckFail');
       cy.contains('Unable to connect to the server').should('be.visible');
     });
@@ -61,15 +61,15 @@ describe('Family Search - Enhanced E2E Tests', () => {
 
   describe('Search Input Behavior', () => {
     it('should enable search button when text is entered', () => {
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').should('not.be.disabled');
     });
 
     it('should disable search button when input is cleared', () => {
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button.search-button').should('not.be.disabled');
       
-      cy.get('input[placeholder*="Enter family name"]').clear();
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').clear();
       cy.get('button.search-button').should('be.disabled');
     });
 
@@ -79,7 +79,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: []
       }).as('searchRequest');
       
-      cy.get('input[placeholder*="Enter family name"]').type('  Smith  ');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('  Smith  ');
       cy.get('button').contains('Search').click();
       
       cy.wait('@searchRequest').its('request.url').should('include', 'q=Smith');
@@ -99,7 +99,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('searchRequest');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith{enter}');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith{enter}');
       cy.wait('@searchRequest');
       cy.contains('Search Results').should('be.visible');
     });
@@ -107,8 +107,8 @@ describe('Family Search - Enhanced E2E Tests', () => {
 
   describe('Results Limit Selection', () => {
     it('should allow changing results limit', () => {
-      cy.get('select').select('50');
-      cy.get('select option[value="50"]').should('be.selected');
+      cy.get('select').first().select('50');
+      cy.get('select').first().find('option[value="50"]').should('be.selected');
     });
 
     it('should use selected limit in API request', () => {
@@ -117,8 +117,8 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: []
       }).as('searchRequest');
       
-      cy.get('select').select('10');
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('select').first().select('10');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       
       cy.wait('@searchRequest').its('request.url').should('include', 'limit=10');
@@ -140,7 +140,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('familySearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
 
@@ -196,7 +196,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: mockFamilies
       }).as('familySearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
       
@@ -222,7 +222,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('familySearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
       
@@ -238,7 +238,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: { detail: 'No families found matching the search criteria' }
       }).as('familySearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Nonexistent');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Nonexistent');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
       
@@ -253,7 +253,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         forceNetworkError: true
       }).as('familySearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
       
@@ -267,7 +267,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: { detail: 'Internal server error' }
       }).as('familySearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearch');
       
@@ -281,7 +281,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         body: { detail: 'Server error' }
       }).as('familySearchError');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@familySearchError');
       
@@ -313,14 +313,14 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('firstSearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@firstSearch');
       
       cy.contains('John Smith & Jane Doe').should('be.visible');
       
       // Start typing new search - this should clear results
-      cy.get('input[placeholder*="Enter family name"]').clear().type('J');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').clear().type('J');
       
       // Results should be cleared when typing new search
       cy.contains('John Smith & Jane Doe').should('not.exist');
@@ -340,7 +340,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('specialSearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type("O'Brien");
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type("O'Brien");
       cy.get('button').contains('Search').click();
       cy.wait('@specialSearch');
       
@@ -352,7 +352,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
     it('should work on mobile viewport', () => {
       cy.viewport('iphone-x');
       
-      cy.get('input[placeholder*="Enter family name"]').should('be.visible');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').should('be.visible');
       cy.get('button').contains('Search').should('be.visible');
       
       cy.intercept('GET', `${API_URL}/api/v1/families/search*`, {
@@ -368,7 +368,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('mobileSearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@mobileSearch');
       
@@ -378,23 +378,23 @@ describe('Family Search - Enhanced E2E Tests', () => {
     it('should work on tablet viewport', () => {
       cy.viewport('ipad-2');
       
-      cy.get('input[placeholder*="Enter family name"]').should('be.visible');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').should('be.visible');
       cy.get('button').contains('Search').should('be.visible');
     });
   });
 
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
-      cy.get('input[placeholder*="Enter family name"]').should('have.attr', 'type', 'text');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').should('have.attr', 'type', 'text');
       cy.get('button').contains('Search').should('be.visible');
     });
 
     it('should support keyboard navigation', () => {
-      cy.get('input[placeholder*="Enter family name"]').focus().type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').focus().type('Smith');
       cy.focused().should('have.value', 'Smith');
       
       // Test that Enter key works for search
-      cy.get('input[placeholder*="Enter family name"]').clear().type('Test{enter}');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').clear().type('Test{enter}');
       // The search should be triggered (we don't need to wait for results)
     });
   });
@@ -415,7 +415,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('smithSearch');
       
-      cy.get('input[placeholder*="Enter family name"]').type('Smith');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').type('Smith');
       cy.get('button').contains('Search').click();
       cy.wait('@smithSearch');
       cy.contains('John Smith').should('be.visible');
@@ -434,7 +434,7 @@ describe('Family Search - Enhanced E2E Tests', () => {
         }]
       }).as('johnsonSearch');
       
-      cy.get('input[placeholder*="Enter family name"]').clear().type('Johnson');
+      cy.get('input[placeholder*="Search families by name, place, or notes"]').clear().type('Johnson');
       cy.get('button').contains('Search').click();
       cy.wait('@johnsonSearch');
       
