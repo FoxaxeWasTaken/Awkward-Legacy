@@ -241,6 +241,19 @@ class GenealogyQualityChecker:
                 issues.append(f"Empty first name: {person.id}")
         return issues
 ```
+
+Tests cover:
+
+    Person and family object creation
+
+    Comparison logic
+
+    Data builder functionality
+
+    Person lookup
+
+    Various comparison scenarios
+
 Error Handling
 
 The tool includes robust error handling for:
@@ -253,4 +266,12 @@ The tool includes robust error handling for:
 
     Malformed genealogy data
 
-This modular design allows the diff functionality to be reused in other genealogy applications while maintaining consistency with the core data structures from consang.py.
+Notes
+
+    Names with spaces should be quoted on command line
+
+    HTML output generates clickable links to GeneWeb individual pages
+
+    The tool only reports differences, identical data produces no output
+
+    This modular design allows the diff functionality to be reused in other genealogy applications while maintaining consistency with the core data structures from consang.py.

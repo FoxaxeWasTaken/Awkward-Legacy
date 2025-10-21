@@ -255,6 +255,24 @@ class MyGenealogyApp:
 ```
 This modular design allows easy extension for other genealogy analyses like relationship finding, pedigree charts, or genetic inheritance patterns.
 
+Output :
+
+    Summary statistics (number of persons, families, significant relations)
+
+    Top 10 most consanguineous relationships
+
+    JSON report with all relationships and coefficients (when using -o option)
+
+Consanguinity coefficients range from 0.0 (unrelated) to higher values indicating closer familial relationships.
+
+Error Handling
+
+    Detects and reports genealogical loops
+
+    Handles missing or malformed data gracefully
+
+    Provides clear error messages for common issues
+
 Limitations
 
     Maximum generational depth: 15 (configurable)
