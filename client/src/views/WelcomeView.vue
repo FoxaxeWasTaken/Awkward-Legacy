@@ -22,11 +22,15 @@ const searchError = ref('')
 const healthError = ref('')
 const resultsLimit = ref(20)
 
+// Helper function to check if error has response structure
+const isErrorWithResponse = (error: unknown): error is { response?: { data?: { detail?: string } } } => {
+  return Boolean(error && typeof error === 'object' && 'response' in error)
+}
+
 // Helper function to extract error message from API response
 const extractSearchErrorMessage = (error: unknown): string => {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const apiError = error as { response?: { data?: { detail?: string } } }
-    return apiError.response?.data?.detail || 'Failed to search families. Please try again.'
+  if (isErrorWithResponse(error)) {
+    return error.response?.data?.detail || 'Failed to search families. Please try again.'
   }
   return 'Failed to search families. Please try again.'
 }
