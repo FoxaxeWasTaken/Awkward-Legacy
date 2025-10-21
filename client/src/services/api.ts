@@ -177,10 +177,16 @@ class ApiService {
         }
       )
       
-      // Process each family to get detailed information in parallel
-      const familiesWithNames: FamilySearchResult[] = await Promise.all(
-        response.data.map(family => this.processFamilyWithDetails(family))
-      )
+      // Convert to FamilySearchResult format without fetching details
+      const familiesWithNames: FamilySearchResult[] = response.data.map(family => ({
+        id: family.id,
+        husband_name: this.buildDisplayName(family.husband_id || null),
+        wife_name: this.buildDisplayName(family.wife_id || null),
+        marriage_date: family.marriage_date,
+        marriage_place: family.marriage_place,
+        children_count: 0, // We don't fetch children count for performance
+        summary: `${this.buildDisplayName(family.husband_id || null)} & ${this.buildDisplayName(family.wife_id || null)}`
+      }))
       
       return familiesWithNames
     } catch (error) {
