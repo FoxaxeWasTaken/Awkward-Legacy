@@ -1,0 +1,87 @@
+describe('Welcome View - E2E Tests', () => {
+  beforeEach(() => {
+    cy.visit('/');
+  });
+
+  describe('Page Load and Initial State', () => {
+    it('should display the main homepage interface', () => {
+      // Check header
+      cy.contains('h1', '🏛️ Geneweb').should('be.visible');
+      cy.contains('Explore family trees and genealogical data').should('be.visible');
+      
+      // Check action cards
+      cy.contains('Upload Family File').should('be.visible');
+      cy.contains('Search & Manage Families').should('be.visible');
+    });
+
+    it('should display action cards with proper content', () => {
+      // Upload Family File card
+      cy.contains('Upload Family File').should('be.visible');
+      cy.contains('Upload and import your GeneWeb (.gw) files to the database').should('be.visible');
+      cy.contains('Upload File').should('be.visible');
+      
+      // Search & Manage Families card
+      cy.contains('Search & Manage Families').should('be.visible');
+      cy.contains('Search, explore, and manage all families in the database').should('be.visible');
+      cy.contains('Explore Families').should('be.visible');
+    });
+
+    it('should have proper card layout and styling', () => {
+      // Check that cards are displayed in a grid
+      cy.get('.action-card').should('have.length', 2);
+      cy.get('.action-card').each(($card) => {
+        cy.wrap($card).should('be.visible');
+        cy.wrap($card).should('have.class', 'action-card');
+      });
+    });
+  });
+
+  describe('Navigation from Homepage', () => {
+    it('should navigate to upload page when clicking Upload File', () => {
+      cy.contains('Upload File').click();
+      cy.url().should('include', '/upload');
+      cy.contains('Upload Family File').should('be.visible');
+    });
+
+    it('should navigate to manage page when clicking Explore Families', () => {
+      cy.contains('Explore Families').click();
+      cy.url().should('include', '/manage');
+      cy.contains('Family Search & Management').should('be.visible');
+    });
+  });
+
+  describe('Responsive Design', () => {
+    it('should work on mobile viewport', () => {
+      cy.viewport('iphone-x');
+      
+      cy.contains('🏛️ Geneweb').should('be.visible');
+      cy.get('.action-card').should('have.length', 2);
+      cy.contains('Upload File').should('be.visible');
+      cy.contains('Explore Families').should('be.visible');
+    });
+
+    it('should work on tablet viewport', () => {
+      cy.viewport('ipad-2');
+      
+      cy.contains('🏛️ Geneweb').should('be.visible');
+      cy.get('.action-card').should('have.length', 2);
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have proper heading structure', () => {
+      cy.get('h1').should('contain', '🏛️ Geneweb');
+    });
+
+    it('should be keyboard navigable', () => {
+      // Tab through the page
+      cy.get('body').tab();
+      cy.focused().should('be.visible');
+    });
+
+    it('should have proper button labels', () => {
+      cy.contains('Upload File').should('be.visible');
+      cy.contains('Explore Families').should('be.visible');
+    });
+  });
+});
