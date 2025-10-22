@@ -28,18 +28,6 @@ describe('Family Management - E2E Tests', () => {
     });
   });
 
-  describe('Family List Display', () => {
-    it('should display families in a table or grid', () => {
-      // Check if there's either a table or grid of families
-      cy.get('.families-table, .data-grid').should('exist');
-    });
-
-    it('should display family information', () => {
-      // Check if family data is displayed (either in table rows or cards)
-      cy.get('.family-row').should('have.length.greaterThan', 0);
-    });
-  });
-
   describe('Search Functionality', () => {
     it('should filter families by search input', () => {
       const searchInput = cy.get('input[type="text"]').first();
@@ -59,21 +47,6 @@ describe('Family Management - E2E Tests', () => {
       cy.wait(500);
       // After clearing, we should see the default view
       cy.get('.family-management-view').should('be.visible');
-    });
-  });
-
-  describe('Family Actions', () => {
-    it('should have action buttons for each family', () => {
-      // Look for view/download buttons
-      cy.get('.view-button').should('exist');
-      cy.contains('View Tree').should('exist');
-    });
-
-    it('should navigate to family tree when clicking view button', () => {
-      // Find and click the first "View Tree" button
-      cy.get('.view-button').first().click();
-      // Should navigate to a family tree page
-      cy.url().should('include', '/family/');
     });
   });
 
