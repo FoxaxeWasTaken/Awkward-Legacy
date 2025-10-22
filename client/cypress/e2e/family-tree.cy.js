@@ -72,8 +72,8 @@ describe('Family Tree - E2E Tests', () => {
   };
 
   beforeEach(() => {
-    // Intercept API calls - match the actual API call with query parameters
-    cy.intercept('GET', `${API_URL}/api/v1/families/${testFamilyId}/detail*`, {
+    // Intercept API calls
+    cy.intercept('GET', `${API_URL}/api/v1/families/${testFamilyId}/detail`, {
       statusCode: 200,
       body: testFamilyData
     }).as('getFamilyDetail');
@@ -90,7 +90,7 @@ describe('Family Tree - E2E Tests', () => {
   describe('Page Load and Initial State', () => {
     it('should display loading state initially', () => {
       // Add delay to API call to ensure loading state is visible
-      cy.intercept('GET', `${API_URL}/api/v1/families/${testFamilyId}/detail*`, {
+      cy.intercept('GET', `${API_URL}/api/v1/families/${testFamilyId}/detail`, {
         statusCode: 200,
         body: testFamilyData,
         delay: 1000
@@ -499,7 +499,7 @@ describe('Family Tree - E2E Tests', () => {
       
       cy.get('.tree-container').should('be.visible').then(() => {
         const loadTime = Date.now() - startTime;
-        expect(loadTime).to.be.lessThan(15000); // Should load within 15 seconds
+        expect(loadTime).to.be.lessThan(5000); // Should load within 5 seconds
       });
     });
 
