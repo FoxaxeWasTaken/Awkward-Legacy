@@ -1,4 +1,21 @@
 describe('File Upload - E2E Tests', () => {
+  const TEST_FILE = 'test.gw';
+
+  /**
+   * Helper function to select a file for upload
+   * Reduces code duplication across multiple tests
+   */
+  const selectTestFile = (fileName = TEST_FILE) => {
+    cy.fixture(fileName).then(fileContent => {
+      cy.get('input[type="file"]').selectFile({
+        contents: Cypress.Buffer.from(fileContent),
+        fileName: fileName,
+        mimeType: 'application/octet-stream',
+        lastModified: Date.now(),
+      }, { force: true });
+    });
+  };
+
   beforeEach(() => {
     cy.visit('/upload');
   });
@@ -18,44 +35,20 @@ describe('File Upload - E2E Tests', () => {
 
   describe('File Selection', () => {
     it('should handle file selection', () => {
-      const fileName = 'test.gw';
-      cy.fixture(fileName).then(fileContent => {
-        cy.get('input[type="file"]').selectFile({
-          contents: Cypress.Buffer.from(fileContent),
-          fileName: fileName,
-          mimeType: 'application/octet-stream',
-          lastModified: Date.now(),
-        }, { force: true });
-      });
-      cy.contains(fileName).should('be.visible');
+      selectTestFile();
+      cy.contains(TEST_FILE).should('be.visible');
     });
 
     it('should show selected file name', () => {
-      const fileName = 'test.gw';
-      cy.fixture(fileName).then(fileContent => {
-        cy.get('input[type="file"]').selectFile({
-          contents: Cypress.Buffer.from(fileContent),
-          fileName: fileName,
-          mimeType: 'application/octet-stream',
-          lastModified: Date.now(),
-        }, { force: true });
-      });
+      selectTestFile();
       // Verify file name is displayed somewhere
-      cy.contains(fileName, { timeout: 5000 }).should('exist');
+      cy.contains(TEST_FILE, { timeout: 5000 }).should('exist');
     });
   });
 
   describe('File Upload Process', () => {
     it('should show upload progress', () => {
-      const fileName = 'test.gw';
-      cy.fixture(fileName).then(fileContent => {
-        cy.get('input[type="file"]').selectFile({
-          contents: Cypress.Buffer.from(fileContent),
-          fileName: fileName,
-          mimeType: 'application/octet-stream',
-          lastModified: Date.now(),
-        }, { force: true });
-      });
+      selectTestFile();
       // Click upload button if it exists
       cy.contains(/upload/i).click();
       // Wait for upload to complete (may navigate away)
@@ -63,15 +56,7 @@ describe('File Upload - E2E Tests', () => {
     });
 
     it('should enable upload functionality when file is selected', () => {
-      const fileName = 'test.gw';
-      cy.fixture(fileName).then(fileContent => {
-        cy.get('input[type="file"]').selectFile({
-          contents: Cypress.Buffer.from(fileContent),
-          fileName: fileName,
-          mimeType: 'application/octet-stream',
-          lastModified: Date.now(),
-        }, { force: true });
-      });
+      selectTestFile();
       // Verify upload button or functionality is available
       cy.contains(/upload/i).should('exist');
     });
@@ -84,17 +69,9 @@ describe('File Upload - E2E Tests', () => {
 
   describe('File Validation', () => {
     it('should show file size information', () => {
-      const fileName = 'test.gw';
-      cy.fixture(fileName).then(fileContent => {
-        cy.get('input[type="file"]').selectFile({
-          contents: Cypress.Buffer.from(fileContent),
-          fileName: fileName,
-          mimeType: 'application/octet-stream',
-          lastModified: Date.now(),
-        }, { force: true });
-      });
+      selectTestFile();
       // Just verify the file was selected
-      cy.contains(fileName).should('exist');
+      cy.contains(TEST_FILE).should('exist');
     });
   });
 
@@ -156,16 +133,8 @@ describe('File Upload - E2E Tests', () => {
   describe('Performance', () => {
     it('should handle file selection efficiently', () => {
       const startTime = Date.now();
-      const fileName = 'test.gw';
-      cy.fixture(fileName).then(fileContent => {
-        cy.get('input[type="file"]').selectFile({
-          contents: Cypress.Buffer.from(fileContent),
-          fileName: fileName,
-          mimeType: 'application/octet-stream',
-          lastModified: Date.now(),
-        }, { force: true });
-      });
-      cy.contains(fileName).should('exist');
+      selectTestFile();
+      cy.contains(TEST_FILE).should('exist');
       cy.then(() => {
         const loadTime = Date.now() - startTime;
         expect(loadTime).to.be.lessThan(5000);
