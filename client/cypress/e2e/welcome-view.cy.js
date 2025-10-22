@@ -48,6 +48,46 @@ describe('Welcome View - E2E Tests', () => {
       cy.url().should('include', '/manage');
       cy.contains('Family Search & Management').should('be.visible');
     });
+
+    it('should handle browser back button from upload page', () => {
+      // Navigate to upload page
+      cy.contains('Upload File').click();
+      cy.url().should('include', '/upload');
+      
+      // Use browser back button
+      cy.go('back');
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+      cy.contains('🏛️ Geneweb').should('be.visible');
+    });
+
+    it('should handle browser forward button', () => {
+      // Navigate to upload page
+      cy.contains('Upload File').click();
+      cy.url().should('include', '/upload');
+      
+      // Use browser back button
+      cy.go('back');
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+      
+      // Use browser forward button
+      cy.go('forward');
+      cy.url().should('include', '/upload');
+    });
+
+    it('should handle rapid navigation between pages', () => {
+      // Rapid navigation test
+      cy.contains('Upload File').click();
+      cy.url().should('include', '/upload');
+      
+      cy.contains('← Back to Home').click();
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+      
+      cy.contains('Explore Families').click();
+      cy.url().should('include', '/manage');
+      
+      cy.contains('← Back to Home').click();
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+    });
   });
 
   describe('Responsive Design', () => {
@@ -75,7 +115,7 @@ describe('Welcome View - E2E Tests', () => {
 
     it('should be keyboard navigable', () => {
       // Tab through the page
-      cy.get('body').tab();
+      cy.get('body').type('{tab}');
       cy.focused().should('be.visible');
     });
 

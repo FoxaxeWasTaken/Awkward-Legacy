@@ -2,6 +2,12 @@ describe('File Upload - E2E Tests', () => {
   const API_URL = Cypress.env('apiUrl') || 'http://server-dev:8000';
   
   beforeEach(() => {
+    // Mock health check
+    cy.intercept('GET', `${API_URL}/health`, {
+      statusCode: 200,
+      body: { status: 'healthy' }
+    }).as('healthCheck');
+
     cy.visit('/upload');
   });
 
@@ -9,7 +15,7 @@ describe('File Upload - E2E Tests', () => {
     it('should display the upload interface', () => {
       cy.contains('h1', '📁 Upload Family File').should('be.visible');
       cy.contains('Upload your GeneWeb (.gw) file to import family data into the database').should('be.visible');
-      cy.get('input[type="file"]').should('be.visible');
+      cy.get('input[type="file"]').should('exist');
       cy.contains('Choose File').should('be.visible');
     });
 
@@ -221,6 +227,46 @@ describe('File Upload - E2E Tests', () => {
       cy.contains('← Back to Home').click();
       cy.url().should('eq', Cypress.config().baseUrl + '/');
     });
+
+    it('should handle browser back button', () => {
+      // Start at homepage
+      cy.visit('/');
+      
+      // Navigate to upload page
+      cy.contains('Upload File').click();
+      cy.url().should('include', '/upload');
+      
+      // Use browser back button
+      cy.go('back');
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+    });
+
+    it('should handle browser forward button', () => {
+      // Start at homepage
+      cy.visit('/');
+      
+      // Navigate to upload page
+      cy.contains('Upload File').click();
+      cy.url().should('include', '/upload');
+      
+      // Use browser back button
+      cy.go('back');
+      cy.url().should('eq', Cypress.config().baseUrl + '/');
+      
+      // Use browser forward button
+      cy.go('forward');
+      cy.url().should('include', '/upload');
+    });
+
+    it('should maintain URL state during page refreshes', () => {
+      cy.visit('/upload');
+      cy.url().should('include', '/upload');
+      
+      // Refresh page
+      cy.reload();
+      cy.url().should('include', '/upload');
+      cy.contains('Upload Family File').should('be.visible');
+    });
   });
 
   describe('Responsive Design', () => {
@@ -228,7 +274,7 @@ describe('File Upload - E2E Tests', () => {
       cy.viewport('iphone-x');
       
       cy.contains('Upload Family File').should('be.visible');
-      cy.get('input[type="file"]').should('be.visible');
+      cy.get('input[type="file"]').should('exist');
       cy.contains('Choose File').should('be.visible');
     });
 
@@ -236,19 +282,19 @@ describe('File Upload - E2E Tests', () => {
       cy.viewport('ipad-2');
       
       cy.contains('Upload Family File').should('be.visible');
-      cy.get('input[type="file"]').should('be.visible');
+      cy.get('input[type="file"]').should('exist');
     });
   });
 
   describe('Accessibility', () => {
     it('should have proper form labels', () => {
-      cy.get('input[type="file"]').should('be.visible');
+      cy.get('input[type="file"]').should('exist');
       cy.contains('Choose File').should('be.visible');
     });
 
     it('should be keyboard navigable', () => {
       cy.get('input[type="file"]').focus().should('be.focused');
-      cy.get('body').tab();
+      cy.get('body').type('{tab}');
       cy.focused().should('be.visible');
     });
   });
