@@ -17,6 +17,16 @@ describe('Person Service - createPerson', () => {
     vi.clearAllMocks()
   })
 
+  // Helper function to test error scenarios
+  const testErrorScenario = async (
+    personData: any,
+    errorResponse: any,
+    description: string
+  ) => {
+    vi.mocked(api.post).mockRejectedValue(errorResponse)
+    await expect(personService.createPerson(personData)).rejects.toEqual(errorResponse)
+  }
+
   it('should create a person with all fields', async () => {
     const personData = {
       first_name: 'John',
@@ -89,9 +99,7 @@ describe('Person Service - createPerson', () => {
       }
     }
 
-    vi.mocked(api.post).mockRejectedValue(errorResponse)
-
-    await expect(personService.createPerson(personData)).rejects.toEqual(errorResponse)
+    await testErrorScenario(personData, errorResponse, 'validation errors')
     expect(api.post).toHaveBeenCalledWith('/api/v1/persons', personData)
   })
 
@@ -111,9 +119,7 @@ describe('Person Service - createPerson', () => {
       }
     }
 
-    vi.mocked(api.post).mockRejectedValue(errorResponse)
-
-    await expect(personService.createPerson(personData)).rejects.toEqual(errorResponse)
+    await testErrorScenario(personData, errorResponse, 'invalid sex value')
   })
 
   it('should handle future birth date error', async () => {
@@ -133,9 +139,7 @@ describe('Person Service - createPerson', () => {
       }
     }
 
-    vi.mocked(api.post).mockRejectedValue(errorResponse)
-
-    await expect(personService.createPerson(personData)).rejects.toEqual(errorResponse)
+    await testErrorScenario(personData, errorResponse, 'future birth date error')
   })
 
   it('should handle death date before birth date error', async () => {
@@ -156,9 +160,7 @@ describe('Person Service - createPerson', () => {
       }
     }
 
-    vi.mocked(api.post).mockRejectedValue(errorResponse)
-
-    await expect(personService.createPerson(personData)).rejects.toEqual(errorResponse)
+    await testErrorScenario(personData, errorResponse, 'death date before birth date error')
   })
 
   it('should handle network errors', async () => {
@@ -173,9 +175,7 @@ describe('Person Service - createPerson', () => {
       code: 'ERR_NETWORK'
     }
 
-    vi.mocked(api.post).mockRejectedValue(networkError)
-
-    await expect(personService.createPerson(personData)).rejects.toEqual(networkError)
+    await testErrorScenario(personData, networkError, 'network errors')
   })
 
   it('should handle server errors', async () => {
@@ -194,8 +194,6 @@ describe('Person Service - createPerson', () => {
       }
     }
 
-    vi.mocked(api.post).mockRejectedValue(serverError)
-
-    await expect(personService.createPerson(personData)).rejects.toEqual(serverError)
+    await testErrorScenario(personData, serverError, 'server errors')
   })
 })
