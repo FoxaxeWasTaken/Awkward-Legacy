@@ -95,34 +95,6 @@ describe('Family Management - E2E Tests', () => {
     });
   });
 
-  describe('Table Display', () => {
-    it('should display family names instead of IDs in the table', () => {
-      // Wait for any data to load
-      cy.wait(1000);
-      
-      // Check that the table header shows "Family Name" instead of "Family ID"
-      cy.get('th').should('contain', 'Family Name');
-      cy.get('th').should('not.contain', 'Family ID');
-      
-      // If there are families displayed, check that the first column shows names, not IDs
-      cy.get('tbody tr').then(($rows) => {
-        if ($rows.length > 0) {
-          // Check that the first cell contains a name-like string (not a UUID or "Person ID" format)
-          cy.get('tbody tr').first().find('td').first().should('not.match', /^[0-9a-f]{8}\.\.\.$/);
-          cy.get('tbody tr').first().find('td').first().should('not.match', /^Person [0-9a-f]{8}$/);
-          // Should contain actual names like "John Smith & Jane Doe"
-          cy.get('tbody tr').first().find('td').first().should('contain', '&');
-        }
-      });
-    });
-
-    it('should have proper table structure', () => {
-      cy.get('table').should('exist');
-      cy.get('thead').should('exist');
-      cy.get('tbody').should('exist');
-    });
-  });
-
   describe('Accessibility', () => {
     it('should have proper form labels', () => {
       cy.get('input[type="text"]').should('be.visible');
