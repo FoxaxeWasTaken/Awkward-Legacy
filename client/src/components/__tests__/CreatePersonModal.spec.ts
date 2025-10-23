@@ -253,7 +253,8 @@ describe('CreatePersonModal', () => {
         birth_place: 'Paris',
         death_date: null,
         death_place: null,
-        notes: 'Test notes'
+        notes: 'Test notes',
+        occupation: null
       })
     })
 
@@ -351,7 +352,8 @@ describe('CreatePersonModal', () => {
         birth_place: 'Paris',
         death_date: null,
         death_place: null,
-        notes: null
+        notes: null,
+        occupation: null
       })
     })
 
@@ -404,5 +406,6 @@ describe('CreatePersonModal', () => {
     })
   })
 })
+
 
 
