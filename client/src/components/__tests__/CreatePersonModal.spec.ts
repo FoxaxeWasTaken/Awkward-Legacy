@@ -1,17 +1,34 @@
+// typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
+import type { ComponentPublicInstance } from 'vue'
 import CreatePersonModal from '../CreatePersonModal.vue'
 import { personService } from '@/services/personService'
 
-// Mock du service personService
+// Mock the service
 vi.mock('@/services/personService', () => ({
   personService: {
     createPerson: vi.fn()
   }
 }))
 
+type Person = {
+  id: string
+  first_name: string
+  last_name: string
+  sex: 'M' | 'F' | 'U'
+  birth_date: string | null
+  birth_place: string | null
+  death_date: string | null
+  death_place: string | null
+  notes: string | null
+  occupation?: string | null
+}
+
+type ApiResponse<T> = { data: T }
+
 describe('CreatePersonModal', () => {
-  let wrapper: VueWrapper<any>
+  let wrapper: VueWrapper<ComponentPublicInstance>
 
   const defaultProps = {
     show: true,
@@ -184,19 +201,20 @@ describe('CreatePersonModal', () => {
     })
 
     it('should not show error when both required fields are filled', async () => {
-      vi.mocked(personService.createPerson).mockResolvedValue({
-        data: {
-          id: '123',
-          first_name: 'Jean',
-          last_name: 'Dupont',
-          sex: 'M',
-          birth_date: null,
-          birth_place: null,
-          death_date: null,
-          death_place: null,
-          notes: null
-        }
-      } as any)
+      const createdPerson: Person = {
+        id: '123',
+        first_name: 'Jean',
+        last_name: 'Dupont',
+        sex: 'M',
+        birth_date: null,
+        birth_place: null,
+        death_date: null,
+        death_place: null,
+        notes: null,
+        occupation: null
+      }
+
+      vi.mocked(personService.createPerson).mockResolvedValue({ data: createdPerson } as ApiResponse<Person>)
 
       wrapper = mount(CreatePersonModal, {
         props: defaultProps
@@ -215,7 +233,7 @@ describe('CreatePersonModal', () => {
 
   describe('Person creation', () => {
     it('should call personService.createPerson with correct data', async () => {
-      const mockPerson = {
+      const mockPerson: Person = {
         id: '123',
         first_name: 'Jean',
         last_name: 'Dupont',
@@ -227,9 +245,7 @@ describe('CreatePersonModal', () => {
         notes: 'Test notes'
       }
 
-      vi.mocked(personService.createPerson).mockResolvedValue({
-        data: mockPerson
-      } as any)
+      vi.mocked(personService.createPerson).mockResolvedValue({ data: mockPerson } as ApiResponse<Person>)
 
       wrapper = mount(CreatePersonModal, {
         props: defaultProps
@@ -259,7 +275,7 @@ describe('CreatePersonModal', () => {
     })
 
     it('should emit personCreated event with created person data', async () => {
-      const mockPerson = {
+      const mockPerson: Person = {
         id: '123',
         first_name: 'Jean',
         last_name: 'Dupont',
@@ -271,9 +287,7 @@ describe('CreatePersonModal', () => {
         notes: null
       }
 
-      vi.mocked(personService.createPerson).mockResolvedValue({
-        data: mockPerson
-      } as any)
+      vi.mocked(personService.createPerson).mockResolvedValue({ data: mockPerson } as ApiResponse<Person>)
 
       wrapper = mount(CreatePersonModal, {
         props: defaultProps
@@ -292,13 +306,15 @@ describe('CreatePersonModal', () => {
     })
 
     it('should show error message when person creation fails', async () => {
-      vi.mocked(personService.createPerson).mockRejectedValue({
+      const apiError = {
         response: {
           data: {
             detail: 'Erreur serveur'
           }
         }
-      })
+      }
+
+      vi.mocked(personService.createPerson).mockRejectedValue(apiError)
 
       wrapper = mount(CreatePersonModal, {
         props: defaultProps
@@ -317,7 +333,7 @@ describe('CreatePersonModal', () => {
     })
 
     it('should trim whitespace from text fields', async () => {
-      const mockPerson = {
+      const mockPerson: Person = {
         id: '123',
         first_name: 'Jean',
         last_name: 'Dupont',
@@ -329,9 +345,7 @@ describe('CreatePersonModal', () => {
         notes: null
       }
 
-      vi.mocked(personService.createPerson).mockResolvedValue({
-        data: mockPerson
-      } as any)
+      vi.mocked(personService.createPerson).mockResolvedValue({ data: mockPerson } as ApiResponse<Person>)
 
       wrapper = mount(CreatePersonModal, {
         props: defaultProps
@@ -358,8 +372,23 @@ describe('CreatePersonModal', () => {
     })
 
     it('should disable submit button while creating person', async () => {
+      const emptyPerson: Person = {
+        id: '',
+        first_name: '',
+        last_name: '',
+        sex: 'U',
+        birth_date: null,
+        birth_place: null,
+        death_date: null,
+        death_place: null,
+        notes: null
+      }
+
       vi.mocked(personService.createPerson).mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve({ data: {} } as any), 100))
+        () =>
+          new Promise<ApiResponse<Person>>(resolve =>
+            setTimeout(() => resolve({ data: emptyPerson }), 100)
+          )
       )
 
       wrapper = mount(CreatePersonModal, {
@@ -406,6 +435,3 @@ describe('CreatePersonModal', () => {
     })
   })
 })
-
-
-

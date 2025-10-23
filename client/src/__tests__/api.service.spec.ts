@@ -1,8 +1,8 @@
+// typescript
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 import axios from 'axios'
 import { apiService } from '../services/api'
 import type { FamilySearchParams, FamilySearchResult, FamilyDetailResult } from '../types/family'
-import type { AxiosInstance } from 'axios'
 
 // Mock axios
 vi.mock('axios', () => ({
@@ -72,7 +72,19 @@ describe('API Service', () => {
     events: [],
   }
 
-  let mockAxiosInstanceWithMethods: any
+  type MockFn = (...args: unknown[]) => unknown
+  type MockAxiosInstance = {
+    get: MockFn
+    post: MockFn
+    put: MockFn
+    delete: MockFn
+    interceptors: {
+      request: { use: MockFn }
+      response: { use: MockFn }
+    }
+  }
+
+  let mockAxiosInstanceWithMethods: MockAxiosInstance | undefined
 
   beforeAll(async () => {
     await import('../services/api')
@@ -85,14 +97,12 @@ describe('API Service', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
     // Get the mock instance
-    mockAxiosInstanceWithMethods = vi.mocked(axios.create).mock.results[0]?.value
+    mockAxiosInstanceWithMethods = vi.mocked(axios.create).mock.results[0]?.value as unknown as MockAxiosInstance
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
-
-
 
   describe('Service Instance', () => {
     it('should export singleton instance', () => {
@@ -226,7 +236,6 @@ describe('API Service', () => {
       consoleSpy.mockRestore()
     })
   })
-
 
   describe('searchFamilies', () => {
     it('should search families with correct parameters', async () => {

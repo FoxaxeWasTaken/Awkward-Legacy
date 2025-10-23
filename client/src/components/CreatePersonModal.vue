@@ -1,22 +1,164 @@
+<template>
+  <div v-if="show" class="modal-overlay" @click="closeModal">
+    <div class="modal" @click.stop>
+      <div class="modal-header">
+        <h3>Créer une nouvelle personne</h3>
+        <button class="close-button close-btn" @click="closeModal" data-cy="close-modal">×</button>
+      </div>
+      
+      <form @submit.prevent="createPerson" class="modal-body">
+        <div class="form-group">
+          <label for="first_name">Prénom *</label>
+          <input
+            id="first_name"
+            v-model="newPerson.first_name"
+            type="text"
+            required
+            data-cy="new-person-first-name"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="last_name">Nom *</label>
+          <input
+            id="last_name"
+            v-model="newPerson.last_name"
+            type="text"
+            required
+            data-cy="new-person-last-name"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="sex">Sexe</label>
+          <select
+            id="sex"
+            v-model="newPerson.sex"
+            data-cy="new-person-sex"
+            :disabled="creatingPerson"
+          >
+            <option value="U">Non défini</option>
+            <option value="M">Homme</option>
+            <option value="F">Femme</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="birth_date">Date de naissance</label>
+          <input
+            id="birth_date"
+            v-model="newPerson.birth_date"
+            type="date"
+            data-cy="new-person-birth-date"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="birth_place">Lieu de naissance</label>
+          <input
+            id="birth_place"
+            v-model="newPerson.birth_place"
+            type="text"
+            data-cy="new-person-birth-place"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="death_date">Date de décès</label>
+          <input
+            id="death_date"
+            v-model="newPerson.death_date"
+            type="date"
+            data-cy="new-person-death-date"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="death_place">Lieu de décès</label>
+          <input
+            id="death_place"
+            v-model="newPerson.death_place"
+            type="text"
+            data-cy="new-person-death-place"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="occupation">Profession</label>
+          <input
+            id="occupation"
+            v-model="newPerson.occupation"
+            type="text"
+            data-cy="new-person-occupation"
+            :disabled="creatingPerson"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea
+            id="notes"
+            v-model="newPerson.notes"
+            data-cy="new-person-notes"
+            :disabled="creatingPerson"
+          ></textarea>
+        </div>
+
+        <div v-if="personCreationError" class="error-message field-error">
+          {{ personCreationError }}
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            @click="closeModal"
+            class="cancel-button"
+            data-cy="cancel-person-creation"
+            :disabled="creatingPerson"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="submit-button"
+            data-cy="create-person-submit"
+            :disabled="creatingPerson"
+          >
+            {{ creatingPerson ? 'Création...' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue'
 import { personService } from '@/services/personService'
 
-// Props
 interface Props {
   show: boolean
   parentType: 'husband' | 'wife'
 }
 
-const props = defineProps<Props>()
+const _props = defineProps<Props>()
 
-// Emits
+type ApiError = {
+  response?: { data?: { detail?: string } }
+  message?: string
+}
+
 const emit = defineEmits<{
   close: []
-  personCreated: [person: any]
+  personCreated: [person: unknown]
 }>()
 
-// Form data
 const newPerson = ref({
   first_name: '',
   last_name: '',
@@ -32,7 +174,6 @@ const newPerson = ref({
 const creatingPerson = ref(false)
 const personCreationError = ref('')
 
-// Fonctions
 const resetForm = () => {
   newPerson.value.first_name = ''
   newPerson.value.last_name = ''
@@ -75,285 +216,175 @@ const createPerson = async () => {
 
     const response = await personService.createPerson(personData)
     const createdPerson = response.data
-    
-    // Emit event with created person
+
     emit('personCreated', createdPerson)
-    
-    // Reset and close
     resetForm()
 
-  } catch (e: any) {
-    personCreationError.value = e?.response?.data?.detail || 'Erreur lors de la création de la personne'
+  } catch (err: unknown) {
+    const apiErr = err as ApiError
+    personCreationError.value = apiErr.response?.data?.detail || apiErr.message || 'Erreur lors de la création de la personne'
   } finally {
     creatingPerson.value = false
   }
 }
+
+// Expose to avoid false-positive "assigned but never used" lint errors
+defineExpose({ closeModal, createPerson })
 </script>
 
-<template>
-  <div v-if="show" class="modal-overlay" @click="closeModal">
-    <div class="modal" @click.stop>
-      <div class="modal-header">
-        <h3>Créer une nouvelle personne</h3>
-        <button type="button" @click="closeModal" class="close-btn">&times;</button>
-      </div>
-      
-      <form @submit.prevent="createPerson" class="modal-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Prénom *</label>
-            <input 
-              v-model="newPerson.first_name" 
-              type="text" 
-              required 
-              placeholder="Prénom"
-              data-cy="new-person-first-name"
-            />
-          </div>
-          <div class="form-group">
-            <label>Nom *</label>
-            <input 
-              v-model="newPerson.last_name" 
-              type="text" 
-              required 
-              placeholder="Nom"
-              data-cy="new-person-last-name"
-            />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Sexe</label>
-          <select v-model="newPerson.sex" data-cy="new-person-sex">
-            <option value="U">Non défini</option>
-            <option value="M">Homme</option>
-            <option value="F">Femme</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Date de naissance</label>
-            <input 
-              v-model="newPerson.birth_date" 
-              type="date" 
-              data-cy="new-person-birth-date"
-            />
-          </div>
-          <div class="form-group">
-            <label>Lieu de naissance</label>
-            <input 
-              v-model="newPerson.birth_place" 
-              type="text" 
-              placeholder="Lieu de naissance"
-              data-cy="new-person-birth-place"
-            />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Date de décès</label>
-            <input 
-              v-model="newPerson.death_date" 
-              type="date" 
-              data-cy="new-person-death-date"
-            />
-          </div>
-          <div class="form-group">
-            <label>Lieu de décès</label>
-            <input 
-              v-model="newPerson.death_place" 
-              type="text" 
-              placeholder="Lieu de décès"
-              data-cy="new-person-death-place"
-            />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Profession</label>
-          <input 
-            v-model="newPerson.occupation" 
-            type="text" 
-            placeholder="Profession"
-            data-cy="new-person-occupation"
-          />
-        </div>
-
-        <div class="form-group">
-          <label>Notes</label>
-          <textarea 
-            v-model="newPerson.notes" 
-            placeholder="Notes supplémentaires..."
-            data-cy="new-person-notes"
-          ></textarea>
-        </div>
-
-        <div v-if="personCreationError" class="field-error">{{ personCreationError }}</div>
-
-        <div class="modal-actions">
-          <button type="button" @click="closeModal" class="btn-secondary">
-            Annuler
-          </button>
-          <button type="submit" :disabled="creatingPerson" class="btn-primary" data-cy="create-person-submit">
-            {{ creatingPerson ? 'Création...' : 'Créer la personne' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-/* Styles pour la modale */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
 .modal {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  max-width: 600px;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5em;
-  border-bottom: 1px solid #e5e5e5;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.close-btn {
+.close-button {
   background: none;
   border: none;
-  font-size: 1.5em;
+  font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: #6b7280;
   padding: 0;
   width: 30px;
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
 }
 
-.close-btn:hover {
-  background: #f5f5f5;
-  color: #333;
+.close-button:hover {
+  color: #374151;
 }
 
 .modal-body {
-  padding: 1.5em;
-}
-
-.form-row {
-  display: flex;
-  gap: 1em;
-  margin-bottom: 1em;
-}
-
-.form-row .form-group {
-  flex: 1;
+  padding: 20px;
 }
 
 .form-group {
-  margin-bottom: 1em;
+  margin-bottom: 16px;
 }
 
 .form-group label {
   display: block;
-  font-weight: 600;
-  margin-bottom: 0.3em;
-  color: #333;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #374151;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.5em;
-  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
   border-radius: 4px;
-  font-size: 1em;
-  box-sizing: border-box;
+  font-size: 14px;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.modal-actions {
-  display: flex;
-  gap: 1em;
-  justify-content: flex-end;
-  margin-top: 2em;
-  padding-top: 1em;
-  border-top: 1px solid #e5e5e5;
-}
-
-.btn-secondary {
-  padding: 0.75em 1.5em;
-  background: #f5f5f5;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1em;
-}
-
-.btn-secondary:hover {
-  background: #e5e5e5;
-}
-
-.btn-primary {
-  padding: 0.75em 1.5em;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1em;
-  font-weight: 600;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.btn-primary:disabled {
-  background: #6c757d;
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
   cursor: not-allowed;
 }
 
-.field-error {
-  color: #b00020;
-  font-size: 0.9em;
-  margin-top: 0.5em;
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.error-message {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-button,
+.submit-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.submit-button {
+  background-color: #3b82f6;
+  color: white;
+  border: 1px solid #3b82f6;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.submit-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
-
-

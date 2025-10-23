@@ -18,17 +18,19 @@ describe('Person Service - createPerson', () => {
   })
 
   // Helper function to test error scenarios
+  type CreatePersonParam = Parameters<typeof personService.createPerson>[0]
+
   const testErrorScenario = async (
-    personData: any,
-    errorResponse: any,
-    description: string
+    personData: CreatePersonParam,
+    errorResponse: unknown,
+    _description: string
   ) => {
     vi.mocked(api.post).mockRejectedValue(errorResponse)
     await expect(personService.createPerson(personData)).rejects.toEqual(errorResponse)
   }
 
   it('should create a person with all fields', async () => {
-    const personData = {
+    const personData: CreatePersonParam = {
       first_name: 'John',
       last_name: 'Doe',
       sex: 'M',
@@ -38,7 +40,7 @@ describe('Person Service - createPerson', () => {
       death_place: null,
       notes: 'Sample person',
       occupation: 'Engineer'
-    }
+    } as CreatePersonParam
 
     const expectedResponse = {
       data: {
@@ -56,11 +58,11 @@ describe('Person Service - createPerson', () => {
   })
 
   it('should create a person with only required fields', async () => {
-    const personData = {
+    const personData: CreatePersonParam = {
       first_name: 'Jane',
       last_name: 'Smith',
       sex: 'F'
-    }
+    } as CreatePersonParam
 
     const expectedResponse = {
       data: {
@@ -91,7 +93,7 @@ describe('Person Service - createPerson', () => {
         first_name: '',
         last_name: 'Doe',
         sex: 'M'
-      },
+      } as CreatePersonParam,
       errorResponse: {
         response: {
           status: 422,
@@ -107,7 +109,7 @@ describe('Person Service - createPerson', () => {
         first_name: 'John',
         last_name: 'Doe',
         sex: 'X'
-      },
+      } as CreatePersonParam,
       errorResponse: {
         response: {
           status: 422,
@@ -124,7 +126,7 @@ describe('Person Service - createPerson', () => {
         last_name: 'Doe',
         sex: 'M',
         birth_date: '2099-01-01'
-      },
+      } as CreatePersonParam,
       errorResponse: {
         response: {
           status: 422,
@@ -142,7 +144,7 @@ describe('Person Service - createPerson', () => {
         sex: 'M',
         birth_date: '1980-01-01',
         death_date: '1979-01-01'
-      },
+      } as CreatePersonParam,
       errorResponse: {
         response: {
           status: 422,
@@ -158,7 +160,7 @@ describe('Person Service - createPerson', () => {
         first_name: 'John',
         last_name: 'Doe',
         sex: 'M'
-      },
+      } as CreatePersonParam,
       errorResponse: {
         message: 'Network Error',
         code: 'ERR_NETWORK'
@@ -170,7 +172,7 @@ describe('Person Service - createPerson', () => {
         first_name: 'John',
         last_name: 'Doe',
         sex: 'M'
-      },
+      } as CreatePersonParam,
       errorResponse: {
         response: {
           status: 500,
@@ -185,6 +187,7 @@ describe('Person Service - createPerson', () => {
   // Parameterized tests for error scenarios
   describe.each(errorTestCases)('should handle $name', ({ name, personData, errorResponse }) => {
     it(`should handle ${name}`, async () => {
+      expect.hasAssertions()
       await testErrorScenario(personData, errorResponse, name)
     })
   })

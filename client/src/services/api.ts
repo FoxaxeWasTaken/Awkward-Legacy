@@ -1,8 +1,9 @@
+// typescript
 import axios from 'axios'
-import type { AxiosInstance, AxiosResponse } from 'axios'
-import type { 
-  FamilySearchResult, 
-  FamilyDetailResult, 
+import type { AxiosInstance, AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios'
+import type {
+  FamilySearchResult,
+  FamilyDetailResult,
   FamilySearchParams,
   UploadResult,
   FamilyRead,
@@ -24,11 +25,11 @@ class ApiService {
 
     // Add request interceptor for logging
     this.api.interceptors.request.use(
-      (config) => {
+      (config: AxiosRequestConfig) => {
         console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
         return config
       },
-      (error) => {
+      (error: unknown) => {
         console.error('API Request Error:', error)
         return Promise.reject(error instanceof Error ? error : new Error(String(error)))
       },
@@ -40,8 +41,8 @@ class ApiService {
         console.log(`API Response: ${response.status} ${response.config.url}`)
         return response
       },
-      (error) => {
-        console.error('API Response Error:', error.response?.data || error.message)
+      (error: AxiosError | unknown) => {
+        console.error('API Response Error:', (error as AxiosError).response?.data || (error as Error).message)
         return Promise.reject(error instanceof Error ? error : new Error(String(error)))
       },
     )
@@ -73,24 +74,24 @@ class ApiService {
   }
 
   // Generic HTTP methods for backward compatibility
-  get(url: string, config?: any) {
-    return this.api.get(url, config)
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.get<T>(url, config)
   }
 
-  post(url: string, data?: any, config?: any) {
-    return this.api.post(url, data, config)
+  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.post<T>(url, data, config)
   }
 
-  put(url: string, data?: any, config?: any) {
-    return this.api.put(url, data, config)
+  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.put<T>(url, data, config)
   }
 
-  patch(url: string, data?: any, config?: any) {
-    return this.api.patch(url, data, config)
+  patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.patch<T>(url, data, config)
   }
 
-  delete(url: string, config?: any) {
-    return this.api.delete(url, config)
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.delete<T>(url, config)
   }
 
   // Health check
@@ -152,7 +153,7 @@ class ApiService {
       const familyDetail = await this.fetchFamilyDetails(family.id)
       const husbandName = this.buildPersonName(familyDetail.husband || null)
       const wifeName = this.buildPersonName(familyDetail.wife || null)
-      
+
       return {
         id: family.id,
         husband_name: husbandName,
@@ -167,7 +168,7 @@ class ApiService {
       // Fallback to unknown names when detail fetch fails
       const husbandDisplayName = 'Unknown Husband'
       const wifeDisplayName = 'Unknown Wife'
-      
+
       return {
         id: family.id,
         husband_name: husbandDisplayName,
@@ -197,7 +198,7 @@ class ApiService {
           },
         }
       )
-      
+
       return response.data
     } catch (error) {
       console.error('Error fetching families for management:', error)

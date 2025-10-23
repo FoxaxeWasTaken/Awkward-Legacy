@@ -6,6 +6,7 @@ import { personService } from '@/services/personService'
 import { childService } from '@/services/childService'
 import { eventService } from '@/services/eventService'
 import { FAMILY_EVENT_TYPES } from '@/types/event'
+import type { Person } from '@/types/family'
 import CreatePersonModal from '@/components/CreatePersonModal.vue'
 
 const router = useRouter()
@@ -40,8 +41,8 @@ const error = ref('')
 const success = ref('')
 
 // Selected parent data for validation
-const selectedHusband = ref<any>(null)
-const selectedWife = ref<any>(null)
+const selectedHusband = ref<Person | null>(null)
+const selectedWife = ref<Person | null>(null)
 const marriageDateError = ref('')
 
 // Modales
@@ -73,7 +74,7 @@ async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') 
     const response = await personService.searchPersonsByName(query, { limit: 10 })
     const persons = response.data
     
-    const options = persons.map((person: any) => ({
+    const options = persons.map((person: Person) => ({
       id: person.id,
       label: `${person.first_name} ${person.last_name}${person.birth_date ? ' • n. ' + person.birth_date : ''}${person.birth_place ? ' • ' + person.birth_place : ''}`
     }))
@@ -211,7 +212,7 @@ const navigateToHome = () => {
 }
 
 // Handle person creation from modal
-function handlePersonCreated(createdPerson: any) {
+function handlePersonCreated(createdPerson: Person) {
   // Add created person to options and select it
   const newOption = {
     id: createdPerson.id,
@@ -343,7 +344,7 @@ async function submit() {
             family_id: familyId,
             child_id: child.id
           })
-        } catch (childError: any) {
+        } catch (childError: unknown) {
           console.error(`Erreur lors de l'ajout de l'enfant ${child.label}:`, childError)
           // Continue even if a child fails
         }
@@ -361,7 +362,7 @@ async function submit() {
             place: event.place || null,
             description: event.description || null
           })
-        } catch (eventError: any) {
+        } catch (eventError: unknown) {
           console.error(`Erreur lors de l'ajout de l'événement ${event.type}:`, eventError)
           // Continue even if an event fails
         }
@@ -391,8 +392,9 @@ async function submit() {
     queryChild.value = ''
     selectedHusband.value = null
     selectedWife.value = null
-  } catch (e: any) {
-    error.value = e?.response?.data?.detail || 'Erreur lors de la création de la famille'
+  } catch (e: unknown) {
+    const apiError = e as { response?: { data?: { detail?: string } } }
+    error.value = apiError.response?.data?.detail || 'Erreur lors de la création de la famille'
   } finally {
     submitting.value = false
   }

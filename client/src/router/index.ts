@@ -1,3 +1,4 @@
+// typescript
 import { createRouter, createWebHistory } from 'vue-router'
 import WelcomeView from '../views/WelcomeView.vue'
 import FamilyTreeView from '../views/FamilyTreeView.vue'
@@ -53,9 +54,10 @@ const router = createRouter({
 })
 
 // Global after hook - runs after navigation
-router.afterEach((to, from) => {
-  // Update page title
-  document.title = to.meta.title || 'My Vue App'
+router.afterEach((to, _from) => {
+  // Ensure meta.title is a string before assigning to document.title
+  const title = typeof to.meta?.title === 'string' ? to.meta.title : 'My Vue App'
+  document.title = title
 })
 
 export default router

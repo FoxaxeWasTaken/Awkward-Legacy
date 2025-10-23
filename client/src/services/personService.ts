@@ -22,11 +22,11 @@ export const personService = {
     return api.get(`/api/v1/persons/${id}`)
   },
 
-  updatePerson(id: string, data: any) {
+  updatePerson(id: string, data: CreatePerson) {
     return api.put(`/api/v1/persons/${id}`, data)
   },
 
-  patchPerson(id: string, data: Partial<any>) {
+  patchPerson(id: string, data: Partial<CreatePerson>) {
     return api.patch(`/api/v1/persons/${id}`, data)
   },
 
