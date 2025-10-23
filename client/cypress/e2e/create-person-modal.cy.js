@@ -91,7 +91,8 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="new-person-birth-place"]').should('be.visible')
       cy.get('[data-cy="new-person-death-date"]').should('be.visible')
       cy.get('[data-cy="new-person-death-place"]').should('be.visible')
-      cy.get('[data-cy="new-person-notes"]').should('be.visible')
+      cy.get('[data-cy="new-person-occupation"]').should('exist').scrollIntoView().should('be.visible')
+      cy.get('[data-cy="new-person-notes"]').should('exist').scrollIntoView().should('be.visible')
     })
 
     it('should have required attribute on first name and last name', () => {
@@ -111,13 +112,15 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="new-person-last-name"]').type('Curie')
       cy.get('[data-cy="new-person-birth-place"]').type('Varsovie')
       cy.get('[data-cy="new-person-death-place"]').type('Paris')
-      cy.get('[data-cy="new-person-notes"]').type('Physicienne et chimiste')
+      cy.get('[data-cy="new-person-occupation"]').scrollIntoView().type('Physicienne')
+      cy.get('[data-cy="new-person-notes"]').scrollIntoView().type('Pionnière en radioactivité')
 
       cy.get('[data-cy="new-person-first-name"]').should('have.value', 'Marie')
       cy.get('[data-cy="new-person-last-name"]').should('have.value', 'Curie')
       cy.get('[data-cy="new-person-birth-place"]').should('have.value', 'Varsovie')
       cy.get('[data-cy="new-person-death-place"]').should('have.value', 'Paris')
-      cy.get('[data-cy="new-person-notes"]').should('have.value', 'Physicienne et chimiste')
+      cy.get('[data-cy="new-person-occupation"]').should('have.value', 'Physicienne')
+      cy.get('[data-cy="new-person-notes"]').should('have.value', 'Pionnière en radioactivité')
     })
 
     it('should accept dates in date fields', () => {
@@ -196,8 +199,8 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="select-husband"]').should('contain.text', 'Albert Einstein')
 
       // Un message de succès doit s'afficher
-      cy.get('.success').should('be.visible')
-      cy.get('.success').should('contain.text', 'Personne "Albert Einstein" créée avec succès')
+      cy.get('.success-message').should('be.visible')
+      cy.get('.success-message').should('contain.text', 'Personne "Albert Einstein" créée avec succès')
     })
 
     it('should create person with all fields filled', () => {
@@ -210,9 +213,10 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="new-person-birth-place"]').type('Londres')
       cy.get('[data-cy="new-person-death-date"]').type('1852-11-27')
       cy.get('[data-cy="new-person-death-place"]').type('Londres')
-      cy.get('[data-cy="new-person-notes"]').type('Première programmeuse')
+      cy.get('[data-cy="new-person-occupation"]').scrollIntoView().type('Mathématicienne')
+      cy.get('[data-cy="new-person-notes"]').scrollIntoView().type('Première programmeuse')
 
-      cy.get('[data-cy="create-person-submit"]').click()
+      cy.get('[data-cy="create-person-submit"]').scrollIntoView().click()
       cy.wait('@createPerson')
 
       // Vérifier la requête API
@@ -225,6 +229,7 @@ describe('Create Person Modal', () => {
           birth_place: 'Londres',
           death_date: '1852-11-27',
           death_place: 'Londres',
+          occupation: 'Mathématicienne',
           notes: 'Première programmeuse'
         })
       })
@@ -372,7 +377,7 @@ describe('Create Person Modal', () => {
       // Vérifier que l'aperçu de la personne s'affiche
       cy.get('[data-cy="preview-husband"]').should('be.visible')
       cy.get('[data-cy="preview-husband"]').should('contain.text', 'Charles Darwin')
-      cy.get('[data-cy="preview-husband"]').should('contain.text', 'Sexe: M')
+      cy.get('[data-cy="preview-husband"]').should('contain.text', '♂')
     })
 
     it('should allow creating multiple persons for different parents', () => {
