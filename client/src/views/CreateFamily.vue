@@ -312,86 +312,121 @@ const payload = computed<CreateFamily>(() => {
   return data
 })
 
+// Validation functions
+function validateFormSubmission(): boolean {
+  // Validation de la date de mariage avant soumission
+  validateMarriageDate()
+  if (marriageDateError.value) {
+    error.value = marriageDateError.value
+    return false
+  }
+  
+  // Validation minimale: au moins un parent
+  if (!husbandId.value && !wifeId.value) {
+    error.value = 'Au moins un parent est requis.'
+    return false
+  }
+  
+  return true
+}
+
+// Child creation logic
+async function createChildrenRelationships(familyId: string): Promise<void> {
+  if (children.value.length === 0) return
+  
+  for (const child of children.value) {
+    try {
+      await childService.createChild({
+        family_id: familyId,
+        child_id: child.id
+      })
+    } catch (childError: unknown) {
+      console.error(`Erreur lors de l'ajout de l'enfant ${child.label}:`, childError)
+      // Continue even if a child fails
+    }
+  }
+}
+
+// Event creation logic
+async function createFamilyEvents(familyId: string): Promise<void> {
+  if (events.value.length === 0) return
+  
+  for (const event of events.value) {
+    try {
+      await eventService.createEvent({
+        family_id: familyId,
+        type: event.type,
+        date: event.date || null,
+        place: event.place || null,
+        description: event.description || null
+      })
+    } catch (eventError: unknown) {
+      console.error(`Erreur lors de l'ajout de l'événement ${event.type}:`, eventError)
+      // Continue even if an event fails
+    }
+  }
+}
+
+// Success message generation
+function generateSuccessMessage(): string {
+  const childCount = children.value.length
+  const eventCount = events.value.length
+  let message = 'Famille créée'
+  
+  if (childCount > 0) {
+    message += ` avec ${childCount} enfant${childCount > 1 ? 's' : ''}`
+  }
+  
+  if (eventCount > 0) {
+    message += `${childCount > 0 ? ' et' : ' avec'} ${eventCount} événement${eventCount > 1 ? 's' : ''}`
+  }
+  
+  return message + '.'
+}
+
+// Form reset logic
+function resetForm(): void {
+  husbandId.value = ''
+  wifeId.value = ''
+  marriage_date.value = ''
+  marriage_place.value = ''
+  notes.value = ''
+  children.value = []
+  events.value = []
+  husbandOptions.value = []
+  wifeOptions.value = []
+  childOptions.value = []
+  queryHusband.value = ''
+  queryWife.value = ''
+  queryChild.value = ''
+  selectedHusband.value = null
+  selectedWife.value = null
+}
+
+// Main submit function - now much simpler
 async function submit() {
   console.log('Submit function called')
   error.value = ''
   success.value = ''
   marriageDateError.value = ''
   
-  // Validation de la date de mariage avant soumission
-  validateMarriageDate()
-  if (marriageDateError.value) {
-    error.value = marriageDateError.value
+  if (!validateFormSubmission()) {
+    submitting.value = false
     return
   }
   
   submitting.value = true
+  
   try {
-  // Validation minimale: au moins un parent
-  if (!husbandId.value && !wifeId.value) {
-    error.value = 'Au moins un parent est requis.'
-    submitting.value = false
-    return
-  }
     const res = await familyService.createFamily(payload.value)
     const familyId = res.data.id
     
-    // Create child-family relationships
-    if (children.value.length > 0) {
-      for (const child of children.value) {
-        try {
-          await childService.createChild({
-            family_id: familyId,
-            child_id: child.id
-          })
-        } catch (childError: unknown) {
-          console.error(`Erreur lors de l'ajout de l'enfant ${child.label}:`, childError)
-          // Continue even if a child fails
-        }
-      }
-    }
+    await createChildrenRelationships(familyId)
+    await createFamilyEvents(familyId)
     
-    // Create family events
-    if (events.value.length > 0) {
-      for (const event of events.value) {
-        try {
-          await eventService.createEvent({
-            family_id: familyId,
-            type: event.type,
-            date: event.date || null,
-            place: event.place || null,
-            description: event.description || null
-          })
-        } catch (eventError: unknown) {
-          console.error(`Erreur lors de l'ajout de l'événement ${event.type}:`, eventError)
-          // Continue even if an event fails
-        }
-      }
-    }
+    success.value = generateSuccessMessage()
+    resetForm()
     
-    const childCount = children.value.length
-    const eventCount = events.value.length
-    let message = 'Famille créée'
-    if (childCount > 0) message += ` avec ${childCount} enfant${childCount > 1 ? 's' : ''}`
-    if (eventCount > 0) message += `${childCount > 0 ? ' et' : ' avec'} ${eventCount} événement${eventCount > 1 ? 's' : ''}`
-    success.value = message + '.'
-    
-    // Reset simple
-    husbandId.value = ''
-    wifeId.value = ''
-    marriage_date.value = ''
-    marriage_place.value = ''
-    notes.value = ''
-    children.value = []
-    events.value = []
-    husbandOptions.value = []
-    wifeOptions.value = []
-    childOptions.value = []
-    queryHusband.value = ''
-    queryWife.value = ''
-    queryChild.value = ''
-    selectedHusband.value = null
-    selectedWife.value = null
   } catch (e: unknown) {
     const apiError = e as { response?: { data?: { detail?: string } } }
     error.value = apiError.response?.data?.detail || 'Erreur lors de la création de la famille'
