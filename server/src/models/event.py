@@ -20,22 +20,22 @@ class EventType(str, Enum):
     """Enumération des types d'événements."""
     
     # Événements de personne
-    BIRTH = "Birth"
-    BAPTISM = "Baptism"
-    DEATH = "Death"
-    BURIAL = "Burial"
+    BIRTH = "BIRTH"
+    BAPTISM = "BAPTISM"
+    DEATH = "DEATH"
+    BURIAL = "BURIAL"
     
     # Événements de famille
-    MARRIAGE = "Marriage"
-    COUPLE = "Couple"
-    ENGAGEMENT = "Engagement"
-    DIVORCE = "Divorce"
-    SEPARATION = "Separation"
-    COHABITATION = "Cohabitation"
-    MARRIAGE_ANNULMENT = "Marriage Annulment"
+    MARRIAGE = "MARRIAGE"
+    COUPLE = "COUPLE"
+    ENGAGEMENT = "ENGAGEMENT"
+    DIVORCE = "DIVORCE"
+    SEPARATION = "SEPARATION"
+    COHABITATION = "COHABITATION"
+    MARRIAGE_ANNULMENT = "MARRIAGE_ANNULMENT"
     
     # Autres événements
-    OTHER = "Other"
+    OTHER = "OTHER"
 
 
 class EventBase(SQLModel):
