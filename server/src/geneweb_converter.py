@@ -24,10 +24,10 @@ def json_to_db(data: Dict[str, Any], session: Session):
     created_children = _create_children(session, children, family_map, person_map)
 
     return {
-        "persons": len(persons),
-        "families": len(families),
-        "events": len(events),
-        "children": created_children,
+        "persons_created": len(persons),
+        "families_created": len(families),
+        "events_created": len(events),
+        "children_created": created_children,
     }
 
 

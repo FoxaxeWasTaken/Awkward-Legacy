@@ -69,3 +69,38 @@ export interface FamilySearchParams {
   family_id?: string
   limit?: number
 }
+
+export interface UploadResult {
+  message: string
+  persons_created: number
+  families_created: number
+  events_created: number
+  children_created: number
+}
+
+export interface FamilyRead {
+  id: string
+  husband_id?: string
+  wife_id?: string
+  marriage_date?: string
+  marriage_place?: string
+  notes?: string
+}
+
+export interface FamilyManagementParams {
+  skip?: number
+  limit?: number
+}
+
+export interface FamilyDetail {
+  id: string
+  husband_id?: string
+  wife_id?: string
+  marriage_date?: string
+  marriage_place?: string
+  notes?: string
+  husband?: Person
+  wife?: Person
+  children?: Child[]
+  events?: Event[]
+}

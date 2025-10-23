@@ -256,16 +256,16 @@ describe('Family Tree - E2E Tests', () => {
       cy.wait('@getFamilyDetail');
     });
 
-    it('should navigate back to search when back button is clicked', () => {
+    it('should navigate back to family management when back button is clicked', () => {
       cy.get('.back-button').click();
       
-      cy.url().should('eq', Cypress.config().baseUrl + '/');
-      cy.contains('Family Search').should('be.visible');
+      cy.url().should('eq', Cypress.config().baseUrl + '/manage');
+      cy.contains('Family Search & Management').should('be.visible');
     });
 
     it('should display back button with correct text and icon', () => {
       cy.get('.back-button').should('be.visible');
-      cy.get('.back-button').should('contain', 'Back to Search');
+      cy.get('.back-button').should('contain', 'Back to Family Management');
       cy.get('.back-icon').should('contain', '←');
     });
   });

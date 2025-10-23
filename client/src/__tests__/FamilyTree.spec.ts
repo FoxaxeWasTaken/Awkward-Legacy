@@ -465,12 +465,12 @@ describe('FamilyTree Component', () => {
       await waitForPromises()
     })
 
-    it('navigates back to search when back button is clicked', async () => {
+    it('navigates back to family management when back button is clicked', async () => {
       const pushSpy = vi.spyOn(mockRouter, 'push')
 
       await wrapper.find('.back-button').trigger('click')
 
-      expect(pushSpy).toHaveBeenCalledWith('/')
+      expect(pushSpy).toHaveBeenCalledWith('/manage')
     })
   })
 

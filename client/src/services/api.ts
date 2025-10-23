@@ -1,6 +1,14 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse } from 'axios'
-import type { FamilySearchResult, FamilyDetailResult, FamilySearchParams } from '../types/family'
+import type { 
+  FamilySearchResult, 
+  FamilyDetailResult, 
+  FamilySearchParams,
+  UploadResult,
+  FamilyRead,
+  FamilyManagementParams,
+  FamilyDetail
+} from '../types/family'
 
 class ApiService {
   private readonly api: AxiosInstance
@@ -72,6 +80,107 @@ class ApiService {
     } catch (error) {
       console.error('Health check failed:', error)
       return false
+    }
+  }
+
+  // File upload methods
+  async uploadFamilyFile(file: File): Promise<UploadResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response: AxiosResponse<UploadResult> = await this.api.post(
+      '/api/v1/files/import',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    return response.data
+  }
+
+  // File download methods
+  async downloadFamilyFile(familyId: string): Promise<Blob> {
+    const response: AxiosResponse<Blob> = await this.api.get(
+      `/api/v1/files/export/family/${familyId}`,
+      {
+        responseType: 'blob',
+      }
+    )
+    return response.data
+  }
+
+  // Helper methods for family management
+  private async fetchFamilyDetails(familyId: string): Promise<FamilyDetail> {
+    const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(
+      `/api/v1/families/${familyId}/detail`
+    )
+    return detailResponse.data
+  }
+
+  private buildPersonName(person: { first_name?: string; last_name?: string } | null): string {
+    if (!person) return 'Unknown'
+    const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim()
+    return fullName || 'Unknown'
+  }
+
+
+  private async processFamilyWithDetails(family: FamilyRead): Promise<FamilySearchResult> {
+    try {
+      const familyDetail = await this.fetchFamilyDetails(family.id)
+      const husbandName = this.buildPersonName(familyDetail.husband || null)
+      const wifeName = this.buildPersonName(familyDetail.wife || null)
+      
+      return {
+        id: family.id,
+        husband_name: husbandName,
+        wife_name: wifeName,
+        marriage_date: family.marriage_date,
+        marriage_place: family.marriage_place,
+        children_count: familyDetail.children?.length || 0,
+        summary: `${husbandName} & ${wifeName}`
+      }
+    } catch (detailError) {
+      console.warn(`Failed to fetch details for family ${family.id}:`, detailError)
+      // Fallback to unknown names when detail fetch fails
+      const husbandDisplayName = 'Unknown Husband'
+      const wifeDisplayName = 'Unknown Wife'
+      
+      return {
+        id: family.id,
+        husband_name: husbandDisplayName,
+        wife_name: wifeDisplayName,
+        marriage_date: family.marriage_date,
+        marriage_place: family.marriage_place,
+        children_count: 0,
+        summary: `${husbandDisplayName} & ${wifeDisplayName}`
+      }
+    }
+  }
+
+  // Family management methods
+  async getAllFamiliesForManagement(
+    params: FamilyManagementParams = {}
+  ): Promise<FamilySearchResult[]> {
+    try {
+      // Use the search endpoint which returns FamilySearchResult with proper names
+      // Note: Server has a max limit of 100 for search endpoint
+      // Use a wildcard search to get all families
+      const response: AxiosResponse<FamilySearchResult[]> = await this.api.get(
+        '/api/v1/families/search',
+        {
+          params: {
+            q: '%', // Wildcard search to get all families
+            limit: Math.min(params.limit || 100, 100),
+          },
+        }
+      )
+      
+      return response.data
+    } catch (error) {
+      console.error('Error fetching families for management:', error)
+      throw error
     }
   }
 }

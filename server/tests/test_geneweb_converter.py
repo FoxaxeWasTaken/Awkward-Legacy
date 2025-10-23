@@ -26,7 +26,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 0, "families": 0, "events": 0, "children": 0}
+            expected = {
+                "persons_created": 0,
+                "families_created": 0,
+                "events_created": 0,
+                "children_created": 0,
+            }
             assert result == expected
 
             mock_person_crud.create.assert_not_called()
@@ -66,7 +71,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 1, "families": 0, "events": 0, "children": 0}
+            expected = {
+                "persons_created": 1,
+                "families_created": 0,
+                "events_created": 0,
+                "children_created": 0,
+            }
             assert result == expected
 
             mock_person_crud.create.assert_called_once_with(
@@ -122,7 +132,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 2, "families": 1, "events": 0, "children": 0}
+            expected = {
+                "persons_created": 2,
+                "families_created": 1,
+                "events_created": 0,
+                "children_created": 0,
+            }
             assert result == expected
 
             assert mock_person_crud.create.call_count == 2
@@ -154,7 +169,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 0, "families": 0, "events": 1, "children": 0}
+            expected = {
+                "persons_created": 0,
+                "families_created": 0,
+                "events_created": 1,
+                "children_created": 0,
+            }
             assert result == expected
 
             mock_event_crud.create.assert_called_once_with(
@@ -199,7 +219,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 1, "families": 1, "events": 0, "children": 1}
+            expected = {
+                "persons_created": 1,
+                "families_created": 1,
+                "events_created": 0,
+                "children_created": 1,
+            }
             assert result == expected
 
             child_call = mock_child_crud.create.call_args[0][1]
@@ -229,7 +254,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 0, "families": 0, "events": 0, "children": 0}
+            expected = {
+                "persons_created": 0,
+                "families_created": 0,
+                "events_created": 0,
+                "children_created": 0,
+            }
             assert result == expected
 
             mock_child_crud.create.assert_not_called()
@@ -282,7 +312,12 @@ class TestJsonToDb:
 
             result = json_to_db(data, mock_session)
 
-            expected = {"persons": 2, "families": 1, "events": 1, "children": 1}
+            expected = {
+                "persons_created": 2,
+                "families_created": 1,
+                "events_created": 1,
+                "children_created": 1,
+            }
             assert result == expected
 
             assert mock_person_crud.create.call_count == 2

@@ -1,0 +1,182 @@
+fam Galichet Jean_Pierre + Loche Marie_Elisabeth
+src marriage_records_1849
+csrc marriage_records_1849
+csources marriage_records_1849
+fevt
+#marr 1849
+note Jean Pierre and Marie Elisabeth were married in 1849. This is a clean test family for the genealogy application.
+end fevt
+beg
+- male Jean_Charles 1813
+- male Pierre 1814
+- male Paul 1816
+- female Thérèse_Eugénie 1830
+end
+
+fam Galichet Paul + Marty Florence
+src family_records_1835
+csrc family_records_1835
+csources family_records_1835
+fevt
+#marr 3/3/1835
+note Paul and Florence married in 1835. They had two children.
+end fevt
+beg
+- male Jean-Paul 2/2/1836
+- female Laure 1839
+end
+
+fam Galichet Jean_Charles + Martin Sophie
+src family_records_1860
+csrc family_records_1860
+csources family_records_1860
+fevt
+#marr 1860
+note Jean Charles and Sophie married in 1860. They had three children.
+end fevt
+beg
+- male Pierre_Charles 1861
+- female Marie_Claire 1863
+- male Louis_Antoine 1865
+end
+
+fam Galichet Pierre_Charles + Dubois Anne
+src family_records_1885
+csrc family_records_1885
+csources family_records_1885
+fevt
+#marr 1885
+note Pierre Charles and Anne married in 1885. They had two children.
+end fevt
+beg
+- male Henri_Pierre 1886
+- female Catherine 1888
+end
+
+fam Galichet Henri_Pierre + Moreau Claire
+src family_records_1910
+csrc family_records_1910
+csources family_records_1910
+fevt
+#marr 1910
+note Henri Pierre and Claire married in 1910. They had one child.
+end fevt
+beg
+- male Robert_Henri 1911
+end
+
+pevt Galichet Jean_Pierre
+#birt 1800
+#deat 1875
+end pevt
+
+pevt Loche Marie_Elisabeth
+#birt 1805
+#deat 1880
+end pevt
+
+pevt Galichet Jean_Charles
+#birt 1813
+#deat 1890
+end pevt
+
+pevt Galichet Pierre
+#birt 1814
+#deat 1850
+end pevt
+
+pevt Galichet Paul
+#birt 1816
+#deat 1895
+end pevt
+
+pevt Galichet Thérèse_Eugénie
+#birt 1830
+#deat 1900
+end pevt
+
+pevt Marty Florence
+#birt 1818
+#deat 1885
+end pevt
+
+pevt Galichet Jean-Paul
+#birt 2/2/1836
+#deat 1905
+end pevt
+
+pevt Galichet Laure
+#birt 1839
+#deat 1920
+end pevt
+
+pevt Martin Sophie
+#birt 1840
+#deat 1910
+end pevt
+
+pevt Galichet Pierre_Charles
+#birt 1861
+#deat 1930
+end pevt
+
+pevt Galichet Marie_Claire
+#birt 1863
+#deat 1940
+end pevt
+
+pevt Galichet Louis_Antoine
+#birt 1865
+#deat 1950
+end pevt
+
+pevt Dubois Anne
+#birt 1865
+#deat 1945
+end pevt
+
+pevt Galichet Henri_Pierre
+#birt 1886
+#deat 1960
+end pevt
+
+pevt Galichet Catherine
+#birt 1888
+#deat 1970
+end pevt
+
+pevt Moreau Claire
+#birt 1890
+#deat 1975
+end pevt
+
+pevt Galichet Robert_Henri
+#birt 1911
+#deat 1990
+end pevt
+
+notes Galichet Jean_Pierre
+beg
+Jean Pierre was the patriarch of the Galichet family. He worked as a merchant and established the family business in the early 1800s.
+end notes
+
+notes Galichet Thérèse_Eugénie
+beg
+Thérèse Eugénie was known for her charitable work in the community. She helped establish a local school for children.
+end notes
+
+notes Galichet Henri_Pierre
+beg
+Henri Pierre served in the military during World War I and later became a successful businessman. He expanded the family business significantly.
+end notes
+
+notes-db
+  text=TITLE=Clean Genealogy Database
+
+  This is a clean, well-structured genealogy database created for testing the Awkward Legacy application.
+
+  * Contains a simple family tree with 5 generations
+  * All dates are properly formatted
+  * No complex HTML or special characters
+  * Suitable for testing import/export functionality
+  raw_lines=['  TITLE=Clean Genealogy Database', '', '  This is a clean, well-structured genealogy database created for testing the Awkward Legacy application.', '', '  * Contains a simple family tree with 5 generations', '  * All dates are properly formatted', '  * No complex HTML or special characters', '  * Suitable for testing import/export functionality']

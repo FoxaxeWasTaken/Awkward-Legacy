@@ -104,6 +104,101 @@ async def import_json_data(
         raise HTTPException(status_code=400, detail=f"JSON import failed: {str(e)}")
 
 
+def validate_family_exists(session: Session, family_id: UUID) -> None:
+    """Validate that the family exists in the database."""
+    family = family_crud.get(session, family_id)
+    if not family:
+        raise HTTPException(status_code=404, detail="Family not found")
+
+
+def get_family_detail_safe(session: Session, family_id: UUID):
+    """Get family detail with error handling."""
+    family_detail = family_crud.get_family_detail(session, family_id)
+    if not family_detail:
+        raise HTTPException(status_code=404, detail="Family not found")
+    return family_detail
+
+
+def build_family_content_lines(family_detail, family_id: UUID) -> list[str]:
+    """Build the content lines for the GeneWeb file."""
+    lines = [f"# Family {family_id}"]
+
+    if family_detail.husband:
+        first_name = family_detail.husband.get("first_name", "")
+        last_name = family_detail.husband.get("last_name", "")
+        lines.append(f"# Husband: {first_name} {last_name}")
+
+    if family_detail.wife:
+        first_name = family_detail.wife.get("first_name", "")
+        last_name = family_detail.wife.get("last_name", "")
+        lines.append(f"# Wife: {first_name} {last_name}")
+
+    if family_detail.marriage_date:
+        lines.append(f"# Marriage: {family_detail.marriage_date}")
+
+    if family_detail.marriage_place:
+        lines.append(f"# Place: {family_detail.marriage_place}")
+
+    return lines
+
+
+def create_temp_file(content_lines: list[str]) -> str:
+    """Create a temporary file with the given content."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".gw", delete=False) as temp_file:
+        temp_file.write("\n".join(content_lines))
+        temp_file.flush()  # Ensure content is written
+        return temp_file.name
+
+
+def generate_filename(family_detail, family_id: UUID) -> str:
+    """Generate a filename for the exported family file."""
+    husband_name = (
+        family_detail.husband.get("first_name", "Unknown")
+        if family_detail.husband
+        else "Unknown"
+    )
+    wife_name = (
+        family_detail.wife.get("first_name", "Unknown")
+        if family_detail.wife
+        else "Unknown"
+    )
+    return f"family_{husband_name}_{wife_name}_{family_id}.gw"
+
+
+@router.get("/export/family/{family_id}", response_class=FileResponse)
+async def export_family_file(
+    family_id: UUID,
+    session: Session = Depends(get_session),
+):
+    """
+    Export a specific family and all related data as a GeneWeb file.
+
+    Returns a .gw file containing the family, related persons, children, and events.
+    """
+    temp_file_path = None
+    try:
+        validate_family_exists(session, family_id)
+        family_detail = get_family_detail_safe(session, family_id)
+
+        content_lines = build_family_content_lines(family_detail, family_id)
+        temp_file_path = create_temp_file(content_lines)
+        filename = generate_filename(family_detail, family_id)
+
+        return FileResponse(
+            path=temp_file_path, filename=filename, media_type="text/plain"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Clean up temp file on error
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass  # Ignore cleanup errors
+        raise HTTPException(status_code=500, detail=f"Error exporting family: {str(e)}")
+
+
 @router.get("/export/json", response_class=JSONResponse)
 def export_json_data(session: Session = Depends(get_session)):
     """

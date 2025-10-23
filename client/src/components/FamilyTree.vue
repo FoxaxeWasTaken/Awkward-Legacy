@@ -110,9 +110,9 @@ onUnmounted(() => {
   <div class="family-tree">
     <div class="tree-header">
       <div class="header-left">
-        <button @click="$router.push('/')" class="back-button">
+        <button @click="$router.push('/manage')" class="back-button">
           <span class="back-icon">←</span>
-          Back to Search
+          Back to Family Management
         </button>
         <h2>{{ familyTitle }}</h2>
       </div>

@@ -27,7 +27,7 @@ describe('Router', () => {
     await router.push('/')
 
     expect(router.currentRoute.value.path).toBe('/')
-    expect(router.currentRoute.value.name).toBe('home')
+    expect(router.currentRoute.value.name).toBe('welcome')
   })
 
   it('navigates to family tree route with id parameter', async () => {
@@ -51,8 +51,8 @@ describe('Router', () => {
     })
 
     // Navigate by name
-    await router.push({ name: 'home' })
-    expect(router.currentRoute.value.name).toBe('home')
+    await router.push({ name: 'welcome' })
+    expect(router.currentRoute.value.name).toBe('welcome')
 
     await router.push({
       name: 'family-tree',
