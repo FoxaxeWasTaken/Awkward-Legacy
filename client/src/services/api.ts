@@ -72,6 +72,27 @@ class ApiService {
     return response.data
   }
 
+  // Generic HTTP methods for backward compatibility
+  get(url: string, config?: any) {
+    return this.api.get(url, config)
+  }
+
+  post(url: string, data?: any, config?: any) {
+    return this.api.post(url, data, config)
+  }
+
+  put(url: string, data?: any, config?: any) {
+    return this.api.put(url, data, config)
+  }
+
+  patch(url: string, data?: any, config?: any) {
+    return this.api.patch(url, data, config)
+  }
+
+  delete(url: string, config?: any) {
+    return this.api.delete(url, config)
+  }
+
   // Health check
   async healthCheck(): Promise<boolean> {
     try {
