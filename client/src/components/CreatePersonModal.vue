@@ -16,7 +16,7 @@ const emit = defineEmits<{
   personCreated: [person: any]
 }>()
 
-// Données du formulaire
+// Form data
 const newPerson = ref({
   first_name: '',
   last_name: '',
@@ -76,10 +76,10 @@ const createPerson = async () => {
     const response = await personService.createPerson(personData)
     const createdPerson = response.data
     
-    // Émettre l'événement avec la personne créée
+    // Emit event with created person
     emit('personCreated', createdPerson)
     
-    // Réinitialiser et fermer
+    // Reset and close
     resetForm()
 
   } catch (e: any) {

@@ -1,25 +1,25 @@
 describe('Create Person Modal', () => {
   before(() => {
-    // Nettoyer complètement la base de données avant la suite de tests
+    // Clean the database completely before the test suite
     cy.cleanDatabase()
   })
 
   beforeEach(() => {
-    // Visiter la page de création de famille pour accéder à la modale
+    // Visit the family creation page to access the modal
     cy.visit('/families/create')
   })
 
   after(() => {
-    // Nettoyer complètement la base de données à la fin de la suite de tests
+    // Clean the database completely at the end of the test suite
     cy.cleanDatabase()
   })
 
   describe('Modal Opening and Closing', () => {
     it('should open modal when clicking "Créer" button for husband', () => {
-      // La modale ne doit pas être visible au départ
+      // The modal should not be visible initially
       cy.get('.modal-overlay').should('not.exist')
 
-      // Cliquer sur le bouton "Créer" pour le parent 1
+      // Click "Create" button for parent 1
       cy.get('[data-cy="search-husband"]').parent().find('button').contains('Créer').click()
 
       // La modale doit s'ouvrir
@@ -31,7 +31,7 @@ describe('Create Person Modal', () => {
     it('should open modal when clicking "Créer" button for wife', () => {
       cy.get('.modal-overlay').should('not.exist')
 
-      // Cliquer sur le bouton "Créer" pour le parent 2
+      // Click "Create" button for parent 2
       cy.get('[data-cy="search-wife"]').parent().find('button').contains('Créer').click()
 
       cy.get('.modal-overlay').should('be.visible')
@@ -70,7 +70,7 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="search-husband"]').parent().find('button').contains('Créer').click()
       cy.get('.modal').should('be.visible')
 
-      // Cliquer à l'intérieur de la modale
+      // Click inside the modal
       cy.get('.modal').click()
 
       // La modale doit rester ouverte
@@ -184,7 +184,7 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="create-person-submit"]').click()
       cy.wait('@createPerson')
 
-      // Vérifier la requête API
+      // Check API request
       cy.wait('@createPerson').then((interception) => {
         expect(interception.request.body).to.include({
           first_name: 'Albert',
@@ -195,10 +195,10 @@ describe('Create Person Modal', () => {
       // La modale doit se fermer
       cy.get('.modal-overlay').should('not.exist')
 
-      // La personne doit être sélectionnée automatiquement
+      // The person must be automatically selected
       cy.get('[data-cy="select-husband"]').should('contain.text', 'Albert Einstein')
 
-      // Un message de succès doit s'afficher
+      // A success message must be displayed
       cy.get('.success-message').should('be.visible')
       cy.get('.success-message').should('contain.text', 'Personne "Albert Einstein" créée avec succès')
     })
@@ -219,7 +219,7 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="create-person-submit"]').scrollIntoView().click()
       cy.wait('@createPerson')
 
-      // Vérifier la requête API
+      // Check API request
       cy.wait('@createPerson').then((interception) => {
         expect(interception.request.body).to.include({
           first_name: 'Ada',
@@ -256,7 +256,7 @@ describe('Create Person Modal', () => {
 
       cy.get('.modal-overlay').should('not.exist')
 
-      // La personne doit être sélectionnée comme wife
+      // The person must be selected as wife
       cy.get('[data-cy="select-wife"]').should('contain.text', 'Grace Hopper')
     })
 
@@ -299,7 +299,7 @@ describe('Create Person Modal', () => {
       // Rouvrir la modale
       cy.get('[data-cy="search-husband"]').parent().find('button').contains('Créer').click()
 
-      // Les champs doivent être vides
+      // Fields must be empty
       cy.get('[data-cy="new-person-first-name"]').should('have.value', '')
       cy.get('[data-cy="new-person-last-name"]').should('have.value', '')
       cy.get('[data-cy="new-person-sex"]').should('have.value', 'U')
@@ -328,7 +328,7 @@ describe('Create Person Modal', () => {
       // Rouvrir la modale
       cy.get('[data-cy="search-wife"]').parent().find('button').contains('Créer').click()
 
-      // Les champs doivent être vides
+      // Fields must be empty
       cy.get('[data-cy="new-person-first-name"]').should('have.value', '')
       cy.get('[data-cy="new-person-last-name"]').should('have.value', '')
     })
@@ -346,7 +346,7 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="create-person-submit"]').click()
       cy.wait('@createPerson')
 
-      // Vérifier que la personne est sélectionnée
+      // Check that the person is selected
       cy.get('[data-cy="select-husband"]').find('option:selected').should('contain.text', 'Isaac Newton')
     })
 
@@ -374,7 +374,7 @@ describe('Create Person Modal', () => {
       cy.get('[data-cy="create-person-submit"]').click()
       cy.wait('@createPerson')
 
-      // Vérifier que l'aperçu de la personne s'affiche
+      // Check that the person preview is displayed
       cy.get('[data-cy="preview-husband"]').should('be.visible')
       cy.get('[data-cy="preview-husband"]').should('contain.text', 'Charles Darwin')
       cy.get('[data-cy="preview-husband"]').should('contain.text', '♂')
@@ -383,21 +383,21 @@ describe('Create Person Modal', () => {
     it('should allow creating multiple persons for different parents', () => {
       cy.intercept('POST', '**/api/v1/persons').as('createPerson')
 
-      // Créer le husband
+      // Create the husband
       cy.get('[data-cy="search-husband"]').parent().find('button').contains('Créer').click()
       cy.get('[data-cy="new-person-first-name"]').type('Romeo')
       cy.get('[data-cy="new-person-last-name"]').type('Montague')
       cy.get('[data-cy="create-person-submit"]').click()
       cy.wait('@createPerson')
 
-      // Créer la wife
+      // Create the wife
       cy.get('[data-cy="search-wife"]').parent().find('button').contains('Créer').click()
       cy.get('[data-cy="new-person-first-name"]').type('Juliette')
       cy.get('[data-cy="new-person-last-name"]').type('Capulet')
       cy.get('[data-cy="create-person-submit"]').click()
       cy.wait('@createPerson')
 
-      // Vérifier que les deux personnes sont sélectionnées
+      // Check that both persons are selected
       cy.get('[data-cy="select-husband"]').should('contain.text', 'Romeo Montague')
       cy.get('[data-cy="select-wife"]').should('contain.text', 'Juliette Capulet')
     })
@@ -407,7 +407,7 @@ describe('Create Person Modal', () => {
     it('should disable submit button while creating person', () => {
       cy.intercept('POST', '**/api/v1/persons', (req) => {
         req.reply({
-          delay: 1000, // Simuler un délai réseau
+          delay: 1000, // Simulate network delay
           statusCode: 201,
           body: {
             id: '789',
@@ -425,7 +425,7 @@ describe('Create Person Modal', () => {
 
       cy.get('[data-cy="create-person-submit"]').click()
 
-      // Le bouton doit être désactivé pendant la création
+      // The button must be disabled during creation
       cy.get('[data-cy="create-person-submit"]').should('be.disabled')
       cy.get('[data-cy="create-person-submit"]').should('contain.text', 'Création...')
 

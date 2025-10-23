@@ -2,10 +2,10 @@ describe('Create Family', () => {
   let johnId, janeId
 
   before(() => {
-    // Nettoyer complètement la base de données avant la suite de tests
+    // Clean the database completely before the test suite
     cy.cleanDatabase()
 
-    // Créer les personnes nécessaires une seule fois (chaînées pour garantir l'ordre)
+    // Create necessary persons once (chained to guarantee order)
     cy.createTestPerson({
       first_name: 'John',
       last_name: 'Doe',
@@ -30,7 +30,7 @@ describe('Create Family', () => {
   })
 
   afterEach(() => {
-    // Nettoyer les familles après chaque test
+    // Clean families after each test
     const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
     cy.request('GET', `${apiUrl}/api/v1/families?limit=1000`).then((response) => {
       const families = response.body
@@ -45,12 +45,12 @@ describe('Create Family', () => {
   })
 
   after(() => {
-    // Nettoyer complètement la base de données à la fin de la suite de tests
+    // Clean the database completely at the end of the test suite
     cy.cleanDatabase()
   })
 
   it('should create a family with one parent', () => {
-    // Vérifier que les éléments existent
+    // Check that elements exist
     cy.get('[data-cy="search-husband"]').should('be.visible')
     cy.get('[data-cy="select-husband"]').should('be.visible')
     
@@ -72,7 +72,7 @@ describe('Create Family', () => {
       ]
     }).as('searchPersons')
     
-    // Mocker la création de famille
+    // Mock family creation
     cy.intercept('POST', '**/api/v1/families', {
       statusCode: 201,
       body: {
@@ -85,10 +85,10 @@ describe('Create Family', () => {
       }
     }).as('createFamily')
     
-    // Rechercher et sélectionner un parent
+    // Search and select a parent
     cy.get('[data-cy="search-husband"]').clear().type('John')
     cy.wait('@searchPersons')
-    // Sélectionner la première option non vide
+    // Select the first non-empty option
     cy.get('[data-cy="select-husband"]').find('option').its('length').should('be.greaterThan', 1)
     cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
       const val = $opt.val()
@@ -103,15 +103,15 @@ describe('Create Family', () => {
     // Soumettre le formulaire
     cy.get('[data-cy="submit-family"]').click()
     
-    // Attendre la création de famille
+    // Wait for family creation
     cy.wait('@createFamily')
 
-    // Vérifier le message de succès
+    // Check success message
     cy.contains('Famille créée.').should('be.visible')
   })
 
   it('should create a family with two parents', () => {
-    // Sélectionner le premier parent
+    // Select the first parent
     cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
     cy.get('[data-cy="search-husband"]').type('John')
     cy.wait('@searchPersons')
@@ -120,7 +120,7 @@ describe('Create Family', () => {
       cy.get('[data-cy="select-husband"]').select($opt.val())
     })
 
-    // Sélectionner le deuxième parent
+    // Select the second parent
     cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons2')
     cy.get('[data-cy="search-wife"]').type('Jane')
     cy.wait('@searchPersons2')
@@ -133,17 +133,17 @@ describe('Create Family', () => {
     cy.get('[data-cy="marriage-date"]').type('2005-06-20')
     cy.get('[data-cy="marriage-place"]').type('Paris')
 
-    // Intercepter la création de famille
+    // Intercept family creation
     cy.intercept('POST', '**/api/v1/families').as('createFamily')
     
     // Soumettre
     cy.get('[data-cy="submit-family"]').click()
     cy.wait('@createFamily')
 
-    // Attendre un peu pour que la fonction submit s'exécute
+    // Wait a bit for the submit function to execute
     cy.wait(1000)
     
-    // Debug: vérifier ce qui est affiché
+    // Debug: check what is displayed
     cy.get('body').then(($body) => {
       if ($body.find('.success-message').length > 0) {
         cy.get('.success-message').should('be.visible')
@@ -159,7 +159,7 @@ describe('Create Family', () => {
   })
 
   it('should validate marriage date against parent birth dates', () => {
-    // Sélectionner un parent avec une date de naissance connue
+    // Select a parent with a known birth date
     cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
     cy.get('[data-cy="search-husband"]').type('John')
     cy.wait('@searchPersons')
@@ -169,15 +169,15 @@ describe('Create Family', () => {
 
     // Essayer une date de mariage avant la naissance
     cy.get('[data-cy="marriage-date"]').type('1970-01-01')
-    cy.get('[data-cy="marriage-date"]').blur() // Déclencher la validation
+    cy.get('[data-cy="marriage-date"]').blur() // Trigger validation
 
-    // Vérifier l'erreur de validation
+    // Check validation error
     cy.get('.field-error').should('be.visible')
     cy.get('.field-error').should('contain.text', 'antérieure à la naissance')
   })
 
   it('should prevent future marriage dates', () => {
-    // Sélectionner un parent
+    // Select a parent
     cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
     cy.get('[data-cy="search-husband"]').type('John')
     cy.wait('@searchPersons')
@@ -191,26 +191,26 @@ describe('Create Family', () => {
     const tomorrowStr = tomorrow.toISOString().split('T')[0]
 
     cy.get('[data-cy="marriage-date"]').type(tomorrowStr)
-    cy.get('[data-cy="marriage-date"]').blur() // Déclencher la validation
+    cy.get('[data-cy="marriage-date"]').blur() // Trigger validation
 
-    // Vérifier l'erreur
+    // Check error
     cy.get('.field-error').should('be.visible')
     cy.get('.field-error').should('contain.text', 'dans le futur')
   })
 
   it('should require at least one parent', () => {
-    // Ne pas sélectionner de parents
+    // Don't select any parents
     cy.get('[data-cy="marriage-date"]').type('2005-06-20')
 
     // Essayer de soumettre
     cy.get('[data-cy="submit-family"]').click()
 
-    // Vérifier l'erreur
+    // Check error
     cy.contains('Au moins un parent est requis.').should('be.visible')
   })
 
   it('should handle duplicate family creation error', () => {
-    // Créer des personnes uniques pour ce test
+    // Create unique persons for this test
     const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
     const timestamp = Date.now()
     let husbandId, wifeId
@@ -227,7 +227,7 @@ describe('Create Family', () => {
       wifeId = response.body.id
     })
 
-    // Créer une première famille via l'interface
+    // Create a first family via the interface
     cy.get('[data-cy="search-husband"]').type(`Husband${timestamp}`)
     cy.wait(600)
     cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
@@ -242,16 +242,16 @@ describe('Create Family', () => {
 
     cy.get('[data-cy="marriage-date"]').type('2005-06-20')
     
-    // Intercepter la première création
+    // Intercept the first creation
     cy.intercept('POST', '**/api/v1/families').as('createFamily1')
     cy.get('[data-cy="submit-family"]').click()
     cy.wait('@createFamily1')
     
-    // Vérifier le succès de la première création
+    // Check success of the first creation
     cy.get('.success-message').should('be.visible')
     cy.get('.success-message').should('contain.text', 'Famille créée.')
 
-    // Maintenant essayer de créer la même famille à nouveau
+    // Now try to create the same family again
     cy.get('[data-cy="search-husband"]').clear().type(`Husband${timestamp}`)
     cy.wait(600)
     cy.get('[data-cy="select-husband"]').find('option').eq(1).then(($opt) => {
@@ -266,16 +266,16 @@ describe('Create Family', () => {
 
     cy.get('[data-cy="marriage-date"]').type('2005-06-20')
     
-    // Intercepter la deuxième création (qui devrait échouer)
+    // Intercept the second creation (which should fail)
     cy.intercept('POST', '**/api/v1/families').as('createFamily2')
     cy.get('[data-cy="submit-family"]').click()
     cy.wait('@createFamily2')
     
-    // Vérifier l'erreur de doublon
+    // Check duplicate error
     cy.get('.error-message').should('be.visible')
     cy.get('.error-message').should('contain.text', 'already exists')
     
-    // Nettoyer les personnes créées pour ce test
+    // Clean up persons created for this test
     cy.then(() => {
       if (husbandId) {
         cy.request('DELETE', `${apiUrl}/api/v1/persons/${husbandId}`, { failOnStatusCode: false })
@@ -287,7 +287,7 @@ describe('Create Family', () => {
   })
 
   it('should reset form after successful creation', () => {
-    // Créer une famille
+    // Create a family
     cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
     cy.get('[data-cy="search-husband"]').type('John')
     cy.wait('@searchPersons')
@@ -302,7 +302,7 @@ describe('Create Family', () => {
     cy.get('[data-cy="submit-family"]').click()
     cy.contains('Famille créée.').should('be.visible')
 
-    // Vérifier que le formulaire est réinitialisé
+    // Check that the form is reset
     cy.get('[data-cy="search-husband"]').should('have.value', '')
     cy.get('[data-cy="search-wife"]').should('have.value', '')
     cy.get('[data-cy="marriage-date"]').should('have.value', '')
@@ -318,14 +318,14 @@ describe('Create Family', () => {
   })
 
   it('should open create person modal and create a new person', () => {
-    // Ouvrir la modale de création de personne pour le husband
+    // Open person creation modal for husband
     cy.get('[data-cy="search-husband"]').parent().find('button').click()
     
-    // Vérifier que la modale s'ouvre
+    // Check that the modal opens
     cy.get('.modal').should('be.visible')
     cy.get('.modal-header h3').should('contain.text', 'Créer une nouvelle personne')
     
-    // Remplir le formulaire
+    // Fill the form
     cy.get('[data-cy="new-person-first-name"]').type('Jean')
     cy.get('[data-cy="new-person-last-name"]').type('Dupont')
     cy.get('[data-cy="new-person-sex"]').select('M')
@@ -333,50 +333,50 @@ describe('Create Family', () => {
     cy.get('[data-cy="new-person-birth-place"]').type('Paris')
     cy.get('[data-cy="new-person-notes"]').type('Personne créée via modale')
     
-    // Intercepter la création de personne
+    // Intercept person creation
     cy.intercept('POST', '**/api/v1/persons').as('createPerson')
     
     // Soumettre le formulaire
     cy.get('[data-cy="create-person-submit"]').click()
     cy.wait('@createPerson')
     
-    // Vérifier que la modale se ferme
+    // Check that the modal closes
     cy.get('.modal').should('not.exist')
     
-    // Vérifier que la personne a été sélectionnée automatiquement
+    // Check that the person was automatically selected
     cy.get('[data-cy="select-husband"]').should('contain.text', 'Jean Dupont')
     cy.get('[data-cy="preview-husband"]').should('be.visible')
     cy.get('[data-cy="preview-husband"]').should('contain.text', 'Jean Dupont')
     cy.get('[data-cy="preview-husband"]').should('contain.text', '♂')
     
-    // Vérifier le message de succès
+    // Check success message
     cy.get('.success-message').should('be.visible')
     cy.get('.success-message').should('contain.text', 'Personne "Jean Dupont" créée avec succès')
   })
 
   it('should validate required fields in create person modal', () => {
-    // Ouvrir la modale de création de personne
+    // Open person creation modal
     cy.get('[data-cy="search-husband"]').parent().find('button').click()
     
-    // Vérifier que les champs ont l'attribut 'required'
+    // Check that fields have the 'required' attribute
     cy.get('[data-cy="new-person-first-name"]').should('have.attr', 'required')
     cy.get('[data-cy="new-person-last-name"]').should('have.attr', 'required')
     
-    // Essayer de remplir seulement le prénom (pas le nom)
+    // Try to fill only the first name (not the last name)
     cy.get('[data-cy="new-person-first-name"]').type('Test')
     cy.get('[data-cy="create-person-submit"]').click()
     
-    // Le navigateur devrait empêcher la soumission avec la validation HTML5
-    // La modale devrait rester ouverte
+    // The browser should prevent submission with HTML5 validation
+    // The modal should remain open
     cy.get('.modal').should('be.visible')
     
-    // Fermer la modale
+    // Close the modal
     cy.get('.close-btn').click()
     cy.get('.modal').should('not.exist')
   })
 
   it('should add existing children to the family', () => {
-    // Créer une personne qui sera un enfant
+    // Create a person who will be a child
     const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
     
     cy.request('POST', `${apiUrl}/api/v1/persons`, {
@@ -387,7 +387,7 @@ describe('Create Family', () => {
     }).as('createChild').then((response) => {
       const childId = response.body.id
 
-      // Sélectionner les parents
+      // Select parents
       cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
       cy.get('[data-cy="search-husband"]').type('John')
       cy.wait('@searchPersons')
@@ -398,13 +398,13 @@ describe('Create Family', () => {
       // Scroll vers le haut pour s'assurer que la section enfants est visible
       cy.scrollTo('top')
       
-      // Cliquer sur le bouton "Ajouter un enfant" pour rendre les éléments visibles
+      // Click "Add child" button to make elements visible
       cy.get('[data-cy="add-child-button"]').should('be.visible').click()
       
-      // Vérifier que la section enfants existe maintenant
+      // Check that the children section now exists
       cy.get('[data-cy="search-child"]').should('exist')
       
-      // Rechercher et ajouter l'enfant
+      // Search and add the child
       cy.get('[data-cy="search-child"]').scrollIntoView().should('be.visible')
       cy.get('[data-cy="search-child"]').type('Charlie')
       cy.wait('@searchPersons')
@@ -412,28 +412,28 @@ describe('Create Family', () => {
         cy.get('[data-cy="select-child"]').select($opt.val())
       })
 
-      // Vérifier que l'enfant est ajouté à la liste
+      // Check that the child is added to the list
       cy.get('[data-cy="children-list"]').should('be.visible')
       cy.get('[data-cy="children-list"]').should('contain', 'Charlie TestChild')
 
-      // Créer la famille
+      // Create the family
       cy.intercept('POST', '**/api/v1/families').as('createFamily')
       cy.intercept('POST', '**/api/v1/children').as('createChildRelation')
       cy.get('[data-cy="submit-family"]').click()
       cy.wait('@createFamily')
       cy.wait('@createChildRelation', { timeout: 10000 })
 
-      // Vérifier le message de succès
+      // Check success message
       cy.get('.success-message').should('be.visible')
       cy.get('.success-message').should('contain.text', 'Famille créée avec 1 enfant')
 
-      // Nettoyer l'enfant créé
+      // Clean up created child
       cy.request('DELETE', `${apiUrl}/api/v1/persons/${childId}`, { failOnStatusCode: false })
     })
   })
 
   it('should add multiple children to the family', () => {
-    // Créer deux enfants
+    // Create two children
     const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
     const childIds = []
     
@@ -490,7 +490,7 @@ describe('Create Family', () => {
       }
     })
 
-    // Ajouter le deuxième enfant (utiliser Jane Smith)
+    // Add the second child (use Jane Smith)
     cy.get('[data-cy="add-child-button"]').click()
     cy.get('[data-cy="children-list"]').eq(1).find('[data-cy="search-child"]').clear().type('Jane')
     cy.wait('@searchPersons')
@@ -505,18 +505,18 @@ describe('Create Family', () => {
       }
     })
 
-    // Vérifier que deux enfants ont été ajoutés
+    // Check that two children have been added
     cy.get('[data-cy="children-list"]').should('have.length', 2)
 
-    // Créer la famille
+    // Create the family
     cy.intercept('POST', '**/api/v1/families').as('createFamily')
     cy.get('[data-cy="submit-family"]').click()
     cy.wait('@createFamily')
 
-    // Vérifier le message de succès
+    // Check success message
     cy.get('.success-message').should('contain.text', 'Famille créée avec 2 enfants')
 
-    // Nettoyer les enfants créés
+    // Clean up created children
     cy.then(() => {
       childIds.forEach(id => {
         cy.request('DELETE', `${apiUrl}/api/v1/persons/${id}`, { failOnStatusCode: false })
@@ -525,7 +525,7 @@ describe('Create Family', () => {
   })
 
   it('should remove a child from the list before submission', () => {
-    // Créer un enfant
+    // Create a child
     const apiUrl = Cypress.env('apiUrl') || 'http://server-dev:8000'
     
     cy.request('POST', `${apiUrl}/api/v1/persons`, {
@@ -536,7 +536,7 @@ describe('Create Family', () => {
     }).then((response) => {
       const childId = response.body.id
 
-      // Sélectionner un parent
+      // Select a parent
       cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
       cy.get('[data-cy="search-husband"]').type('John')
       cy.wait('@searchPersons')
@@ -547,7 +547,7 @@ describe('Create Family', () => {
       // Scroll vers le haut pour s'assurer que la section enfants est visible
       cy.scrollTo('top')
       
-      // Cliquer sur le bouton "Ajouter un enfant" pour rendre les éléments visibles
+      // Click "Add child" button to make elements visible
       cy.get('[data-cy="add-child-button"]').should('be.visible').click()
       
       // Ajouter l'enfant
@@ -558,22 +558,22 @@ describe('Create Family', () => {
         cy.get('[data-cy="select-child"]').select($opt.val())
       })
 
-      // Vérifier que l'enfant est ajouté
+      // Check that the child is added
       cy.get('[data-cy="children-list"]').should('contain', 'ToRemove Child')
 
-      // Supprimer l'enfant
+      // Remove the child
       cy.get('[data-cy="remove-child-btn"]').click()
 
-      // Vérifier que l'enfant est supprimé
+      // Check that the child is removed
       cy.get('[data-cy="children-list"]').should('not.exist')
 
-      // Nettoyer l'enfant créé
+      // Clean up created child
       cy.request('DELETE', `${apiUrl}/api/v1/persons/${childId}`, { failOnStatusCode: false })
     })
   })
 
   it('should create a new child via modal and add to family', () => {
-    // Sélectionner un parent
+    // Select a parent
     cy.intercept('GET', '**/api/v1/persons/search*').as('searchPersons')
     cy.get('[data-cy="search-husband"]').type('John')
     cy.wait('@searchPersons')
@@ -587,12 +587,12 @@ describe('Create Family', () => {
     // Cliquer sur le bouton "Ajouter un enfant" pour rendre les éléments visibles
     cy.get('[data-cy="add-child-button"]').should('be.visible').click()
     
-    // Ouvrir la modale pour créer un enfant
+    // Open modal to create a child
     cy.get('[data-cy="create-child-button"]').scrollIntoView().should('be.visible')
     cy.get('[data-cy="create-child-button"]').click()
     cy.get('.modal').should('be.visible')
 
-    // Remplir le formulaire
+    // Fill the form
     cy.get('[data-cy="new-person-first-name"]').type('NewChild')
     cy.get('[data-cy="new-person-last-name"]').type('Created')
     cy.get('[data-cy="new-person-birth-date"]').type('2015-03-10')
@@ -602,17 +602,17 @@ describe('Create Family', () => {
     cy.get('[data-cy="create-person-submit"]').click()
     cy.wait('@createPerson')
 
-    // Vérifier que la modale se ferme et que l'enfant est ajouté
+    // Check that the modal closes and the child is added
     cy.get('.modal').should('not.exist')
-    // Vérifier que l'enfant créé est sélectionné dans le select
+    // Check that the created child is selected in the select
     cy.get('[data-cy="select-child"]').should('contain', 'NewChild Created')
 
-    // Créer la famille
+    // Create the family
     cy.intercept('POST', '**/api/v1/families').as('createFamily')
     cy.get('[data-cy="submit-family"]').click()
     cy.wait('@createFamily')
 
-    // Vérifier le message de succès
+    // Check success message
     cy.get('.success-message').should('contain.text', 'Famille créée avec 1 enfant')
   })
 
@@ -690,14 +690,14 @@ describe('Create Family', () => {
     cy.get('[data-cy="event-0"]').should('be.visible')
     cy.get('[data-cy="event-1"]').should('be.visible')
 
-    // Créer la famille
+    // Create the family
     cy.intercept('POST', '**/api/v1/families').as('createFamily')
     cy.intercept('POST', '**/api/v1/events').as('createEvent')
     cy.get('[data-cy="submit-family"]').click()
     cy.wait('@createFamily')
     cy.wait('@createEvent')
 
-    // Vérifier le message de succès
+    // Check success message
     cy.get('.success-message').should('contain.text', 'Famille créée avec 2 événements')
 
     // Nettoyer les personnes créées
@@ -727,7 +727,7 @@ describe('Create Family', () => {
     }).then(() => {
       cy.visit('/families/create')
 
-      // Sélectionner un parent
+      // Select a parent
       cy.intercept('GET', '**/api/v1/persons/search*').as('searchPerson')
       cy.get('[data-cy="search-husband"]').type('RemoveEvent')
       cy.wait('@searchPerson')

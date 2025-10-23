@@ -34,7 +34,7 @@ Cypress.Commands.add('cleanDatabase', () => {
     })
   })
 
-  // 2. Supprimer tous les événements
+  // 2. Delete all events
   cy.request('GET', `${apiUrl}/api/v1/events?limit=1000`).then((response) => {
     const events = response.body
     events.forEach((event: any) => {

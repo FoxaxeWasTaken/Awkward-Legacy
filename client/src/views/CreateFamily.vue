@@ -26,7 +26,7 @@ const children = ref<Array<{ id: string; label: string }>>([])
 const queryChild = ref('')
 const childOptions = ref<PersonOption[]>([])
 
-// Événements
+// Events
 const events = ref<Array<{
   type: string
   date: string
@@ -39,7 +39,7 @@ const submitting = ref(false)
 const error = ref('')
 const success = ref('')
 
-// Données des parents sélectionnés pour validation
+// Selected parent data for validation
 const selectedHusband = ref<any>(null)
 const selectedWife = ref<any>(null)
 const marriageDateError = ref('')
@@ -48,7 +48,7 @@ const marriageDateError = ref('')
 const showCreatePersonModal = ref(false)
 const currentParentType = ref<'husband' | 'wife' | 'child'>('husband')
 
-// Autocomplétion simple (texte libre)
+// Simple autocompletion (free text)
 const queryHusband = ref('')
 const queryWife = ref('')
 const husbandOptions = ref<PersonOption[]>([])
@@ -118,13 +118,13 @@ function validateMarriageDate() {
   const marriageDate = new Date(marriage_date.value)
   const today = new Date()
   
-  // Vérifier que la date n'est pas dans le futur
+  // Check that the date is not in the future
   if (marriageDate > today) {
     marriageDateError.value = 'La date de mariage ne peut pas être dans le futur.'
     return
   }
   
-  // Vérifier contre les dates de naissance et décès des parents
+  // Check against parent birth and death dates
   if (selectedHusband.value) {
     if (selectedHusband.value.birth_date) {
       const husbandBirth = new Date(selectedHusband.value.birth_date)
@@ -160,17 +160,17 @@ function validateMarriageDate() {
   }
 }
 
-// Charger les détails d'une personne sélectionnée
+// Load details of a selected person
 async function loadPersonDetails(type: 'husband' | 'wife', personId: string) {
   try {
-    // Si aucun sélectionné, réinitialiser l'aperçu
+    // If none selected, reset preview
     if (!personId) {
       if (type === 'husband') {
         selectedHusband.value = null
       } else {
         selectedWife.value = null
       }
-      // Revalider la date si besoin (pour nettoyer un éventuel message)
+      // Revalidate date if needed (to clear any message)
       if (marriage_date.value) {
         validateMarriageDate()
       }
@@ -185,7 +185,7 @@ async function loadPersonDetails(type: 'husband' | 'wife', personId: string) {
       selectedWife.value = person
     }
     
-    // Revalider la date de mariage si elle est déjà saisie
+    // Revalidate marriage date if already entered
     if (marriage_date.value) {
       validateMarriageDate()
     }
@@ -194,7 +194,7 @@ async function loadPersonDetails(type: 'husband' | 'wife', personId: string) {
   }
 }
 
-// Ouvrir modale de création de personne
+// Open person creation modal
 function openCreatePersonModal(type: 'husband' | 'wife') {
   currentParentType.value = type
   showCreatePersonModal.value = true
@@ -210,9 +210,9 @@ const navigateToHome = () => {
   router.push('/')
 }
 
-// Gérer la création de personne depuis la modale
+// Handle person creation from modal
 function handlePersonCreated(createdPerson: any) {
-  // Ajouter la personne créée aux options et la sélectionner
+  // Add created person to options and select it
   const newOption = {
     id: createdPerson.id,
     label: `${createdPerson.first_name} ${createdPerson.last_name}`
@@ -227,7 +227,7 @@ function handlePersonCreated(createdPerson: any) {
     wifeId.value = createdPerson.id
     selectedWife.value = createdPerson
   } else if (currentParentType.value === 'child') {
-    // Trouver le dernier enfant ajouté et le remplir avec la personne créée
+    // Find the last added child and fill it with the created person
     const lastChildIndex = children.value.length - 1
     if (lastChildIndex >= 0) {
       const newOption = {
@@ -243,7 +243,7 @@ function handlePersonCreated(createdPerson: any) {
   // Fermer la modale
   closeCreatePersonModal()
   
-  // Afficher un message de succès
+  // Show success message
   success.value = `Personne "${createdPerson.first_name} ${createdPerson.last_name}" créée avec succès`
   setTimeout(() => { success.value = '' }, 3000)
 }
@@ -277,7 +277,7 @@ async function loadChildDetails(childId: string) {
     const response = await personService.getPersonById(childId)
     const person = response.data
     
-    // Mettre à jour le label de l'enfant
+    // Update child label
     const childIndex = children.value.findIndex(child => child.id === childId)
     if (childIndex !== -1) {
       children.value[childIndex].label = `${person.first_name} ${person.last_name}`
@@ -287,7 +287,7 @@ async function loadChildDetails(childId: string) {
   }
 }
 
-// Gestion des événements
+// Event management
 function addEvent() {
   events.value.push({
     type: '',
@@ -335,7 +335,7 @@ async function submit() {
     const res = await familyService.createFamily(payload.value)
     const familyId = res.data.id
     
-    // Créer les relations enfant-famille
+    // Create child-family relationships
     if (children.value.length > 0) {
       for (const child of children.value) {
         try {
@@ -345,12 +345,12 @@ async function submit() {
           })
         } catch (childError: any) {
           console.error(`Erreur lors de l'ajout de l'enfant ${child.label}:`, childError)
-          // On continue même si un enfant échoue
+          // Continue even if a child fails
         }
       }
     }
     
-    // Créer les événements familiaux
+    // Create family events
     if (events.value.length > 0) {
       for (const event of events.value) {
         try {
@@ -363,7 +363,7 @@ async function submit() {
           })
         } catch (eventError: any) {
           console.error(`Erreur lors de l'ajout de l'événement ${event.type}:`, eventError)
-          // On continue même si un événement échoue
+          // Continue even if an event fails
         }
       }
     }

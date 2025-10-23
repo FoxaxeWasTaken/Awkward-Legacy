@@ -17,7 +17,7 @@ export interface CreateEvent {
   description?: string | null
 }
 
-// Types d'événements familiaux
+// Family event types
 export const FAMILY_EVENT_TYPES = [
   { value: 'Marriage', label: 'Mariage' },
   { value: 'Couple', label: 'Couple' },

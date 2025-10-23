@@ -45,12 +45,12 @@ describe('CreateFamily.vue', () => {
       death_date: null
     }
 
-    // Mock des réponses API
+    // Mock API responses
     vi.mocked(personService.getPersonById)
       .mockResolvedValueOnce({ data: mockHusband })
       .mockResolvedValueOnce({ data: mockWife })
 
-    // Sélectionner les parents
+    // Select parents
     await wrapper.vm.loadPersonDetails('1', 'husband')
     await wrapper.vm.loadPersonDetails('2', 'wife')
 
@@ -75,7 +75,7 @@ describe('CreateFamily.vue', () => {
     vi.mocked(personService.getPersonById).mockResolvedValue({ data: mockHusband })
     await wrapper.vm.loadPersonDetails('1', 'husband')
 
-    // Tester une date de mariage après le décès
+    // Test a marriage date after death
     wrapper.vm.marriage_date = '2021-01-01'
     wrapper.vm.validateMarriageDate()
 
@@ -98,7 +98,7 @@ describe('CreateFamily.vue', () => {
   it('requires at least one parent', async () => {
     const wrapper = mount(CreateFamily)
 
-    // Ne pas sélectionner de parents
+    // Don't select any parents
     wrapper.vm.husbandId = ''
     wrapper.vm.wifeId = ''
 
@@ -188,7 +188,7 @@ describe('CreateFamily.vue', () => {
       },
     })
 
-    // Vérifier que le bouton existe
+    // Check that the button exists
     const backButton = wrapper.find('[data-cy="back-to-home"]')
     expect(backButton.exists()).toBe(true)
     expect(backButton.text()).toContain('Retour à l\'accueil')
@@ -196,7 +196,7 @@ describe('CreateFamily.vue', () => {
     // Simuler le clic sur le bouton
     await backButton.trigger('click')
 
-    // Vérifier que la navigation a été appelée
+    // Check that navigation was called
     expect(mockRouter.currentRoute.value.path).toBe('/')
   })
 

@@ -25,11 +25,11 @@ describe('WelcomeView.vue', () => {
       },
     })
 
-    // Vérifier que les 3 cartes sont présentes
+    // Check that all 3 cards are present
     const actionCards = wrapper.findAll('.action-card')
     expect(actionCards).toHaveLength(3)
 
-    // Vérifier le contenu des cartes
+    // Check card content
     expect(wrapper.text()).toContain('Upload Family File')
     expect(wrapper.text()).toContain('Search & Manage Families')
     expect(wrapper.text()).toContain('Créer une famille')
@@ -42,7 +42,7 @@ describe('WelcomeView.vue', () => {
       },
     })
 
-    // Vérifier que les fonctions de navigation existent
+    // Check that navigation functions exist
     expect(typeof wrapper.vm.navigateToUpload).toBe('function')
     expect(typeof wrapper.vm.navigateToManage).toBe('function')
     expect(typeof wrapper.vm.navigateToCreateFamily).toBe('function')
@@ -55,7 +55,7 @@ describe('WelcomeView.vue', () => {
       },
     })
 
-    // Vérifier que les fonctions peuvent être appelées sans erreur
+    // Check that functions can be called without errors
     expect(() => wrapper.vm.navigateToUpload()).not.toThrow()
     expect(() => wrapper.vm.navigateToManage()).not.toThrow()
     expect(() => wrapper.vm.navigateToCreateFamily()).not.toThrow()
