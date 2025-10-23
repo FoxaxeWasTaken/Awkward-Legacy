@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { familyService, type CreateFamily } from '@/services/familyService'
 import { personService } from '@/services/personService'
 import { childService } from '@/services/childService'
 import { eventService } from '@/services/eventService'
 import { FAMILY_EVENT_TYPES } from '@/types/event'
 import CreatePersonModal from '@/components/CreatePersonModal.vue'
+
+const router = useRouter()
 
 type PersonOption = {
   id: string
@@ -202,6 +205,11 @@ function closeCreatePersonModal() {
   showCreatePersonModal.value = false
 }
 
+// Navigation vers l'accueil
+const navigateToHome = () => {
+  router.push('/')
+}
+
 // Gérer la création de personne depuis la modale
 function handlePersonCreated(createdPerson: any) {
   // Ajouter la personne créée aux options et la sélectionner
@@ -396,8 +404,15 @@ async function submit() {
   <div class="create-family-view">
     <div class="create-family">
       <div class="page-header">
-        <h2>👨‍👩‍👧‍👦 Créer une famille</h2>
-        <p>Créez une nouvelle famille en ajoutant les parents et les informations de mariage</p>
+        <div class="header-content">
+          <div class="header-text">
+            <h2>👨‍👩‍👧‍👦 Créer une famille</h2>
+            <p>Créez une nouvelle famille en ajoutant les parents et les informations de mariage</p>
+          </div>
+          <button @click="navigateToHome" class="back-to-home-btn" data-cy="back-to-home">
+            🏠 Retour à l'accueil
+          </button>
+        </div>
       </div>
       
       <form @submit.prevent="submit" class="family-form">
@@ -786,8 +801,50 @@ async function submit() {
 }
 
 .page-header {
-  text-align: center;
   margin-bottom: 3rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-text {
+  text-align: center;
+  flex: 1;
+}
+
+.back-to-home-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.back-to-home-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive design pour le header */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-text {
+    margin-bottom: 1rem;
+  }
 }
 
 .page-header h2 {
