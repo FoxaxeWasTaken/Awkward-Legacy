@@ -50,153 +50,115 @@ const queryHusband = ref('')
 const queryWife = ref('')
 const husbandOptions = ref<PersonOption[]>([])
 const wifeOptions = ref<PersonOption[]>([])
-let debounceTimer: number | undefined
 
-function debounce(fn: () => void, delay = 300) {
-  if (debounceTimer) window.clearTimeout(debounceTimer)
-  debounceTimer = window.setTimeout(fn, delay)
-}
+// Debounce pour la recherche
+let searchTimeout: NodeJS.Timeout | null = null
 
-async function searchPersons(target: 'husband' | 'wife') {
-  const q = target === 'husband' ? queryHusband.value : queryWife.value
-  if (!q) {
-    if (target === 'husband') husbandOptions.value = []
-    else wifeOptions.value = []
+async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') {
+  if (!query.trim()) {
+    if (type === 'husband') {
+      husbandOptions.value = []
+    } else if (type === 'wife') {
+      wifeOptions.value = []
+    } else if (type === 'child') {
+      childOptions.value = []
+    }
     return
   }
+
   try {
-    const res = await personService.searchPersonsByName(q)
-    const list = (res.data || []).map((p: any) => ({
-      id: p.id,
-      label: `${p.first_name} ${p.last_name} (${p.sex})${p.birth_date ? ' • n. ' + p.birth_date : ''}${p.birth_place ? ' • ' + p.birth_place : ''}`,
+    const response = await personService.searchPersonsByName(query, { limit: 10 })
+    const persons = response.data
+    
+    const options = persons.map((person: any) => ({
+      id: person.id,
+      label: `${person.first_name} ${person.last_name}${person.birth_date ? ' • n. ' + person.birth_date : ''}${person.birth_place ? ' • ' + person.birth_place : ''}`
     }))
-    if (target === 'husband') husbandOptions.value = list
-    else wifeOptions.value = list
-  } catch (_e) {
-    // En cas d'erreur réseau / serveur, ne pas faire échouer l'app
-    if (target === 'husband') husbandOptions.value = []
-    else wifeOptions.value = []
+    
+    if (type === 'husband') {
+      husbandOptions.value = options
+    } else if (type === 'wife') {
+      wifeOptions.value = options
+    } else if (type === 'child') {
+      childOptions.value = options
+    }
+  } catch (error) {
+    console.error('Erreur lors de la recherche:', error)
+    if (type === 'husband') {
+      husbandOptions.value = []
+    } else if (type === 'wife') {
+      wifeOptions.value = []
+    } else if (type === 'child') {
+      childOptions.value = []
+    }
   }
 }
 
-function onInputSearch(target: 'husband' | 'wife') {
-  debounce(() => searchPersons(target))
-}
-
-// Recherche d'enfants
-async function searchChildren() {
-  if (!queryChild.value) {
-    childOptions.value = []
-    return
+function onInputSearch(type: 'husband' | 'wife') {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
   }
-  try {
-    const res = await personService.searchPersonsByName(queryChild.value)
-    const list = (res.data || []).map((p: any) => ({
-      id: p.id,
-      label: `${p.first_name} ${p.last_name} (${p.sex})${p.birth_date ? ' • n. ' + p.birth_date : ''}${p.birth_place ? ' • ' + p.birth_place : ''}`,
-    }))
-    // Filtrer les personnes déjà ajoutées comme enfants, mari ou femme
-    childOptions.value = list.filter((opt: PersonOption) => 
-      !children.value.some(c => c.id === opt.id) && 
-      opt.id !== husbandId.value && 
-      opt.id !== wifeId.value
-    )
-  } catch (_e) {
-    childOptions.value = []
-  }
-}
-
-function onChildSearch() {
-  debounce(() => searchChildren())
-}
-
-// Ajouter un enfant existant
-function addExistingChild(childId: string) {
-  if (!childId) return
-  const child = childOptions.value.find(c => c.id === childId)
-  if (child && !children.value.some(c => c.id === childId)) {
-    children.value.push({ id: child.id, label: child.label })
-    queryChild.value = ''
-    childOptions.value = []
-  }
-}
-
-// Supprimer un enfant
-function removeChild(childId: string) {
-  children.value = children.value.filter(c => c.id !== childId)
-}
-
-// Ouvrir la modale pour créer un enfant
-function openCreateChildModal() {
-  currentParentType.value = 'child'
-  showCreatePersonModal.value = true
-}
-
-// Gestion des événements
-function addEvent() {
-  events.value.push({
-    type: 'Marriage',
-    date: '',
-    place: '',
-    description: ''
-  })
-}
-
-function removeEvent(index: number) {
-  events.value.splice(index, 1)
+  
+  const query = type === 'husband' ? queryHusband.value : queryWife.value
+  
+  searchTimeout = setTimeout(() => {
+    searchPersons(query, type)
+  }, 300)
 }
 
 // Validation de la date de mariage
 function validateMarriageDate() {
   marriageDateError.value = ''
+  
   if (!marriage_date.value) return
-
+  
   const marriageDate = new Date(marriage_date.value)
   const today = new Date()
   
   // Vérifier que la date n'est pas dans le futur
   if (marriageDate > today) {
-    marriageDateError.value = 'La date de mariage ne peut pas être dans le futur'
+    marriageDateError.value = 'La date de mariage ne peut pas être dans le futur.'
     return
   }
-
-  // Vérifier par rapport aux dates de naissance des parents
-  if (selectedHusband.value?.birth_date) {
-    const husbandBirth = new Date(selectedHusband.value.birth_date)
-    if (marriageDate < husbandBirth) {
-      marriageDateError.value = 'La date de mariage ne peut pas être avant la naissance du parent 1'
-      return
+  
+  // Vérifier contre les dates de naissance et décès des parents
+  if (selectedHusband.value) {
+    if (selectedHusband.value.birth_date) {
+      const husbandBirth = new Date(selectedHusband.value.birth_date)
+      if (marriageDate < husbandBirth) {
+        marriageDateError.value = 'La date de mariage ne peut pas être antérieure à la naissance du mari.'
+        return
+      }
+    }
+    if (selectedHusband.value.death_date) {
+      const husbandDeath = new Date(selectedHusband.value.death_date)
+      if (marriageDate > husbandDeath) {
+        marriageDateError.value = 'La date de mariage ne peut pas être postérieure au décès du mari.'
+        return
+      }
     }
   }
-
-  if (selectedWife.value?.birth_date) {
-    const wifeBirth = new Date(selectedWife.value.birth_date)
-    if (marriageDate < wifeBirth) {
-      marriageDateError.value = 'La date de mariage ne peut pas être avant la naissance du parent 2'
-      return
+  
+  if (selectedWife.value) {
+    if (selectedWife.value.birth_date) {
+      const wifeBirth = new Date(selectedWife.value.birth_date)
+      if (marriageDate < wifeBirth) {
+        marriageDateError.value = 'La date de mariage ne peut pas être antérieure à la naissance de la femme.'
+        return
+      }
     }
-  }
-
-  // Vérifier par rapport aux dates de décès des parents
-  if (selectedHusband.value?.death_date) {
-    const husbandDeath = new Date(selectedHusband.value.death_date)
-    if (marriageDate > husbandDeath) {
-      marriageDateError.value = 'La date de mariage ne peut pas être après le décès du parent 1'
-      return
-    }
-  }
-
-  if (selectedWife.value?.death_date) {
-    const wifeDeath = new Date(selectedWife.value.death_date)
-    if (marriageDate > wifeDeath) {
-      marriageDateError.value = 'La date de mariage ne peut pas être après le décès du parent 2'
-      return
+    if (selectedWife.value.death_date) {
+      const wifeDeath = new Date(selectedWife.value.death_date)
+      if (marriageDate > wifeDeath) {
+        marriageDateError.value = 'La date de mariage ne peut pas être postérieure au décès de la femme.'
+        return
+      }
     }
   }
 }
 
-// Charger les données complètes d'une personne sélectionnée
-async function loadPersonDetails(personId: string, type: 'husband' | 'wife') {
+// Charger les détails d'une personne sélectionnée
+async function loadPersonDetails(type: 'husband' | 'wife', personId: string) {
   try {
     // Si aucun sélectionné, réinitialiser l'aperçu
     if (!personId) {
@@ -257,11 +219,17 @@ function handlePersonCreated(createdPerson: any) {
     wifeId.value = createdPerson.id
     selectedWife.value = createdPerson
   } else if (currentParentType.value === 'child') {
-    // Ajouter l'enfant créé à la liste
-    children.value.push({
-      id: createdPerson.id,
-      label: `${createdPerson.first_name} ${createdPerson.last_name}${createdPerson.birth_date ? ' • n. ' + createdPerson.birth_date : ''}`
-    })
+    // Trouver le dernier enfant ajouté et le remplir avec la personne créée
+    const lastChildIndex = children.value.length - 1
+    if (lastChildIndex >= 0) {
+      const newOption = {
+        id: createdPerson.id,
+        label: `${createdPerson.first_name} ${createdPerson.last_name}${createdPerson.birth_date ? ' • n. ' + createdPerson.birth_date : ''}`
+      }
+      childOptions.value = [newOption, ...childOptions.value]
+      children.value[lastChildIndex].id = createdPerson.id
+      children.value[lastChildIndex].label = newOption.label
+    }
   }
 
   // Fermer la modale
@@ -272,7 +240,58 @@ function handlePersonCreated(createdPerson: any) {
   setTimeout(() => { success.value = '' }, 3000)
 }
 
-// (Pas de modale de liaison: la liaison se fait via l'auto-complétion)
+// Gestion des enfants
+function addChild() {
+  children.value.push({
+    id: '',
+    label: ''
+  })
+}
+
+function removeChild(index: number) {
+  children.value.splice(index, 1)
+}
+
+async function onInputSearchChild() {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  
+  searchTimeout = setTimeout(() => {
+    searchPersons(queryChild.value, 'child')
+  }, 300)
+}
+
+async function loadChildDetails(childId: string) {
+  if (!childId) return
+  
+  try {
+    const response = await personService.getPersonById(childId)
+    const person = response.data
+    
+    // Mettre à jour le label de l'enfant
+    const childIndex = children.value.findIndex(child => child.id === childId)
+    if (childIndex !== -1) {
+      children.value[childIndex].label = `${person.first_name} ${person.last_name}`
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement des détails de l\'enfant:', error)
+  }
+}
+
+// Gestion des événements
+function addEvent() {
+  events.value.push({
+    type: '',
+    date: '',
+    place: '',
+    description: ''
+  })
+}
+
+function removeEvent(index: number) {
+  events.value.splice(index, 1)
+}
 
 const payload = computed<CreateFamily>(() => {
   const data: CreateFamily = {}
@@ -374,432 +393,849 @@ async function submit() {
 </script>
 
 <template>
-  <div class="create-family">
-    <h2>Créer une famille</h2>
-    <form @submit.prevent="submit">
-      <fieldset>
-        <legend>Parents</legend>
-        <div class="parent-field">
-          <label>Parent 1 (Husband)</label>
-          <div class="parent-input-group">
-            <input
-              v-model="queryHusband"
-              @input="onInputSearch('husband')"
-              placeholder="Rechercher une personne..."
-              data-cy="search-husband"
-            />
-            <button type="button" @click="openCreatePersonModal('husband')" class="btn-secondary">
-              Créer
-            </button>
-            
+  <div class="create-family-view">
+    <div class="create-family">
+      <div class="page-header">
+        <h2>👨‍👩‍👧‍👦 Créer une famille</h2>
+        <p>Créez une nouvelle famille en ajoutant les parents et les informations de mariage</p>
+      </div>
+      
+      <form @submit.prevent="submit" class="family-form">
+        <!-- Parents Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>👫 Parents</h3>
+            <p>Ajoutez un ou deux parents à la famille</p>
           </div>
-          <select v-model="husbandId" @change="loadPersonDetails(husbandId, 'husband')" data-cy="select-husband">
-            <option value="">— Aucun —</option>
-            <option v-for="opt in husbandOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
-          </select>
-          <div v-if="selectedHusband" class="person-preview" data-cy="preview-husband">
-            <strong>{{ selectedHusband.first_name }} {{ selectedHusband.last_name }}</strong>
-            <div class="meta">
-              <span>Sexe: {{ selectedHusband.sex }}</span>
-              <span v-if="selectedHusband.birth_date">Naissance: {{ selectedHusband.birth_date }}</span>
-              <span v-if="selectedHusband.birth_place">({{ selectedHusband.birth_place }})</span>
-              <span v-if="selectedHusband.death_date"> • Décès: {{ selectedHusband.death_date }}</span>
-              <span v-if="selectedHusband.death_place">({{ selectedHusband.death_place }})</span>
-            </div>
-            <div v-if="selectedHusband.notes" class="notes">{{ selectedHusband.notes }}</div>
-          </div>
-        </div>
-        <div class="parent-field">
-          <label>Parent 2 (Wife)</label>
-          <div class="parent-input-group">
-            <input
-              v-model="queryWife"
-              @input="onInputSearch('wife')"
-              placeholder="Rechercher une personne..."
-              data-cy="search-wife"
-            />
-            <button type="button" @click="openCreatePersonModal('wife')" class="btn-secondary">
-              Créer
-            </button>
-            
-          </div>
-          <select v-model="wifeId" @change="loadPersonDetails(wifeId, 'wife')" data-cy="select-wife">
-            <option value="">— Aucun —</option>
-            <option v-for="opt in wifeOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
-          </select>
-          <div v-if="selectedWife" class="person-preview" data-cy="preview-wife">
-            <strong>{{ selectedWife.first_name }} {{ selectedWife.last_name }}</strong>
-            <div class="meta">
-              <span>Sexe: {{ selectedWife.sex }}</span>
-              <span v-if="selectedWife.birth_date">Naissance: {{ selectedWife.birth_date }}</span>
-              <span v-if="selectedWife.birth_place">({{ selectedWife.birth_place }})</span>
-              <span v-if="selectedWife.death_date"> • Décès: {{ selectedWife.death_date }}</span>
-              <span v-if="selectedWife.death_place">({{ selectedWife.death_place }})</span>
-            </div>
-            <div v-if="selectedWife.notes" class="notes">{{ selectedWife.notes }}</div>
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Enfants ({{ children.length }})</legend>
-        <div class="children-section">
-          <div class="add-child-controls">
-            <div class="search-and-select">
-              <label>Rechercher et ajouter un enfant existant</label>
-              <input 
-                v-model="queryChild"
-                @input="onChildSearch"
-                placeholder="Nom ou prénom de l'enfant"
-                data-cy="search-child"
-              />
-              <select 
-                @change="(e) => { addExistingChild((e.target as HTMLSelectElement).value); (e.target as HTMLSelectElement).value = '' }"
-                data-cy="select-child"
-              >
-                <option value="">— Sélectionner —</option>
-                <option v-for="opt in childOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
-              </select>
-            </div>
-            <div class="button-group">
-              <button type="button" @click="openCreateChildModal" data-cy="create-child-button">
-                Créer un nouvel enfant
-              </button>
-            </div>
-          </div>
-
-          <div v-if="children.length > 0" class="children-list">
-            <h4>Enfants ajoutés :</h4>
-            <ul data-cy="children-list">
-              <li v-for="child in children" :key="child.id" class="child-item">
-                <span>{{ child.label }}</span>
-                <button 
-                  type="button" 
-                  @click="removeChild(child.id)" 
-                  class="remove-btn"
-                  :data-cy="`remove-child-${child.id}`"
+          
+          <div class="parents-grid">
+            <!-- Mari -->
+            <div class="parent-card">
+              <div class="parent-header">
+                <h4>👨 Mari</h4>
+                <span class="required-badge">Optionnel</span>
+              </div>
+              
+              <div class="search-container">
+                <input
+                  v-model="queryHusband"
+                  type="text"
+                  placeholder="Rechercher un mari existant..."
+                  class="search-input"
+                  data-cy="search-husband"
+                  @input="onInputSearch('husband')"
+                />
+                <select
+                  v-model="husbandId"
+                  class="person-select"
+                  data-cy="select-husband"
+                  @change="loadPersonDetails('husband', husbandId)"
                 >
-                  ✕
+                  <option value="">— Aucun —</option>
+                  <option
+                    v-for="option in husbandOptions"
+                    :key="option.id"
+                    :value="option.id"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="create-person-btn"
+                  data-cy="create-husband-btn"
+                  @click="openCreatePersonModal('husband')"
+                >
+                  ➕ Créer
                 </button>
-              </li>
-            </ul>
+              </div>
+              
+              <!-- Aperçu du mari sélectionné -->
+              <div v-if="selectedHusband" class="person-preview" data-cy="preview-husband">
+                <div class="person-info">
+                  <strong>{{ selectedHusband.first_name }} {{ selectedHusband.last_name }}</strong>
+                  <span class="person-sex">{{ selectedHusband.sex === 'M' ? '♂' : selectedHusband.sex === 'F' ? '♀' : '⚥' }}</span>
+                </div>
+                <div v-if="selectedHusband.birth_date || selectedHusband.death_date" class="person-dates">
+                  <span v-if="selectedHusband.birth_date">Né: {{ selectedHusband.birth_date }}</span>
+                  <span v-if="selectedHusband.death_date">Décédé: {{ selectedHusband.death_date }}</span>
+                </div>
+                <div v-if="selectedHusband.birth_place || selectedHusband.death_place" class="person-places">
+                  <span v-if="selectedHusband.birth_place">Lieu de naissance: {{ selectedHusband.birth_place }}</span>
+                  <span v-if="selectedHusband.death_place">Lieu de décès: {{ selectedHusband.death_place }}</span>
+                </div>
+                <div v-if="selectedHusband.notes" class="person-notes">
+                  Notes: {{ selectedHusband.notes }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Femme -->
+            <div class="parent-card">
+              <div class="parent-header">
+                <h4>👩 Femme</h4>
+                <span class="required-badge">Optionnel</span>
+              </div>
+              
+              <div class="search-container">
+                <input
+                  v-model="queryWife"
+                  type="text"
+                  placeholder="Rechercher une femme existante..."
+                  class="search-input"
+                  data-cy="search-wife"
+                  @input="onInputSearch('wife')"
+                />
+                <select
+                  v-model="wifeId"
+                  class="person-select"
+                  data-cy="select-wife"
+                  @change="loadPersonDetails('wife', wifeId)"
+                >
+                  <option value="">— Aucun —</option>
+                  <option
+                    v-for="option in wifeOptions"
+                    :key="option.id"
+                    :value="option.id"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="create-person-btn"
+                  data-cy="create-wife-btn"
+                  @click="openCreatePersonModal('wife')"
+                >
+                  ➕ Créer
+                </button>
+              </div>
+              
+              <!-- Aperçu de la femme sélectionnée -->
+              <div v-if="selectedWife" class="person-preview" data-cy="preview-wife">
+                <div class="person-info">
+                  <strong>{{ selectedWife.first_name }} {{ selectedWife.last_name }}</strong>
+                  <span class="person-sex">{{ selectedWife.sex === 'M' ? '♂' : selectedWife.sex === 'F' ? '♀' : '⚥' }}</span>
+                </div>
+                <div v-if="selectedWife.birth_date || selectedWife.death_date" class="person-dates">
+                  <span v-if="selectedWife.birth_date">Née: {{ selectedWife.birth_date }}</span>
+                  <span v-if="selectedWife.death_date">Décédée: {{ selectedWife.death_date }}</span>
+                </div>
+                <div v-if="selectedWife.birth_place || selectedWife.death_place" class="person-places">
+                  <span v-if="selectedWife.birth_place">Lieu de naissance: {{ selectedWife.birth_place }}</span>
+                  <span v-if="selectedWife.death_place">Lieu de décès: {{ selectedWife.death_place }}</span>
+                </div>
+                <div v-if="selectedWife.notes" class="person-notes">
+                  Notes: {{ selectedWife.notes }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </fieldset>
 
-      <fieldset>
-        <legend>Événements ({{ events.length }})</legend>
-        <div class="events-section">
-          <div class="button-group">
-            <button type="button" @click="addEvent" data-cy="add-event-button">
-              Ajouter un événement
-            </button>
+        <!-- Informations de mariage Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>💒 Informations de mariage</h3>
+            <p>Ajoutez les détails du mariage (optionnel)</p>
           </div>
+          
+          <div class="marriage-fields">
+            <div class="form-group">
+              <label for="marriage_date">📅 Date de mariage</label>
+              <input
+                id="marriage_date"
+                v-model="marriage_date"
+                type="date"
+                data-cy="marriage-date"
+                @change="validateMarriageDate"
+              />
+              <div v-if="marriageDateError" class="field-error">{{ marriageDateError }}</div>
+            </div>
+            <div class="form-group">
+              <label for="marriage_place">📍 Lieu de mariage</label>
+              <input
+                id="marriage_place"
+                v-model="marriage_place"
+                type="text"
+                placeholder="Ex: Paris, France"
+                data-cy="marriage-place"
+              />
+            </div>
+          </div>
+        </div>
 
-          <div v-if="events.length > 0" class="events-list">
-            <div v-for="(event, index) in events" :key="index" class="event-item" :data-cy="`event-${index}`">
-              <div class="event-row">
-                <div class="event-field">
+        <!-- Événements Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>📅 Événements</h3>
+            <p>Ajoutez des événements liés à cette famille</p>
+          </div>
+          
+          <div class="events-section">
+            <button
+              type="button"
+              class="add-event-btn"
+              data-cy="add-event-btn"
+              @click="addEvent"
+            >
+              ➕ Ajouter un événement
+            </button>
+            
+            <div v-for="(event, index) in events" :key="index" class="event-form" :data-cy="`event-${index}`">
+              <div class="event-header">
+                <h4>Événement {{ index + 1 }}</h4>
+                <button
+                  type="button"
+                  class="remove-event-btn"
+                  :data-cy="`remove-event-${index}`"
+                  @click="removeEvent(index)"
+                >
+                  🗑️ Supprimer
+                </button>
+              </div>
+              
+              <div class="event-fields">
+                <div class="form-group">
                   <label>Type d'événement</label>
                   <select v-model="event.type" :data-cy="`event-type-${index}`">
-                    <option v-for="eventType in eventTypes" :key="eventType.value" :value="eventType.value">
+                    <option value="">Sélectionner un type</option>
+                    <option
+                      v-for="eventType in eventTypes"
+                      :key="eventType.value"
+                      :value="eventType.value"
+                    >
                       {{ eventType.label }}
                     </option>
                   </select>
                 </div>
-
-                <div class="event-field">
+                
+                <div class="form-group">
                   <label>Date</label>
-                  <input 
-                    type="date" 
-                    v-model="event.date" 
+                  <input
+                    v-model="event.date"
+                    type="date"
                     :data-cy="`event-date-${index}`"
                   />
                 </div>
-
-                <div class="event-field">
+                
+                <div class="form-group">
                   <label>Lieu</label>
-                  <input 
-                    v-model="event.place" 
-                    placeholder="Lieu de l'événement"
+                  <input
+                    v-model="event.place"
+                    type="text"
+                    placeholder="Ex: Paris, France"
                     :data-cy="`event-place-${index}`"
                   />
                 </div>
-              </div>
-
-              <div class="event-row">
-                <div class="event-field event-field-full">
-                  <label>Description (optionnel)</label>
-                  <textarea 
-                    v-model="event.description" 
-                    placeholder="Description de l'événement"
-                    rows="2"
+                
+                <div class="form-group">
+                  <label>Description</label>
+                  <textarea
+                    v-model="event.description"
+                    placeholder="Description de l'événement..."
                     :data-cy="`event-description-${index}`"
                   ></textarea>
                 </div>
               </div>
-
-              <button 
-                type="button" 
-                @click="removeEvent(index)" 
-                class="remove-btn event-remove-btn"
-                :data-cy="`remove-event-${index}`"
-              >
-                ✕ Supprimer
-              </button>
             </div>
           </div>
         </div>
-      </fieldset>
 
-      <fieldset>
-        <legend>Informations de mariage</legend>
-        <div>
-          <label>Date de mariage</label>
-          <input 
-            type="date" 
-            v-model="marriage_date" 
-            @change="validateMarriageDate"
-            data-cy="marriage-date" 
-          />
-          <div v-if="marriageDateError" class="field-error">{{ marriageDateError }}</div>
+        <!-- Enfants Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>👶 Enfants</h3>
+            <p>Ajoutez des enfants à cette famille</p>
+          </div>
+          
+          <div class="children-section">
+            <button
+              type="button"
+              class="add-child-btn"
+              data-cy="add-child-button"
+              @click="addChild"
+            >
+              ➕ Ajouter un enfant
+            </button>
+            
+            <div v-for="(child, index) in children" :key="index" class="child-form" data-cy="children-list">
+              <div class="child-header">
+                <h4>Enfant {{ index + 1 }}</h4>
+                <button
+                  type="button"
+                  class="remove-child-btn"
+                  data-cy="remove-child-btn"
+                  @click="removeChild(index)"
+                >
+                  🗑️ Supprimer
+                </button>
+              </div>
+              
+              <div class="child-fields">
+                <div class="search-container">
+                  <input
+                    v-model="queryChild"
+                    type="text"
+                    placeholder="Rechercher un enfant existant..."
+                    class="search-input"
+                    data-cy="search-child"
+                    @input="onInputSearchChild"
+                  />
+                  <select
+                    v-model="child.id"
+                    class="person-select"
+                    data-cy="select-child"
+                    @change="loadChildDetails(child.id)"
+                  >
+                    <option value="">— Aucun —</option>
+                    <option
+                      v-for="option in childOptions"
+                      :key="option.id"
+                      :value="option.id"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <button
+                    type="button"
+                    class="create-person-btn"
+                    data-cy="create-child-button"
+                    @click="openCreatePersonModal('child')"
+                  >
+                    ➕ Créer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label>Lieu de mariage</label>
-          <input v-model="marriage_place" data-cy="marriage-place" />
-        </div>
-        <div>
-          <label>Notes</label>
-          <textarea v-model="notes" data-cy="notes"></textarea>
-        </div>
-      </fieldset>
 
-      <button type="submit" :disabled="submitting" data-cy="submit-family">Créer</button>
-    </form>
+        <!-- Notes Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>📝 Notes</h3>
+            <p>Ajoutez des notes sur cette famille</p>
+          </div>
+          
+          <div class="form-group">
+            <label for="notes">Notes sur la famille</label>
+            <textarea
+              id="notes"
+              v-model="notes"
+              placeholder="Notes sur la famille, informations supplémentaires..."
+              data-cy="family-notes"
+            ></textarea>
+          </div>
+        </div>
 
-    <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="success" class="success">{{ success }}</div>
+        <!-- Boutons d'action -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            :disabled="submitting"
+            class="submit-btn"
+            data-cy="submit-family"
+          >
+            <span v-if="submitting" class="loading-spinner"></span>
+            {{ submitting ? 'Création en cours...' : '✨ Créer la famille' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Messages d'erreur et de succès -->
+      <div v-if="error" class="error-message">
+        <div class="error-icon">⚠️</div>
+        <div class="error-content">
+          <h4>Erreur</h4>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+      
+      <div v-if="success" class="success-message">
+        <div class="success-icon">✅</div>
+        <div class="success-content">
+          <h4>Succès</h4>
+          <p>{{ success }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale de création de personne -->
+    <CreatePersonModal
+      :show="showCreatePersonModal"
+      :parent-type="currentParentType"
+      @close="closeCreatePersonModal"
+      @person-created="handlePersonCreated"
+    />
   </div>
-
-  <!-- Modale de création de personne -->
-  <CreatePersonModal
-    :show="showCreatePersonModal"
-    :parent-type="currentParentType"
-    @close="closeCreatePersonModal"
-    @person-created="handlePersonCreated"
-  />
-  
 </template>
 
 <style scoped>
-.create-family {
-  max-width: 720px;
-  margin: 2em auto;
-  padding: 2em;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-}
-fieldset { margin-bottom: 1.5em; }
-.parent-field { margin-bottom: 1em; }
-label { display: block; font-weight: 600; margin-bottom: 0.3em; }
-input, select, textarea { width: 100%; padding: 0.5em; box-sizing: border-box; }
-
-.parent-input-group {
-  display: flex;
-  gap: 0.5em;
-  margin-bottom: 0.5em;
-}
-.parent-input-group input {
+.create-family-view {
   flex: 1;
-}
-.btn-secondary {
-  padding: 0.5em 1em;
-  background: #f5f5f5;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9em;
-}
-.btn-secondary:hover {
-  background: #e5e5e5;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
 }
 
-.error { color: #b00020; margin-top: 1em; }
-.success { color: #0a7a2f; margin-top: 1em; }
-.field-error { color: #b00020; font-size: 0.9em; margin-top: 0.3em; }
- 
-.person-preview {
-  margin-top: 0.5em;
-  padding: 0.75em;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-}
-.person-preview .meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5em 1em;
-  color: #555;
-  margin-top: 0.25em;
-}
-.person-preview .notes {
-  margin-top: 0.5em;
-  font-style: italic;
-  color: #666;
+.create-family {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
-/* Styles pour la section enfants */
-.children-section {
-  margin-top: 1em;
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
 }
 
-.add-child-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  margin-bottom: 1.5em;
+.page-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.search-and-select {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
+.page-header p {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.button-group {
-  display: flex;
-  gap: 0.5em;
+.family-form {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.button-group button {
-  padding: 0.6em 1.2em;
-  background: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95em;
+.form-section {
+  padding: 2rem;
+  border-bottom: 1px solid #ecf0f1;
 }
 
-.button-group button:hover {
-  background: #1976d2;
+.form-section:last-of-type {
+  border-bottom: none;
 }
 
-.children-list {
-  margin-top: 1.5em;
+.section-header {
+  margin-bottom: 2rem;
 }
 
-.children-list h4 {
-  margin-bottom: 0.75em;
-  color: #333;
+.section-header h3 {
+  font-size: 1.5rem;
   font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.children-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.section-header p {
+  color: #7f8c8d;
+  font-size: 0.95rem;
 }
 
-.child-item {
+.parents-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.parent-card {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.parent-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.parent-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75em 1em;
-  margin-bottom: 0.5em;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
+  margin-bottom: 1rem;
 }
 
-.child-item span {
-  flex: 1;
-  color: #333;
+.parent-header h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
 }
 
-.remove-btn {
-  padding: 0.3em 0.6em;
-  background: #f44336;
+.required-badge {
+  background: #e74c3c;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.search-input {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.person-select {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.person-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.create-person-btn {
+  background: #667eea;
   color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1em;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.remove-btn:hover {
-  background: #d32f2f;
-}
-
-/* Styles pour la section événements */
-.events-section {
-  margin-top: 1em;
-}
-
-.events-list {
-  margin-top: 1.5em;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5em;
-}
-
-.event-item {
-  position: relative;
-  padding: 1.5em;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
-}
-
-.event-row {
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
-  gap: 1em;
-  margin-bottom: 1em;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.event-row:last-child {
-  margin-bottom: 0;
+.create-person-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.event-field {
-  flex: 1;
+.person-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.person-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.person-info strong {
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.person-sex {
+  font-size: 1.2rem;
+}
+
+.person-dates,
+.person-places,
+.person-notes {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 0.25rem;
+}
+
+.marriage-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.form-group {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
-.event-field-full {
-  flex: 1 1 100%;
-}
-
-.event-field label {
+.form-group label {
   font-weight: 500;
-  margin-bottom: 0.4em;
-  color: #333;
+  color: #2c3e50;
+  font-size: 0.95rem;
 }
 
-.event-field input,
-.event-field select,
-.event-field textarea {
-  padding: 0.6em;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1em;
-  font-family: inherit;
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
 }
 
-.event-field textarea {
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group textarea {
+  min-height: 80px;
   resize: vertical;
-  min-height: 60px;
 }
 
-.event-remove-btn {
-  margin-top: 1em;
-  padding: 0.5em 1em;
-  font-size: 0.9em;
-  font-weight: normal;
+.field-error {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.events-section,
+.children-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.add-event-btn,
+.add-child-btn {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-event-btn:hover,
+.add-child-btn:hover {
+  background: #229954;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.event-form,
+.child-form {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.event-header,
+.child-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.event-header h4,
+.child-header h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.remove-event-btn,
+.remove-child-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.remove-event-btn:hover,
+.remove-child-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.event-fields,
+.child-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.event-fields .form-group:last-child {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  padding: 2rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: center;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message,
+.success-message {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.error-message {
+  background: #fdf2f2;
+  border: 2px solid #fecaca;
+  color: #dc2626;
+}
+
+.success-message {
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  color: #16a34a;
+}
+
+.error-icon,
+.success-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.error-content,
+.success-content {
+  flex: 1;
+}
+
+.error-content h4,
+.success-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.error-content p,
+.success-content p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .create-family {
+    padding: 0 1rem;
+  }
+  
+  .page-header h2 {
+    font-size: 2rem;
+  }
+  
+  .parents-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .marriage-fields {
+    grid-template-columns: 1fr;
+  }
+  
+  .event-fields {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-section {
+    padding: 1.5rem;
+  }
+  
+  .form-actions {
+    padding: 1.5rem;
+  }
 }
 </style>
-
-
