@@ -25,6 +25,7 @@ const newPerson = ref({
   birth_place: '',
   death_date: '',
   death_place: '',
+  occupation: '',
   notes: ''
 })
 
@@ -40,6 +41,7 @@ const resetForm = () => {
   newPerson.value.birth_place = ''
   newPerson.value.death_date = ''
   newPerson.value.death_place = ''
+  newPerson.value.occupation = ''
   newPerson.value.notes = ''
   personCreationError.value = ''
 }
@@ -67,6 +69,7 @@ const createPerson = async () => {
       birth_place: newPerson.value.birth_place.trim() || null,
       death_date: newPerson.value.death_date || null,
       death_place: newPerson.value.death_place.trim() || null,
+      occupation: newPerson.value.occupation.trim() || null,
       notes: newPerson.value.notes.trim() || null
     }
 
@@ -166,6 +169,16 @@ const createPerson = async () => {
               data-cy="new-person-death-place"
             />
           </div>
+        </div>
+
+        <div class="form-group">
+          <label>Profession</label>
+          <input 
+            v-model="newPerson.occupation" 
+            type="text" 
+            placeholder="Profession"
+            data-cy="new-person-occupation"
+          />
         </div>
 
         <div class="form-group">
