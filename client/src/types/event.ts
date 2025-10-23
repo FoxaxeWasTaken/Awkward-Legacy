@@ -28,3 +28,6 @@ export const FAMILY_EVENT_TYPES = [
   { value: 'Marriage Annulment', label: 'Annulation mariage' },
 ] as const
 
+
+
+

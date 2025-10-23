@@ -6,5 +6,6 @@ export interface CreatePerson {
   birth_place?: string | null
   death_date?: string | null
   death_place?: string | null
+  occupation?: string | null
   notes?: string | null
 }
