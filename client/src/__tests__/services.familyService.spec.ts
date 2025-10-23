@@ -2,7 +2,15 @@ import api from '../services/api'
 import { familyService } from '../services/familyService'
 import { vi, beforeEach, expect, describe, it } from 'vitest'
 
-vi.mock('../services/api')
+vi.mock('../services/api', () => ({
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  }
+}))
 
 describe('Family Service', () => {
   beforeEach(() => {

@@ -102,7 +102,7 @@ describe('API Service', () => {
     const [, responseError] = mockInterceptors.response.use.mock.calls[0]
 
     const error = {
-      response: { status: 404 },
+      response: { status: 404, data: { detail: 'Not found' } },
       message: 'Not found',
     }
 

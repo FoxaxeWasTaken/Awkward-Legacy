@@ -2,7 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { personService } from '../services/personService'
 import api from '../services/api'
 
-vi.mock('../services/api')
+vi.mock('../services/api', () => ({
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  }
+}))
 
 describe('Person Service - createPerson', () => {
   beforeEach(() => {
@@ -18,7 +26,8 @@ describe('Person Service - createPerson', () => {
       birth_place: 'New York',
       death_date: null,
       death_place: null,
-      notes: 'Sample person'
+      notes: 'Sample person',
+      occupation: 'Engineer'
     }
 
     const expectedResponse = {
@@ -51,7 +60,8 @@ describe('Person Service - createPerson', () => {
         birth_place: null,
         death_date: null,
         death_place: null,
-        notes: null
+        notes: null,
+        occupation: null
       }
     }
 
