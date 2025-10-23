@@ -8,4 +8,5 @@ export interface CreatePerson {
   death_place?: string | null
   occupation?: string | null
   notes?: string | null
+  occupation?: string | null
 }
