@@ -10,6 +10,10 @@ const navigateToUpload = () => {
 const navigateToManage = () => {
   router.push('/manage')
 }
+
+const navigateToCreateFamily = () => {
+  router.push('/families/create')
+}
 </script>
 
 <template>
@@ -51,6 +55,23 @@ const navigateToManage = () => {
             </div>
           </div>
           <button class="card-button">Explore Families</button>
+        </div>
+
+        <div class="action-card create-family-card" @click="navigateToCreateFamily">
+          <div class="card-content">
+            <div class="card-icon">👨‍👩‍👧‍👦</div>
+            <h3 class="card-title">Créer une famille</h3>
+            <p class="card-description">
+              Créez une nouvelle famille en ajoutant les parents et les informations de mariage
+            </p>
+            <div class="card-features">
+              <span class="feature">• Ajout de parents</span>
+              <span class="feature">• Informations de mariage</span>
+              <span class="feature">• Gestion des enfants</span>
+              <span class="feature">• Événements familiaux</span>
+            </div>
+          </div>
+          <button class="card-button">Créer une famille</button>
         </div>
       </div>
     </div>
@@ -323,6 +344,10 @@ const navigateToManage = () => {
 
 .manage-card:hover {
   border-color: #2ecc71;
+}
+
+.create-family-card:hover {
+  border-color: #9b59b6;
 }
 
 .card-icon {
