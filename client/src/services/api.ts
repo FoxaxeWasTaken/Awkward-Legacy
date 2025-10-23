@@ -143,8 +143,9 @@ class ApiService {
       }
     } catch (detailError) {
       console.warn(`Failed to fetch details for family ${family.id}:`, detailError)
-      const husbandDisplayName = this.buildDisplayName(family.husband_id || null)
-      const wifeDisplayName = this.buildDisplayName(family.wife_id || null)
+      // Fallback to unknown names when detail fetch fails
+      const husbandDisplayName = 'Unknown Husband'
+      const wifeDisplayName = 'Unknown Wife'
       
       return {
         id: family.id,
