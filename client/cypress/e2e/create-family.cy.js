@@ -786,5 +786,21 @@ describe('Create Family', () => {
       })
     })
   })
+
+  it('should navigate back to home when clicking back to home button', () => {
+    // Vérifier que le bouton "Retour à l'accueil" est présent
+    cy.get('[data-cy="back-to-home"]').should('be.visible')
+    cy.get('[data-cy="back-to-home"]').should('contain', 'Retour à l\'accueil')
+    
+    // Cliquer sur le bouton
+    cy.get('[data-cy="back-to-home"]').click()
+    
+    // Vérifier que nous sommes redirigés vers la page d'accueil
+    cy.url().should('eq', Cypress.config().baseUrl + '/')
+    
+    // Vérifier que la page d'accueil est chargée avec les cartes d'action
+    cy.get('.action-cards').should('be.visible')
+    cy.get('.action-card').should('have.length.at.least', 2)
+  })
 })
 
