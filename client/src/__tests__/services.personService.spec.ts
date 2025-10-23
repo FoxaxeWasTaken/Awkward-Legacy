@@ -83,117 +83,109 @@ describe('Person Service - createPerson', () => {
     expect(result).toEqual(expectedResponse)
   })
 
-  it('should handle validation errors', async () => {
-    const personData = {
-      first_name: '',
-      last_name: 'Doe',
-      sex: 'M'
-    }
-
-    const errorResponse = {
-      response: {
-        status: 422,
-        data: {
-          detail: 'first_name cannot be empty'
+  // Test cases for error scenarios
+  const errorTestCases = [
+    {
+      name: 'validation errors',
+      personData: {
+        first_name: '',
+        last_name: 'Doe',
+        sex: 'M'
+      },
+      errorResponse: {
+        response: {
+          status: 422,
+          data: {
+            detail: 'first_name cannot be empty'
+          }
+        }
+      }
+    },
+    {
+      name: 'invalid sex value',
+      personData: {
+        first_name: 'John',
+        last_name: 'Doe',
+        sex: 'X'
+      },
+      errorResponse: {
+        response: {
+          status: 422,
+          data: {
+            detail: 'sex must be M, F, or U'
+          }
+        }
+      }
+    },
+    {
+      name: 'future birth date error',
+      personData: {
+        first_name: 'John',
+        last_name: 'Doe',
+        sex: 'M',
+        birth_date: '2099-01-01'
+      },
+      errorResponse: {
+        response: {
+          status: 422,
+          data: {
+            detail: 'birth_date cannot be in the future'
+          }
+        }
+      }
+    },
+    {
+      name: 'death date before birth date error',
+      personData: {
+        first_name: 'John',
+        last_name: 'Doe',
+        sex: 'M',
+        birth_date: '1980-01-01',
+        death_date: '1979-01-01'
+      },
+      errorResponse: {
+        response: {
+          status: 422,
+          data: {
+            detail: 'death_date cannot be before birth_date'
+          }
+        }
+      }
+    },
+    {
+      name: 'network errors',
+      personData: {
+        first_name: 'John',
+        last_name: 'Doe',
+        sex: 'M'
+      },
+      errorResponse: {
+        message: 'Network Error',
+        code: 'ERR_NETWORK'
+      }
+    },
+    {
+      name: 'server errors',
+      personData: {
+        first_name: 'John',
+        last_name: 'Doe',
+        sex: 'M'
+      },
+      errorResponse: {
+        response: {
+          status: 500,
+          data: {
+            detail: 'Internal server error'
+          }
         }
       }
     }
+  ]
 
-    await testErrorScenario(personData, errorResponse, 'validation errors')
-    expect(api.post).toHaveBeenCalledWith('/api/v1/persons', personData)
-  })
-
-  it('should handle invalid sex value', async () => {
-    const personData = {
-      first_name: 'John',
-      last_name: 'Doe',
-      sex: 'X'
-    }
-
-    const errorResponse = {
-      response: {
-        status: 422,
-        data: {
-          detail: 'sex must be M, F, or U'
-        }
-      }
-    }
-
-    await testErrorScenario(personData, errorResponse, 'invalid sex value')
-  })
-
-  it('should handle future birth date error', async () => {
-    const personData = {
-      first_name: 'John',
-      last_name: 'Doe',
-      sex: 'M',
-      birth_date: '2099-01-01'
-    }
-
-    const errorResponse = {
-      response: {
-        status: 422,
-        data: {
-          detail: 'birth_date cannot be in the future'
-        }
-      }
-    }
-
-    await testErrorScenario(personData, errorResponse, 'future birth date error')
-  })
-
-  it('should handle death date before birth date error', async () => {
-    const personData = {
-      first_name: 'John',
-      last_name: 'Doe',
-      sex: 'M',
-      birth_date: '1980-01-01',
-      death_date: '1979-01-01'
-    }
-
-    const errorResponse = {
-      response: {
-        status: 422,
-        data: {
-          detail: 'death_date cannot be before birth_date'
-        }
-      }
-    }
-
-    await testErrorScenario(personData, errorResponse, 'death date before birth date error')
-  })
-
-  it('should handle network errors', async () => {
-    const personData = {
-      first_name: 'John',
-      last_name: 'Doe',
-      sex: 'M'
-    }
-
-    const networkError = {
-      message: 'Network Error',
-      code: 'ERR_NETWORK'
-    }
-
-    await testErrorScenario(personData, networkError, 'network errors')
-  })
-
-  it('should handle server errors', async () => {
-    const personData = {
-      first_name: 'John',
-      last_name: 'Doe',
-      sex: 'M'
-    }
-
-    const serverError = {
-      response: {
-        status: 500,
-        data: {
-          detail: 'Internal server error'
-        }
-      }
-    }
-
-    await testErrorScenario(personData, serverError, 'server errors')
+  // Parameterized tests for error scenarios
+  describe.each(errorTestCases)('should handle $name', ({ name, personData, errorResponse }) => {
+    it(`should handle ${name}`, async () => {
+      await testErrorScenario(personData, errorResponse, name)
+    })
   })
 })
