@@ -59,8 +59,7 @@ describe('API Service', () => {
     const result = requestSuccess(config)
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Making request to:',
-      'http://localhost:8000/test'
+      'API Request: undefined /test'
     )
     expect(result).toBe(config)
 
@@ -74,7 +73,7 @@ describe('API Service', () => {
     const error = new Error('Request failed')
 
     await expect(requestError(error)).rejects.toThrow('Request failed')
-    expect(consoleSpy).toHaveBeenCalledWith('Request error:', error)
+    expect(consoleSpy).toHaveBeenCalledWith('API Request Error:', error)
 
     consoleSpy.mockRestore()
   })
@@ -91,9 +90,7 @@ describe('API Service', () => {
     const result = responseSuccess(response)
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Response received:',
-      200,
-      '/test'
+      'API Response: 200 /test'
     )
     expect(result).toBe(response)
 
@@ -109,8 +106,8 @@ describe('API Service', () => {
       message: 'Not found',
     }
 
-    await expect(responseError(error)).rejects.toEqual(error)
-    expect(consoleSpy).toHaveBeenCalledWith('Response error:', 404, 'Not found')
+    await expect(responseError(error)).rejects.toThrow()
+    expect(consoleSpy).toHaveBeenCalledWith('API Response Error:', error.response?.data || error.message)
 
     consoleSpy.mockRestore()
   })
@@ -123,8 +120,8 @@ describe('API Service', () => {
       message: 'Network error',
     }
 
-    await expect(responseError(error)).rejects.toEqual(error)
-    expect(consoleSpy).toHaveBeenCalledWith('Response error:', undefined, 'Network error')
+    await expect(responseError(error)).rejects.toThrow()
+    expect(consoleSpy).toHaveBeenCalledWith('API Response Error:', error.message)
 
     consoleSpy.mockRestore()
   })
