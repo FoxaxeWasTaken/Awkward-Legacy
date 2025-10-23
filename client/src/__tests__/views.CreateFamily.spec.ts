@@ -1,3 +1,4 @@
+// typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
@@ -5,7 +6,7 @@ import CreateFamily from '../views/CreateFamily.vue'
 import { familyService } from '../services/familyService'
 import { personService } from '../services/personService'
 
-// Mock des services
+// Mock the services
 vi.mock('../services/familyService')
 vi.mock('../services/personService')
 
@@ -28,7 +29,7 @@ describe('CreateFamily.vue', () => {
   it('validates marriage date against parent birth dates', async () => {
     const wrapper = mount(CreateFamily)
 
-    // Simuler des parents avec dates de naissance
+    // Simulate parents with birth dates
     const mockHusband = {
       id: '1',
       first_name: 'John',
@@ -54,7 +55,7 @@ describe('CreateFamily.vue', () => {
     await wrapper.vm.loadPersonDetails('1', 'husband')
     await wrapper.vm.loadPersonDetails('2', 'wife')
 
-    // Tester une date de mariage avant la naissance du mari
+    // Test a marriage date before husband's birth
     wrapper.vm.marriage_date = '1979-12-31'
     wrapper.vm.validateMarriageDate()
 
@@ -155,7 +156,7 @@ describe('CreateFamily.vue', () => {
     }
     vi.mocked(personService.searchPersonsByName).mockResolvedValue(mockResponse)
 
-    // Simuler la recherche
+    // Simulate the search
     wrapper.vm.queryHusband = 'John'
     await wrapper.vm.searchPersons('John', 'husband')
 
@@ -193,7 +194,7 @@ describe('CreateFamily.vue', () => {
     expect(backButton.exists()).toBe(true)
     expect(backButton.text()).toContain('Retour à l\'accueil')
 
-    // Simuler le clic sur le bouton
+    // Simulate clicking the button
     await backButton.trigger('click')
 
     // Check that navigation was called
