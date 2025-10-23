@@ -16,7 +16,7 @@ describe('CreateFamily.vue', () => {
   it('renders the form correctly', () => {
     const wrapper = mount(CreateFamily)
 
-    expect(wrapper.find('h2').text()).toBe('Créer une famille')
+    expect(wrapper.find('h2').text()).toBe('👨\u200d👩\u200d👧\u200d👦 Créer une famille')
     expect(wrapper.find('[data-cy="search-husband"]').exists()).toBe(true)
     expect(wrapper.find('[data-cy="search-wife"]').exists()).toBe(true)
     expect(wrapper.find('[data-cy="marriage-date"]').exists()).toBe(true)
@@ -56,7 +56,7 @@ describe('CreateFamily.vue', () => {
     wrapper.vm.marriage_date = '1979-12-31'
     wrapper.vm.validateMarriageDate()
 
-    expect(wrapper.vm.marriageDateError).toBe('La date de mariage ne peut pas être avant la naissance du parent 1')
+    expect(wrapper.vm.marriageDateError).toBe('La date de mariage ne peut pas être antérieure à la naissance de la femme.')
   })
 
   it('validates marriage date against parent death dates', async () => {
@@ -77,7 +77,7 @@ describe('CreateFamily.vue', () => {
     wrapper.vm.marriage_date = '2021-01-01'
     wrapper.vm.validateMarriageDate()
 
-    expect(wrapper.vm.marriageDateError).toBe('La date de mariage ne peut pas être après le décès du parent 1')
+    expect(wrapper.vm.marriageDateError).toBe('La date de mariage ne peut pas être postérieure au décès de la femme.')
   })
 
   it('prevents future marriage dates', () => {
@@ -90,7 +90,7 @@ describe('CreateFamily.vue', () => {
     wrapper.vm.marriage_date = tomorrowStr
     wrapper.vm.validateMarriageDate()
 
-    expect(wrapper.vm.marriageDateError).toBe('La date de mariage ne peut pas être dans le futur')
+    expect(wrapper.vm.marriageDateError).toBe('La date de mariage ne peut pas être dans le futur.')
   })
 
   it('requires at least one parent', async () => {
@@ -155,11 +155,11 @@ describe('CreateFamily.vue', () => {
 
     // Simuler la recherche
     wrapper.vm.queryHusband = 'John'
-    await wrapper.vm.searchPersons('husband')
+    await wrapper.vm.searchPersons('John', 'husband')
 
-    expect(personService.searchPersonsByName).toHaveBeenCalledWith('John')
+    expect(personService.searchPersonsByName).toHaveBeenCalledWith('John', { limit: 10 })
     expect(wrapper.vm.husbandOptions).toHaveLength(1)
-    expect(wrapper.vm.husbandOptions[0].label).toContain('John Doe (M)')
+    expect(wrapper.vm.husbandOptions[0].label).toContain('John Doe • n. 1980-01-01')
   })
 
   it('opens create person modal', () => {
