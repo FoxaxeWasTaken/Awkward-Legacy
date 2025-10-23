@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createRouter, createMemoryHistory } from 'vue-router'
 import CreateFamily from '../views/CreateFamily.vue'
 import { familyService } from '../services/familyService'
 import { personService } from '../services/personService'
@@ -21,6 +22,7 @@ describe('CreateFamily.vue', () => {
     expect(wrapper.find('[data-cy="search-wife"]').exists()).toBe(true)
     expect(wrapper.find('[data-cy="marriage-date"]').exists()).toBe(true)
     expect(wrapper.find('[data-cy="submit-family"]').exists()).toBe(true)
+    expect(wrapper.find('[data-cy="back-to-home"]').exists()).toBe(true)
   })
 
   it('validates marriage date against parent birth dates', async () => {
@@ -169,6 +171,33 @@ describe('CreateFamily.vue', () => {
 
     expect(wrapper.vm.showCreatePersonModal).toBe(true)
     expect(wrapper.vm.currentParentType).toBe('husband')
+  })
+
+  it('navigates to home when back to home button is clicked', async () => {
+    const mockRouter = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/', name: 'welcome', component: { template: '<div>Home</div>' } },
+        { path: '/families/create', name: 'create-family', component: { template: '<div>Create Family</div>' } },
+      ],
+    })
+
+    const wrapper = mount(CreateFamily, {
+      global: {
+        plugins: [mockRouter],
+      },
+    })
+
+    // Vérifier que le bouton existe
+    const backButton = wrapper.find('[data-cy="back-to-home"]')
+    expect(backButton.exists()).toBe(true)
+    expect(backButton.text()).toContain('Retour à l\'accueil')
+
+    // Simuler le clic sur le bouton
+    await backButton.trigger('click')
+
+    // Vérifier que la navigation a été appelée
+    expect(mockRouter.currentRoute.value.path).toBe('/')
   })
 
 })
