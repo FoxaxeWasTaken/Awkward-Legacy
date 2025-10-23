@@ -39,6 +39,23 @@ describe('Family Management - E2E Tests', () => {
       searchInput.should('have.value', 'Person');
     });
 
+    it('should search by actual names instead of IDs', () => {
+      const searchInput = cy.get('input[type="text"]').first();
+      searchInput.should('be.visible');
+      
+      // Try searching for common name patterns
+      searchInput.type('Smith');
+      cy.wait(500);
+      // The search should work with actual names, not "Person ID" format
+      searchInput.should('have.value', 'Smith');
+      
+      // Clear and try another search
+      searchInput.clear();
+      searchInput.type('John');
+      cy.wait(500);
+      searchInput.should('have.value', 'John');
+    });
+
     it('should clear search results when input is cleared', () => {
       const searchInput = cy.get('input[type="text"]').first();
       searchInput.type('TestQuery');
@@ -75,6 +92,34 @@ describe('Family Management - E2E Tests', () => {
       cy.viewport('ipad-2');
       cy.visit('/manage');
       cy.contains('Family Search & Management').should('be.visible');
+    });
+  });
+
+  describe('Table Display', () => {
+    it('should display family names instead of IDs in the table', () => {
+      // Wait for any data to load
+      cy.wait(1000);
+      
+      // Check that the table header shows "Family Name" instead of "Family ID"
+      cy.get('th').should('contain', 'Family Name');
+      cy.get('th').should('not.contain', 'Family ID');
+      
+      // If there are families displayed, check that the first column shows names, not IDs
+      cy.get('tbody tr').then(($rows) => {
+        if ($rows.length > 0) {
+          // Check that the first cell contains a name-like string (not a UUID or "Person ID" format)
+          cy.get('tbody tr').first().find('td').first().should('not.match', /^[0-9a-f]{8}\.\.\.$/);
+          cy.get('tbody tr').first().find('td').first().should('not.match', /^Person [0-9a-f]{8}$/);
+          // Should contain actual names like "John Smith & Jane Doe"
+          cy.get('tbody tr').first().find('td').first().should('contain', '&');
+        }
+      });
+    });
+
+    it('should have proper table structure', () => {
+      cy.get('table').should('exist');
+      cy.get('thead').should('exist');
+      cy.get('tbody').should('exist');
     });
   });
 

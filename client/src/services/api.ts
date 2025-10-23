@@ -125,9 +125,6 @@ class ApiService {
     return fullName || 'Unknown'
   }
 
-  private buildDisplayName(personId: string | null): string {
-    return personId ? `Person ${personId.slice(0, 8)}` : 'Unknown'
-  }
 
   private async processFamilyWithDetails(family: FamilyRead): Promise<FamilySearchResult> {
     try {
@@ -166,29 +163,20 @@ class ApiService {
     params: FamilyManagementParams = {}
   ): Promise<FamilySearchResult[]> {
     try {
-      // Get basic families first
-      const response: AxiosResponse<FamilyRead[]> = await this.api.get(
-        '/api/v1/families',
+      // Use the search endpoint which returns FamilySearchResult with proper names
+      // Note: Server has a max limit of 100 for search endpoint
+      // Use a wildcard search to get all families
+      const response: AxiosResponse<FamilySearchResult[]> = await this.api.get(
+        '/api/v1/families/search',
         {
           params: {
-            skip: params.skip || 0,
-            limit: Math.min(params.limit || 100, 1000),
+            q: '%', // Wildcard search to get all families
+            limit: Math.min(params.limit || 100, 100),
           },
         }
       )
       
-      // Convert to FamilySearchResult format without fetching details
-      const familiesWithNames: FamilySearchResult[] = response.data.map(family => ({
-        id: family.id,
-        husband_name: this.buildDisplayName(family.husband_id || null),
-        wife_name: this.buildDisplayName(family.wife_id || null),
-        marriage_date: family.marriage_date,
-        marriage_place: family.marriage_place,
-        children_count: 0, // We don't fetch children count for performance
-        summary: `${this.buildDisplayName(family.husband_id || null)} & ${this.buildDisplayName(family.wife_id || null)}`
-      }))
-      
-      return familiesWithNames
+      return response.data
     } catch (error) {
       console.error('Error fetching families for management:', error)
       throw error

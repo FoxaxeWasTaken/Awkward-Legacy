@@ -10,7 +10,7 @@ const families = ref<FamilySearchResult[]>([])
 const isLoading = ref(false)
 const error = ref('')
 const searchQuery = ref('')
-const sortBy = ref<'id' | 'marriage_date' | 'marriage_place'>('id')
+const sortBy = ref<'summary' | 'marriage_date' | 'marriage_place'>('summary')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 const currentPage = ref(1)
 const itemsPerPage = ref(20)
@@ -22,9 +22,8 @@ const matchesField = (field: string | undefined, query: string): boolean => {
 }
 
 const matchesSearchQuery = (family: FamilySearchResult, query: string): boolean => {
-  return matchesField(family.id, query) ||
+  return matchesField(family.summary, query) ||
          matchesField(family.marriage_place, query) ||
-         matchesField(family.summary, query) ||
          matchesField(family.husband_name, query) ||
          matchesField(family.wife_name, query)
 }
@@ -113,7 +112,7 @@ const loadFamilies = async () => {
   try {
     const data = await apiService.getAllFamiliesForManagement({
       skip: 0,
-      limit: 1000, // Get all families for client-side filtering
+      limit: 100, // Server search endpoint has max limit of 100
     })
     families.value = data
     totalItems.value = data.length
@@ -129,7 +128,7 @@ const loadFamilies = async () => {
   }
 }
 
-const handleSort = (column: 'id' | 'marriage_date' | 'marriage_place') => {
+const handleSort = (column: 'summary' | 'marriage_date' | 'marriage_place') => {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -229,7 +228,7 @@ onMounted(() => {
           <label class="filter-label">
             Sort by:
             <select v-model="sortBy" class="filter-select">
-              <option value="id">ID</option>
+              <option value="summary">Family Name</option>
               <option value="marriage_date">Marriage Date</option>
               <option value="marriage_place">Marriage Place</option>
             </select>
@@ -281,9 +280,9 @@ onMounted(() => {
         <table class="families-table">
           <thead>
             <tr>
-              <th @click="handleSort('id')" class="sortable">
-                Family ID
-                <span v-if="sortBy === 'id'" class="sort-indicator">
+              <th @click="handleSort('summary')" class="sortable">
+                Family Name
+                <span v-if="sortBy === 'summary'" class="sort-indicator">
                   {{ sortOrder === 'asc' ? '↑' : '↓' }}
                 </span>
               </th>
@@ -306,7 +305,7 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="family in paginatedFamilies" :key="family.id" class="family-row">
-              <td class="family-id">{{ family.id.slice(0, 8) }}...</td>
+              <td class="family-name">{{ family.summary || 'N/A' }}</td>
               <td>{{ family.husband_name || 'N/A' }}</td>
               <td>{{ family.wife_name || 'N/A' }}</td>
               <td>{{ formatDate(family.marriage_date) }}</td>
@@ -384,7 +383,6 @@ onMounted(() => {
         <button @click="router.push('/upload')" class="upload-button">
           Upload Family File
         </button>
-        <button @click="goBack" class="back-button">Back to Home</button>
       </div>
     </div>
   </div>
@@ -607,10 +605,9 @@ onMounted(() => {
   background: #f8f9fa;
 }
 
-.family-id {
-  font-family: monospace;
-  font-size: 0.9rem;
-  color: #7f8c8d;
+.family-name {
+  font-weight: 500;
+  color: #2c3e50;
 }
 
 .actions-cell {
