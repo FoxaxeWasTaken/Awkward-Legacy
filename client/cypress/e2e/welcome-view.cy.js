@@ -24,11 +24,16 @@ describe('Welcome View - E2E Tests', () => {
       cy.contains('Search & Manage Families').should('be.visible');
       cy.contains('Search, explore, and manage all families in the database').should('be.visible');
       cy.contains('Explore Families').should('be.visible');
+      
+      // Create Family card
+      cy.contains('Créer une famille').should('be.visible');
+      cy.contains('Créez une nouvelle famille en ajoutant les parents et les informations de mariage').should('be.visible');
+      cy.contains('Créer une famille').should('be.visible');
     });
 
     it('should have proper card layout and styling', () => {
       // Check that cards are displayed in a grid
-      cy.get('.action-card').should('have.length', 2);
+      cy.get('.action-card').should('have.length', 3);
       cy.get('.action-card').each(($card) => {
         cy.wrap($card).should('be.visible');
         cy.wrap($card).should('have.class', 'action-card');
@@ -47,6 +52,13 @@ describe('Welcome View - E2E Tests', () => {
       cy.contains('Explore Families').click();
       cy.url().should('include', '/manage');
       cy.contains('Family Search & Management').should('be.visible');
+    });
+
+    it('should navigate to create family page when clicking Create Family', () => {
+      cy.contains('Créer une famille').click();
+      cy.url().should('include', '/families/create');
+      cy.contains('Créer une famille').should('be.visible');
+      cy.contains('Créez une nouvelle famille en ajoutant les parents et les informations de mariage').should('be.visible');
     });
 
     it('should handle browser back button from upload page', () => {
@@ -95,16 +107,20 @@ describe('Welcome View - E2E Tests', () => {
       cy.viewport('iphone-x');
       
       cy.contains('🏛️ Geneweb').should('be.visible');
-      cy.get('.action-card').should('have.length', 2);
+      cy.get('.action-card').should('have.length', 3);
       cy.contains('Upload File').should('be.visible');
       cy.contains('Explore Families').should('be.visible');
+      cy.contains('Créer une famille').should('be.visible');
     });
 
     it('should work on tablet viewport', () => {
       cy.viewport('ipad-2');
       
       cy.contains('🏛️ Geneweb').should('be.visible');
-      cy.get('.action-card').should('have.length', 2);
+      cy.get('.action-card').should('have.length', 3);
+      cy.contains('Upload File').should('be.visible');
+      cy.contains('Explore Families').should('be.visible');
+      cy.contains('Créer une famille').should('be.visible');
     });
   });
 
