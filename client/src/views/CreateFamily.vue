@@ -55,6 +55,11 @@ const queryWife = ref('')
 const husbandOptions = ref<PersonOption[]>([])
 const wifeOptions = ref<PersonOption[]>([])
 
+// Show/hide dropdown states
+const showHusbandDropdown = ref(false)
+const showWifeDropdown = ref(false)
+const showChildDropdown = ref(false)
+
 // Debounce pour la recherche
 let searchTimeout: NodeJS.Timeout | null = null
 
@@ -62,10 +67,13 @@ async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') 
   if (!query.trim()) {
     if (type === 'husband') {
       husbandOptions.value = []
+      showHusbandDropdown.value = false
     } else if (type === 'wife') {
       wifeOptions.value = []
+      showWifeDropdown.value = false
     } else if (type === 'child') {
       childOptions.value = []
+      showChildDropdown.value = false
     }
     return
   }
@@ -81,19 +89,25 @@ async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') 
 
     if (type === 'husband') {
       husbandOptions.value = options
+      showHusbandDropdown.value = options.length > 0
     } else if (type === 'wife') {
       wifeOptions.value = options
+      showWifeDropdown.value = options.length > 0
     } else if (type === 'child') {
       childOptions.value = options
+      showChildDropdown.value = options.length > 0
     }
   } catch (error) {
     console.error('Error during search:', error)
     if (type === 'husband') {
       husbandOptions.value = []
+      showHusbandDropdown.value = false
     } else if (type === 'wife') {
       wifeOptions.value = []
+      showWifeDropdown.value = false
     } else if (type === 'child') {
       childOptions.value = []
+      showChildDropdown.value = false
     }
   }
 }
@@ -108,6 +122,62 @@ function onInputSearch(type: 'husband' | 'wife') {
   searchTimeout = setTimeout(() => {
     searchPersons(query, type)
   }, 300)
+}
+
+// Select person from dropdown
+function selectPerson(option: PersonOption, type: 'husband' | 'wife' | 'child') {
+  if (type === 'husband') {
+    husbandId.value = option.id
+    queryHusband.value = option.label
+    showHusbandDropdown.value = false
+    loadPersonDetails('husband', option.id)
+  } else if (type === 'wife') {
+    wifeId.value = option.id
+    queryWife.value = option.label
+    showWifeDropdown.value = false
+    loadPersonDetails('wife', option.id)
+  } else if (type === 'child') {
+    // Find the last added child and fill it with the selected person
+    const lastChildIndex = children.value.length - 1
+    if (lastChildIndex >= 0) {
+      children.value[lastChildIndex].id = option.id
+      children.value[lastChildIndex].label = option.label
+      queryChild.value = option.label
+      showChildDropdown.value = false
+      loadChildDetails(option.id)
+    }
+  }
+}
+
+// Clear selection
+function clearSelection(type: 'husband' | 'wife' | 'child') {
+  if (type === 'husband') {
+    husbandId.value = ''
+    queryHusband.value = ''
+    selectedHusband.value = null
+    showHusbandDropdown.value = false
+  } else if (type === 'wife') {
+    wifeId.value = ''
+    queryWife.value = ''
+    selectedWife.value = null
+    showWifeDropdown.value = false
+  } else if (type === 'child') {
+    queryChild.value = ''
+    showChildDropdown.value = false
+  }
+}
+
+// Handle blur events with delay
+function handleHusbandBlur() {
+  setTimeout(() => { showHusbandDropdown.value = false }, 200)
+}
+
+function handleWifeBlur() {
+  setTimeout(() => { showWifeDropdown.value = false }, 200)
+}
+
+function handleChildBlur() {
+  setTimeout(() => { showChildDropdown.value = false }, 200)
 }
 
 // Marriage date validation
@@ -222,10 +292,12 @@ function handlePersonCreated(createdPerson: Person) {
   if (currentParentType.value === 'husband') {
     husbandOptions.value = [newOption, ...husbandOptions.value]
     husbandId.value = createdPerson.id
+    queryHusband.value = newOption.label
     selectedHusband.value = createdPerson
   } else if (currentParentType.value === 'wife') {
     wifeOptions.value = [newOption, ...wifeOptions.value]
     wifeId.value = createdPerson.id
+    queryWife.value = newOption.label
     selectedWife.value = createdPerson
   } else if (currentParentType.value === 'child') {
     // Find the last added child and fill it with the created person
@@ -238,6 +310,7 @@ function handlePersonCreated(createdPerson: Person) {
       childOptions.value = [newOption, ...childOptions.value]
       children.value[lastChildIndex].id = createdPerson.id
       children.value[lastChildIndex].label = newOption.label
+      queryChild.value = newOption.label
     }
   }
 
@@ -349,10 +422,21 @@ async function createChildrenRelationships(familyId: string): Promise<void> {
 
 // Event creation logic
 async function createFamilyEvents(familyId: string): Promise<void> {
-  if (events.value.length === 0) return
+  console.log('createFamilyEvents called with familyId:', familyId)
+  console.log('events.value:', events.value)
+  
+  if (events.value.length === 0) {
+    console.log('No events to create')
+    return
+  }
 
-  for (const event of events.value) {
+  // Filter events that have a valid type
+  const validEvents = events.value.filter(event => event.type && event.type.trim() !== '')
+  console.log('validEvents:', validEvents)
+  
+  for (const event of validEvents) {
     try {
+      console.log('Creating event:', event)
       await eventService.createEvent({
         family_id: familyId,
         type: event.type,
@@ -360,6 +444,7 @@ async function createFamilyEvents(familyId: string): Promise<void> {
         place: event.place || null,
         description: event.description || null
       })
+      console.log('Event created successfully:', event.type)
     } catch (eventError: unknown) {
       console.error(`Error adding event ${event.type}:`, eventError)
       // Continue even if an event fails
@@ -370,15 +455,15 @@ async function createFamilyEvents(familyId: string): Promise<void> {
 // Success message generation
 function generateSuccessMessage(): string {
   const childCount = children.value.length
-  const eventCount = events.value.length
+  const validEventCount = events.value.filter(event => event.type && event.type.trim() !== '').length
   let message = 'Family created'
 
   if (childCount > 0) {
     message += ` with ${childCount} child${childCount > 1 ? 'ren' : ''}`
   }
 
-  if (eventCount > 0) {
-    message += `${childCount > 0 ? ' and' : ' with'} ${eventCount} event${eventCount > 1 ? 's' : ''}`
+  if (validEventCount > 0) {
+    message += `${childCount > 0 ? ' and' : ' with'} ${validEventCount} event${validEventCount > 1 ? 's' : ''}`
   }
 
   return message + '.'
@@ -401,6 +486,9 @@ function resetForm(): void {
   queryChild.value = ''
   selectedHusband.value = null
   selectedWife.value = null
+  showHusbandDropdown.value = false
+  showWifeDropdown.value = false
+  showChildDropdown.value = false
 }
 
 // Main submit function - now much simpler
@@ -435,6 +523,27 @@ async function submit() {
   }
 }
 
+// Expose methods/refs for unit tests
+defineExpose({
+  loadPersonDetails,
+  validateMarriageDate,
+  submit,
+  // state
+  marriage_date,
+  marriageDateError,
+  husbandId,
+  wifeId,
+  error,
+  success,
+  // search helpers
+  queryHusband,
+  searchPersons,
+  husbandOptions,
+  // modal controls
+  openCreatePersonModal,
+  showCreatePersonModal,
+  currentParentType,
+})
 </script>
 
 <template>
@@ -469,29 +578,41 @@ async function submit() {
               </div>
 
               <div class="search-container">
-                <input
-                  v-model="queryHusband"
-                  type="text"
-                  placeholder="Search for existing husband..."
-                  class="search-input"
-                  data-cy="search-husband"
-                  @input="onInputSearch('husband')"
-                />
-                <select
-                  v-model="husbandId"
-                  class="person-select"
-                  data-cy="select-husband"
-                  @change="loadPersonDetails('husband', husbandId)"
-                >
-                  <option value="">— None —</option>
-                  <option
-                    v-for="option in husbandOptions"
-                    :key="option.id"
-                    :value="option.id"
+                <div class="search-input-wrapper">
+                  <input
+                    v-model="queryHusband"
+                    type="text"
+                    placeholder="Search for existing husband..."
+                    class="search-input"
+                    data-cy="search-husband"
+                    @input="onInputSearch('husband')"
+                    @focus="showHusbandDropdown = husbandOptions.length > 0"
+                    @blur="handleHusbandBlur"
+                  />
+                  <button
+                    v-if="husbandId"
+                    type="button"
+                    class="clear-btn"
+                    @click="clearSelection('husband')"
+                    title="Clear selection"
                   >
-                    {{ option.label }}
-                  </option>
-                </select>
+                    ✕
+                  </button>
+                  
+                  <!-- Dropdown suggestions -->
+                  <div v-if="showHusbandDropdown && husbandOptions.length > 0" class="dropdown-suggestions" data-cy="husband-suggestions">
+                    <div
+                      v-for="option in husbandOptions"
+                      :key="option.id"
+                      class="suggestion-item"
+                      :data-cy="`husband-suggestion-${option.id}`"
+                      @click="selectPerson(option, 'husband')"
+                    >
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+                
                 <button
                   type="button"
                   class="create-person-btn"
@@ -530,29 +651,41 @@ async function submit() {
               </div>
 
               <div class="search-container">
-                <input
-                  v-model="queryWife"
-                  type="text"
-                  placeholder="Search for existing wife..."
-                  class="search-input"
-                  data-cy="search-wife"
-                  @input="onInputSearch('wife')"
-                />
-                <select
-                  v-model="wifeId"
-                  class="person-select"
-                  data-cy="select-wife"
-                  @change="loadPersonDetails('wife', wifeId)"
-                >
-                  <option value="">— None —</option>
-                  <option
-                    v-for="option in wifeOptions"
-                    :key="option.id"
-                    :value="option.id"
+                <div class="search-input-wrapper">
+                  <input
+                    v-model="queryWife"
+                    type="text"
+                    placeholder="Search for existing wife..."
+                    class="search-input"
+                    data-cy="search-wife"
+                    @input="onInputSearch('wife')"
+                    @focus="showWifeDropdown = wifeOptions.length > 0"
+                    @blur="handleWifeBlur"
+                  />
+                  <button
+                    v-if="wifeId"
+                    type="button"
+                    class="clear-btn"
+                    @click="clearSelection('wife')"
+                    title="Clear selection"
                   >
-                    {{ option.label }}
-                  </option>
-                </select>
+                    ✕
+                  </button>
+                  
+                  <!-- Dropdown suggestions -->
+                  <div v-if="showWifeDropdown && wifeOptions.length > 0" class="dropdown-suggestions" data-cy="wife-suggestions">
+                    <div
+                      v-for="option in wifeOptions"
+                      :key="option.id"
+                      class="suggestion-item"
+                      :data-cy="`wife-suggestion-${option.id}`"
+                      @click="selectPerson(option, 'wife')"
+                    >
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+                
                 <button
                   type="button"
                   class="create-person-btn"
@@ -726,29 +859,41 @@ async function submit() {
 
               <div class="child-fields">
                 <div class="search-container">
+                  <div class="search-input-wrapper">
                   <input
-                    v-model="queryChild"
-                    type="text"
-                    placeholder="Search an existing child..."
-                    class="search-input"
-                    data-cy="search-child"
-                    @input="onInputSearchChild"
-                  />
-                  <select
-                    v-model="child.id"
-                    class="person-select"
-                    data-cy="select-child"
-                    @change="loadChildDetails(child.id)"
-                  >
-                    <option value="">— None —</option>
-                    <option
-                      v-for="option in childOptions"
-                      :key="option.id"
-                      :value="option.id"
+                      v-model="queryChild"
+                      type="text"
+                      placeholder="Search an existing child..."
+                      class="search-input"
+                      data-cy="search-child"
+                      @input="onInputSearchChild"
+                      @focus="showChildDropdown = childOptions.length > 0"
+                      @blur="handleChildBlur"
+                    />
+                    <button
+                      v-if="child.id"
+                      type="button"
+                      class="clear-btn"
+                      @click="clearSelection('child')"
+                      title="Clear selection"
                     >
-                      {{ option.label }}
-                    </option>
-                  </select>
+                      ✕
+                    </button>
+                    
+                    <!-- Dropdown suggestions -->
+                    <div v-if="showChildDropdown && childOptions.length > 0" class="dropdown-suggestions" data-cy="child-suggestions">
+                      <div
+                        v-for="option in childOptions"
+                        :key="option.id"
+                        class="suggestion-item"
+                        :data-cy="`child-suggestion-${option.id}`"
+                        @click="selectPerson(option, 'child')"
+                      >
+                        {{ option.label }}
+                      </div>
+                    </div>
+                  </div>
+                  
                   <button
                     type="button"
                     class="create-person-btn"
@@ -982,12 +1127,20 @@ async function submit() {
   gap: 0.75rem;
 }
 
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .search-input {
   padding: 0.75rem;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.3s ease;
+  flex: 1;
+  padding-right: 2.5rem;
 }
 
 .search-input:focus {
@@ -996,20 +1149,59 @@ async function submit() {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.person-select {
-  padding: 0.75rem;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background: white;
-  transition: all 0.3s ease;
+.clear-btn {
+  position: absolute;
+  right: 0.5rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
 }
 
-.person-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+.clear-btn:hover {
+  background: #c0392b;
+  transform: scale(1.1);
 }
+
+.dropdown-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f9fa;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
 
 .create-person-btn {
   background: #667eea;

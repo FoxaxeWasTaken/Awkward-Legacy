@@ -14,6 +14,9 @@ const navigateToManage = () => {
 const navigateToCreateFamily = () => {
   router.push('/families/create')
 }
+
+// Expose for unit tests
+defineExpose({ navigateToUpload, navigateToManage, navigateToCreateFamily })
 </script>
 
 <template>

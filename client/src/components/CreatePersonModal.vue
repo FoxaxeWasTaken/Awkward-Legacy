@@ -2,13 +2,13 @@
   <div v-if="show" class="modal-overlay" @click="closeModal">
     <div class="modal" @click.stop>
       <div class="modal-header">
-        <h3>Créer une nouvelle personne</h3>
+        <h3>Create a New Person</h3>
         <button class="close-button close-btn" @click="closeModal" data-cy="close-modal">×</button>
       </div>
       
       <form @submit.prevent="createPerson" class="modal-body">
         <div class="form-group">
-          <label for="first_name">Prénom *</label>
+          <label for="first_name">First Name *</label>
           <input
             id="first_name"
             v-model="newPerson.first_name"
@@ -20,7 +20,7 @@
         </div>
 
         <div class="form-group">
-          <label for="last_name">Nom *</label>
+          <label for="last_name">Last Name *</label>
           <input
             id="last_name"
             v-model="newPerson.last_name"
@@ -32,21 +32,21 @@
         </div>
 
         <div class="form-group">
-          <label for="sex">Sexe</label>
+          <label for="sex">Gender</label>
           <select
             id="sex"
             v-model="newPerson.sex"
             data-cy="new-person-sex"
             :disabled="creatingPerson"
           >
-            <option value="U">Non défini</option>
-            <option value="M">Homme</option>
-            <option value="F">Femme</option>
+            <option value="U">Undefined</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="birth_date">Date de naissance</label>
+          <label for="birth_date">Birth Date</label>
           <input
             id="birth_date"
             v-model="newPerson.birth_date"
@@ -57,7 +57,7 @@
         </div>
 
         <div class="form-group">
-          <label for="birth_place">Lieu de naissance</label>
+          <label for="birth_place">Birth Place</label>
           <input
             id="birth_place"
             v-model="newPerson.birth_place"
@@ -68,7 +68,7 @@
         </div>
 
         <div class="form-group">
-          <label for="death_date">Date de décès</label>
+          <label for="death_date">Death Date</label>
           <input
             id="death_date"
             v-model="newPerson.death_date"
@@ -79,7 +79,7 @@
         </div>
 
         <div class="form-group">
-          <label for="death_place">Lieu de décès</label>
+          <label for="death_place">Death Place</label>
           <input
             id="death_place"
             v-model="newPerson.death_place"
@@ -90,7 +90,7 @@
         </div>
 
         <div class="form-group">
-          <label for="occupation">Profession</label>
+          <label for="occupation">Occupation</label>
           <input
             id="occupation"
             v-model="newPerson.occupation"
@@ -122,7 +122,7 @@
             data-cy="cancel-person-creation"
             :disabled="creatingPerson"
           >
-            Annuler
+            Cancel
           </button>
           <button
             type="submit"
@@ -130,7 +130,7 @@
             data-cy="create-person-submit"
             :disabled="creatingPerson"
           >
-            {{ creatingPerson ? 'Création...' : 'Créer' }}
+            {{ creatingPerson ? 'Creating...' : 'Create' }}
           </button>
         </div>
       </form>
@@ -194,7 +194,7 @@ const closeModal = () => {
 
 const createPerson = async () => {
   if (!newPerson.value.first_name.trim() || !newPerson.value.last_name.trim()) {
-    personCreationError.value = 'Le prénom et le nom sont obligatoires'
+    personCreationError.value = 'First name and last name are required'
     return
   }
 
@@ -222,7 +222,7 @@ const createPerson = async () => {
 
   } catch (err: unknown) {
     const apiErr = err as ApiError
-    personCreationError.value = apiErr.response?.data?.detail || apiErr.message || 'Erreur lors de la création de la personne'
+    personCreationError.value = apiErr.response?.data?.detail || apiErr.message || 'Error creating person'
   } finally {
     creatingPerson.value = false
   }
