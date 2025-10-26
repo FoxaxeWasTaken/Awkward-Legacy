@@ -26,9 +26,9 @@ describe('Welcome View - E2E Tests', () => {
       cy.contains('Explore Families').should('be.visible');
       
       // Create Family card
-      cy.contains('Créer une famille').should('be.visible');
-      cy.contains('Créez une nouvelle famille en ajoutant les parents et les informations de mariage').should('be.visible');
-      cy.contains('Créer une famille').should('be.visible');
+      cy.contains('Create a family').should('be.visible');
+      cy.contains('Create a new family by adding parents, marriage information and more').should('be.visible');
+      cy.contains('Create family').should('be.visible');
     });
 
     it('should have proper card layout and styling', () => {
@@ -55,10 +55,10 @@ describe('Welcome View - E2E Tests', () => {
     });
 
     it('should navigate to create family page when clicking Create Family', () => {
-      cy.contains('Créer une famille').click();
+      cy.contains('Create family').click();
       cy.url().should('include', '/families/create');
-      cy.contains('Créer une famille').should('be.visible');
-      cy.contains('Créez une nouvelle famille en ajoutant les parents et les informations de mariage').should('be.visible');
+      cy.contains('Create a Family').should('be.visible');
+      cy.contains('Create a new family by adding parents and marriage information').should('be.visible');
     });
 
     it('should handle browser back button from upload page', () => {
@@ -110,7 +110,7 @@ describe('Welcome View - E2E Tests', () => {
       cy.get('.action-card').should('have.length', 3);
       cy.contains('Upload File').should('be.visible');
       cy.contains('Explore Families').should('be.visible');
-      cy.contains('Créer une famille').should('be.visible');
+      cy.contains('Create a family').should('be.visible');
     });
 
     it('should work on tablet viewport', () => {
@@ -120,7 +120,7 @@ describe('Welcome View - E2E Tests', () => {
       cy.get('.action-card').should('have.length', 3);
       cy.contains('Upload File').should('be.visible');
       cy.contains('Explore Families').should('be.visible');
-      cy.contains('Créer une famille').should('be.visible');
+      cy.contains('Create a family').should('be.visible');
     });
   });
 
