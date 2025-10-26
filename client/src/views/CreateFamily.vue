@@ -180,55 +180,39 @@ function handleChildBlur() {
   setTimeout(() => { showChildDropdown.value = false }, 200)
 }
 
-// Marriage date validation
+// Marriage date validation (complex logic extracted to helpers to lower complexity)
+function isFutureDate(date: Date): boolean {
+  const today = new Date()
+  return date > today
+}
+
+function validateAgainstPerson(marriageDate: Date, person: Person | null, label: 'husband' | 'wife'): string | null {
+  if (!person) return null
+  if (person.birth_date) {
+    const birth = new Date(person.birth_date)
+    if (marriageDate < birth) return `Marriage date cannot be before the ${label}'s birth.`
+  }
+  if (person.death_date) {
+    const death = new Date(person.death_date)
+    if (marriageDate > death) return `Marriage date cannot be after the ${label}'s death.`
+  }
+  return null
+}
+
+function computeMarriageDateError(dateStr: string): string {
+  const marriageDate = new Date(dateStr)
+  if (isFutureDate(marriageDate)) return 'Marriage date cannot be in the future.'
+  return (
+    validateAgainstPerson(marriageDate, selectedHusband.value, 'husband') ||
+    validateAgainstPerson(marriageDate, selectedWife.value, 'wife') ||
+    ''
+  )
+}
+
 function validateMarriageDate() {
   marriageDateError.value = ''
-
   if (!marriage_date.value) return
-
-  const marriageDate = new Date(marriage_date.value)
-  const today = new Date()
-
-  // Check that the date is not in the future
-  if (marriageDate > today) {
-    marriageDateError.value = 'Marriage date cannot be in the future.'
-    return
-  }
-
-  // Check against parent birth and death dates
-  if (selectedHusband.value) {
-    if (selectedHusband.value.birth_date) {
-      const husbandBirth = new Date(selectedHusband.value.birth_date)
-      if (marriageDate < husbandBirth) {
-        marriageDateError.value = 'Marriage date cannot be before the husband\'s birth.'
-        return
-      }
-    }
-    if (selectedHusband.value.death_date) {
-      const husbandDeath = new Date(selectedHusband.value.death_date)
-      if (marriageDate > husbandDeath) {
-        marriageDateError.value = 'Marriage date cannot be after the husband\'s death.'
-        return
-      }
-    }
-  }
-
-  if (selectedWife.value) {
-    if (selectedWife.value.birth_date) {
-      const wifeBirth = new Date(selectedWife.value.birth_date)
-      if (marriageDate < wifeBirth) {
-        marriageDateError.value = 'Marriage date cannot be before the wife\'s birth.'
-        return
-      }
-    }
-    if (selectedWife.value.death_date) {
-      const wifeDeath = new Date(selectedWife.value.death_date)
-      if (marriageDate > wifeDeath) {
-        marriageDateError.value = 'Marriage date cannot be after the wife\'s death.'
-        return
-      }
-    }
-  }
+  marriageDateError.value = computeMarriageDateError(marriage_date.value)
 }
 
 // Load details of a selected person

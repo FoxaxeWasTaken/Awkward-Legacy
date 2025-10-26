@@ -3,7 +3,8 @@
 from typing import List, Optional
 from uuid import UUID
 
-from sqlmodel import Session, select, col
+from sqlmodel import Session, select
+from sqlalchemy import cast, String
 
 from ..models.event import Event, EventCreate, EventUpdate
 
@@ -45,11 +46,10 @@ class EventCRUD:
 
     def search_by_type(self, db: Session, event_type: str) -> List[Event]:
         """Search events by type (case-sensitive partial match)."""
-        # The col() function from SQLModel does return an object with a contains() method,
-        # pylint just can't detect it through static analysis
-        # pylint: disable=no-member
+        # Cast to text for portability across drivers
+
         statement = select(Event).where(
-            col(Event.type).contains(event_type, autoescape=True)
+            cast(Event.type, String).contains(event_type, autoescape=True)
         )
         return list(db.exec(statement))
 

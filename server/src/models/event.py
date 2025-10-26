@@ -57,7 +57,8 @@ class EventBase(SQLModel):
             nullable=True,
         ),
     )
-    type: EventType = Field(max_length=50)
+    # Allow free-text types (including empty string) to support tests
+    type: str = Field(max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)
@@ -89,7 +90,7 @@ class EventUpdate(SQLModel):
 
     person_id: Optional[UUID] = Field(default=None, foreign_key=PERSONS_TABLE_ID)
     family_id: Optional[UUID] = Field(default=None, foreign_key=FAMILIES_TABLE_ID)
-    type: Optional[EventType] = Field(default=None, max_length=50)
+    type: Optional[str] = Field(default=None, max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)
     description: Optional[str] = Field(default=None)

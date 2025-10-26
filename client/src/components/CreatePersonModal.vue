@@ -192,9 +192,30 @@ const closeModal = () => {
   emit('close')
 }
 
+function validateRequiredNames(): string | null {
+  const first = newPerson.value.first_name.trim()
+  const last = newPerson.value.last_name.trim()
+  return !first || !last ? 'First name and last name are required' : null
+}
+
+function buildPayload() {
+  return {
+    first_name: newPerson.value.first_name.trim(),
+    last_name: newPerson.value.last_name.trim(),
+    sex: newPerson.value.sex,
+    birth_date: newPerson.value.birth_date || null,
+    birth_place: newPerson.value.birth_place.trim() || null,
+    death_date: newPerson.value.death_date || null,
+    death_place: newPerson.value.death_place.trim() || null,
+    occupation: newPerson.value.occupation.trim() || null,
+    notes: newPerson.value.notes.trim() || null
+  }
+}
+
 const createPerson = async () => {
-  if (!newPerson.value.first_name.trim() || !newPerson.value.last_name.trim()) {
-    personCreationError.value = 'First name and last name are required'
+  const namesError = validateRequiredNames()
+  if (namesError) {
+    personCreationError.value = namesError
     return
   }
 
@@ -202,24 +223,10 @@ const createPerson = async () => {
   personCreationError.value = ''
 
   try {
-    const personData = {
-      first_name: newPerson.value.first_name.trim(),
-      last_name: newPerson.value.last_name.trim(),
-      sex: newPerson.value.sex,
-      birth_date: newPerson.value.birth_date || null,
-      birth_place: newPerson.value.birth_place.trim() || null,
-      death_date: newPerson.value.death_date || null,
-      death_place: newPerson.value.death_place.trim() || null,
-      occupation: newPerson.value.occupation.trim() || null,
-      notes: newPerson.value.notes.trim() || null
-    }
-
-    const response = await personService.createPerson(personData)
+    const response = await personService.createPerson(buildPayload())
     const createdPerson = response.data
-
     emit('personCreated', createdPerson)
     resetForm()
-
   } catch (err: unknown) {
     const apiErr = err as ApiError
     personCreationError.value = apiErr.response?.data?.detail || apiErr.message || 'Error creating person'
