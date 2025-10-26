@@ -18,13 +18,13 @@ if TYPE_CHECKING:
 
 class EventType(str, Enum):
     """Enumération des types d'événements."""
-    
+
     # Événements de personne
     BIRTH = "BIRTH"
     BAPTISM = "BAPTISM"
     DEATH = "DEATH"
     BURIAL = "BURIAL"
-    
+
     # Événements de famille
     MARRIAGE = "MARRIAGE"
     COUPLE = "COUPLE"
@@ -33,7 +33,7 @@ class EventType(str, Enum):
     SEPARATION = "SEPARATION"
     COHABITATION = "COHABITATION"
     MARRIAGE_ANNULMENT = "MARRIAGE_ANNULMENT"
-    
+
     # Autres événements
     OTHER = "OTHER"
 

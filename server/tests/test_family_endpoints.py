@@ -321,7 +321,9 @@ class TestFamilyEdgeCases:
         response2 = client.post("/api/v1/families", json=sample_family_data)
         assert response2.status_code == 409
 
-    def test_create_family_same_spouses_swapped_order_conflict(self, client, sample_family_data):
+    def test_create_family_same_spouses_swapped_order_conflict(
+        self, client, sample_family_data
+    ):
         """Test creating a family with spouses swapped order should also conflict (order-indifferent)."""
         # Create initial family
         response1 = client.post("/api/v1/families", json=sample_family_data)

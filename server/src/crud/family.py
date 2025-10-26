@@ -19,9 +19,7 @@ from ..models.family import (
 class FamilyCRUD:
     """CRUD operations for Family model."""
 
-    def exists_same_couple(
-        self, db: Session, husband_id: UUID, wife_id: UUID
-    ) -> bool:
+    def exists_same_couple(self, db: Session, husband_id: UUID, wife_id: UUID) -> bool:
         """Return True if a family already exists with the same two spouses, order-indifferent.
 
         Only applies when both spouses are provided. If either is None, returns False.
