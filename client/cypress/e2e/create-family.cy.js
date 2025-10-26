@@ -695,13 +695,13 @@ describe('Create Family', () => {
 
     // Vérifier que tous les types d'événements sont disponibles
     const expectedEventTypes = [
-      'Mariage',
+      'Marriage',
       'Couple',
-      'Fiançailles',
+      'Engagement',
       'Divorce',
-      'Séparation',
-      'Ménage commun',
-      'Annulation mariage'
+      'Separation',
+      'Cohabitation',
+      'Marriage Annulment'
     ]
 
     cy.get('[data-cy="event-type-0"]').should('be.visible')

@@ -19,13 +19,13 @@ export interface CreateEvent {
 
 // Family event types
 export const FAMILY_EVENT_TYPES = [
-  { value: 'Marriage', label: 'Mariage' },
+  { value: 'Marriage', label: 'Marriage' },
   { value: 'Couple', label: 'Couple' },
-  { value: 'Engagement', label: 'Fiançailles' },
+  { value: 'Engagement', label: 'Engagement' },
   { value: 'Divorce', label: 'Divorce' },
-  { value: 'Separation', label: 'Séparation' },
-  { value: 'Cohabitation', label: 'Ménage commun' },
-  { value: 'Marriage Annulment', label: 'Annulation mariage' },
+  { value: 'Separation', label: 'Separation' },
+  { value: 'Cohabitation', label: 'Cohabitation' },
+  { value: 'Marriage Annulment', label: 'Marriage Annulment' },
 ] as const
 
 
