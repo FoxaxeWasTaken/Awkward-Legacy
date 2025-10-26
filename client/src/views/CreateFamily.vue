@@ -73,12 +73,12 @@ async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') 
   try {
     const response = await personService.searchPersonsByName(query, { limit: 10 })
     const persons = response.data
-    
+
     const options = persons.map((person: Person) => ({
       id: person.id,
       label: `${person.first_name} ${person.last_name}${person.birth_date ? ' • n. ' + person.birth_date : ''}${person.birth_place ? ' • ' + person.birth_place : ''}`
     }))
-    
+
     if (type === 'husband') {
       husbandOptions.value = options
     } else if (type === 'wife') {
@@ -87,7 +87,7 @@ async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') 
       childOptions.value = options
     }
   } catch (error) {
-    console.error('Erreur lors de la recherche:', error)
+    console.error('Error during search:', error)
     if (type === 'husband') {
       husbandOptions.value = []
     } else if (type === 'wife') {
@@ -102,59 +102,59 @@ function onInputSearch(type: 'husband' | 'wife') {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
-  
+
   const query = type === 'husband' ? queryHusband.value : queryWife.value
-  
+
   searchTimeout = setTimeout(() => {
     searchPersons(query, type)
   }, 300)
 }
 
-// Validation de la date de mariage
+// Marriage date validation
 function validateMarriageDate() {
   marriageDateError.value = ''
-  
+
   if (!marriage_date.value) return
-  
+
   const marriageDate = new Date(marriage_date.value)
   const today = new Date()
-  
+
   // Check that the date is not in the future
   if (marriageDate > today) {
-    marriageDateError.value = 'La date de mariage ne peut pas être dans le futur.'
+    marriageDateError.value = 'Marriage date cannot be in the future.'
     return
   }
-  
+
   // Check against parent birth and death dates
   if (selectedHusband.value) {
     if (selectedHusband.value.birth_date) {
       const husbandBirth = new Date(selectedHusband.value.birth_date)
       if (marriageDate < husbandBirth) {
-        marriageDateError.value = 'La date de mariage ne peut pas être antérieure à la naissance du mari.'
+        marriageDateError.value = 'Marriage date cannot be before the husband\'s birth.'
         return
       }
     }
     if (selectedHusband.value.death_date) {
       const husbandDeath = new Date(selectedHusband.value.death_date)
       if (marriageDate > husbandDeath) {
-        marriageDateError.value = 'La date de mariage ne peut pas être postérieure au décès du mari.'
+        marriageDateError.value = 'Marriage date cannot be after the husband\'s death.'
         return
       }
     }
   }
-  
+
   if (selectedWife.value) {
     if (selectedWife.value.birth_date) {
       const wifeBirth = new Date(selectedWife.value.birth_date)
       if (marriageDate < wifeBirth) {
-        marriageDateError.value = 'La date de mariage ne peut pas être antérieure à la naissance de la femme.'
+        marriageDateError.value = 'Marriage date cannot be before the wife\'s birth.'
         return
       }
     }
     if (selectedWife.value.death_date) {
       const wifeDeath = new Date(selectedWife.value.death_date)
       if (marriageDate > wifeDeath) {
-        marriageDateError.value = 'La date de mariage ne peut pas être postérieure au décès de la femme.'
+        marriageDateError.value = 'Marriage date cannot be after the wife\'s death.'
         return
       }
     }
@@ -179,19 +179,19 @@ async function loadPersonDetails(type: 'husband' | 'wife', personId: string) {
     }
     const response = await personService.getPersonById(personId)
     const person = response.data
-    
+
     if (type === 'husband') {
       selectedHusband.value = person
     } else {
       selectedWife.value = person
     }
-    
+
     // Revalidate marriage date if already entered
     if (marriage_date.value) {
       validateMarriageDate()
     }
   } catch (error) {
-    console.error('Erreur lors du chargement des détails de la personne:', error)
+    console.error('Error loading person details:', error)
   }
 }
 
@@ -201,7 +201,7 @@ function openCreatePersonModal(type: 'husband' | 'wife') {
   showCreatePersonModal.value = true
 }
 
-// Fermer la modale
+// Close modal
 function closeCreatePersonModal() {
   showCreatePersonModal.value = false
 }
@@ -241,15 +241,15 @@ function handlePersonCreated(createdPerson: Person) {
     }
   }
 
-  // Fermer la modale
+  // Close modal
   closeCreatePersonModal()
-  
+
   // Show success message
-  success.value = `Personne "${createdPerson.first_name} ${createdPerson.last_name}" créée avec succès`
+  success.value = `Person "${createdPerson.first_name} ${createdPerson.last_name}" created successfully`
   setTimeout(() => { success.value = '' }, 3000)
 }
 
-// Gestion des enfants
+// Children management
 function addChild() {
   children.value.push({
     id: '',
@@ -265,7 +265,7 @@ async function onInputSearchChild() {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
-  
+
   searchTimeout = setTimeout(() => {
     searchPersons(queryChild.value, 'child')
   }, 300)
@@ -273,18 +273,18 @@ async function onInputSearchChild() {
 
 async function loadChildDetails(childId: string) {
   if (!childId) return
-  
+
   try {
     const response = await personService.getPersonById(childId)
     const person = response.data
-    
+
     // Update child label
     const childIndex = children.value.findIndex(child => child.id === childId)
     if (childIndex !== -1) {
       children.value[childIndex].label = `${person.first_name} ${person.last_name}`
     }
   } catch (error) {
-    console.error('Erreur lors du chargement des détails de l\'enfant:', error)
+    console.error('Error loading child details:', error)
   }
 }
 
@@ -314,26 +314,26 @@ const payload = computed<CreateFamily>(() => {
 
 // Validation functions
 function validateFormSubmission(): boolean {
-  // Validation de la date de mariage avant soumission
+  // Marriage date validation before submission
   validateMarriageDate()
   if (marriageDateError.value) {
     error.value = marriageDateError.value
     return false
   }
-  
-  // Validation minimale: au moins un parent
+
+  // Minimum validation: at least one parent
   if (!husbandId.value && !wifeId.value) {
-    error.value = 'Au moins un parent est requis.'
+    error.value = 'At least one parent is required.'
     return false
   }
-  
+
   return true
 }
 
 // Child creation logic
 async function createChildrenRelationships(familyId: string): Promise<void> {
   if (children.value.length === 0) return
-  
+
   for (const child of children.value) {
     try {
       await childService.createChild({
@@ -341,7 +341,7 @@ async function createChildrenRelationships(familyId: string): Promise<void> {
         child_id: child.id
       })
     } catch (childError: unknown) {
-      console.error(`Erreur lors de l'ajout de l'enfant ${child.label}:`, childError)
+      console.error(`Error adding child ${child.label}:`, childError)
       // Continue even if a child fails
     }
   }
@@ -350,7 +350,7 @@ async function createChildrenRelationships(familyId: string): Promise<void> {
 // Event creation logic
 async function createFamilyEvents(familyId: string): Promise<void> {
   if (events.value.length === 0) return
-  
+
   for (const event of events.value) {
     try {
       await eventService.createEvent({
@@ -361,7 +361,7 @@ async function createFamilyEvents(familyId: string): Promise<void> {
         description: event.description || null
       })
     } catch (eventError: unknown) {
-      console.error(`Erreur lors de l'ajout de l'événement ${event.type}:`, eventError)
+      console.error(`Error adding event ${event.type}:`, eventError)
       // Continue even if an event fails
     }
   }
@@ -371,16 +371,16 @@ async function createFamilyEvents(familyId: string): Promise<void> {
 function generateSuccessMessage(): string {
   const childCount = children.value.length
   const eventCount = events.value.length
-  let message = 'Famille créée'
-  
+  let message = 'Family created'
+
   if (childCount > 0) {
-    message += ` avec ${childCount} enfant${childCount > 1 ? 's' : ''}`
+    message += ` with ${childCount} child${childCount > 1 ? 'ren' : ''}`
   }
-  
+
   if (eventCount > 0) {
-    message += `${childCount > 0 ? ' et' : ' avec'} ${eventCount} événement${eventCount > 1 ? 's' : ''}`
+    message += `${childCount > 0 ? ' and' : ' with'} ${eventCount} event${eventCount > 1 ? 's' : ''}`
   }
-  
+
   return message + '.'
 }
 
@@ -409,27 +409,27 @@ async function submit() {
   error.value = ''
   success.value = ''
   marriageDateError.value = ''
-  
+
   if (!validateFormSubmission()) {
     submitting.value = false
     return
   }
-  
+
   submitting.value = true
-  
+
   try {
     const res = await familyService.createFamily(payload.value)
     const familyId = res.data.id
-    
+
     await createChildrenRelationships(familyId)
     await createFamilyEvents(familyId)
-    
+
     success.value = generateSuccessMessage()
     resetForm()
-    
+
   } catch (e: unknown) {
     const apiError = e as { response?: { data?: { detail?: string } } }
-    error.value = apiError.response?.data?.detail || 'Erreur lors de la création de la famille'
+    error.value = apiError.response?.data?.detail || 'Error creating family'
   } finally {
     submitting.value = false
   }
@@ -443,36 +443,36 @@ async function submit() {
       <div class="page-header">
         <div class="header-content">
           <div class="header-text">
-            <h2>👨‍👩‍👧‍👦 Créer une famille</h2>
-            <p>Créez une nouvelle famille en ajoutant les parents et les informations de mariage</p>
+            <h2>👨‍👩‍👧‍👦 Create a Family</h2>
+            <p>Create a new family by adding parents and marriage information</p>
           </div>
           <button @click="navigateToHome" class="back-to-home-btn" data-cy="back-to-home">
-            🏠 Retour à l'accueil
+            🏠 Go back to home
           </button>
         </div>
       </div>
-      
+
       <form @submit.prevent="submit" class="family-form">
         <!-- Parents Section -->
         <div class="form-section">
           <div class="section-header">
             <h3>👫 Parents</h3>
-            <p>Ajoutez un ou deux parents à la famille</p>
+            <p>Add one or two parents to the family</p>
           </div>
-          
+
           <div class="parents-grid">
             <!-- Mari -->
             <div class="parent-card">
               <div class="parent-header">
-                <h4>👨 Mari</h4>
-                <span class="required-badge">Optionnel</span>
+                <h4>👨 Husband</h4>
+                <span class="required-badge">Optional</span>
               </div>
-              
+
               <div class="search-container">
                 <input
                   v-model="queryHusband"
                   type="text"
-                  placeholder="Rechercher un mari existant..."
+                  placeholder="Search for existing husband..."
                   class="search-input"
                   data-cy="search-husband"
                   @input="onInputSearch('husband')"
@@ -483,7 +483,7 @@ async function submit() {
                   data-cy="select-husband"
                   @change="loadPersonDetails('husband', husbandId)"
                 >
-                  <option value="">— Aucun —</option>
+                  <option value="">— None —</option>
                   <option
                     v-for="option in husbandOptions"
                     :key="option.id"
@@ -498,10 +498,10 @@ async function submit() {
                   data-cy="create-husband-btn"
                   @click="openCreatePersonModal('husband')"
                 >
-                  ➕ Créer
+                  ➕ Create
                 </button>
               </div>
-              
+
               <!-- Aperçu du mari sélectionné -->
               <div v-if="selectedHusband" class="person-preview" data-cy="preview-husband">
                 <div class="person-info">
@@ -509,12 +509,12 @@ async function submit() {
                   <span class="person-sex">{{ selectedHusband.sex === 'M' ? '♂' : selectedHusband.sex === 'F' ? '♀' : '⚥' }}</span>
                 </div>
                 <div v-if="selectedHusband.birth_date || selectedHusband.death_date" class="person-dates">
-                  <span v-if="selectedHusband.birth_date">Né: {{ selectedHusband.birth_date }}</span>
-                  <span v-if="selectedHusband.death_date">Décédé: {{ selectedHusband.death_date }}</span>
+                  <span v-if="selectedHusband.birth_date">Born: {{ selectedHusband.birth_date }}</span>
+                  <span v-if="selectedHusband.death_date">Died: {{ selectedHusband.death_date }}</span>
                 </div>
                 <div v-if="selectedHusband.birth_place || selectedHusband.death_place" class="person-places">
-                  <span v-if="selectedHusband.birth_place">Lieu de naissance: {{ selectedHusband.birth_place }}</span>
-                  <span v-if="selectedHusband.death_place">Lieu de décès: {{ selectedHusband.death_place }}</span>
+                  <span v-if="selectedHusband.birth_place">Place of birth: {{ selectedHusband.birth_place }}</span>
+                  <span v-if="selectedHusband.death_place">Place of death: {{ selectedHusband.death_place }}</span>
                 </div>
                 <div v-if="selectedHusband.notes" class="person-notes">
                   Notes: {{ selectedHusband.notes }}
@@ -525,15 +525,15 @@ async function submit() {
             <!-- Femme -->
             <div class="parent-card">
               <div class="parent-header">
-                <h4>👩 Femme</h4>
-                <span class="required-badge">Optionnel</span>
+                <h4>👩 Wife</h4>
+                <span class="required-badge">Optional</span>
               </div>
-              
+
               <div class="search-container">
                 <input
                   v-model="queryWife"
                   type="text"
-                  placeholder="Rechercher une femme existante..."
+                  placeholder="Search for existing wife..."
                   class="search-input"
                   data-cy="search-wife"
                   @input="onInputSearch('wife')"
@@ -544,7 +544,7 @@ async function submit() {
                   data-cy="select-wife"
                   @change="loadPersonDetails('wife', wifeId)"
                 >
-                  <option value="">— Aucun —</option>
+                  <option value="">— None —</option>
                   <option
                     v-for="option in wifeOptions"
                     :key="option.id"
@@ -559,10 +559,10 @@ async function submit() {
                   data-cy="create-wife-btn"
                   @click="openCreatePersonModal('wife')"
                 >
-                  ➕ Créer
+                  ➕ Create
                 </button>
               </div>
-              
+
               <!-- Aperçu de la femme sélectionnée -->
               <div v-if="selectedWife" class="person-preview" data-cy="preview-wife">
                 <div class="person-info">
@@ -570,12 +570,12 @@ async function submit() {
                   <span class="person-sex">{{ selectedWife.sex === 'M' ? '♂' : selectedWife.sex === 'F' ? '♀' : '⚥' }}</span>
                 </div>
                 <div v-if="selectedWife.birth_date || selectedWife.death_date" class="person-dates">
-                  <span v-if="selectedWife.birth_date">Née: {{ selectedWife.birth_date }}</span>
-                  <span v-if="selectedWife.death_date">Décédée: {{ selectedWife.death_date }}</span>
+                  <span v-if="selectedWife.birth_date">Born: {{ selectedWife.birth_date }}</span>
+                  <span v-if="selectedWife.death_date">Died: {{ selectedWife.death_date }}</span>
                 </div>
                 <div v-if="selectedWife.birth_place || selectedWife.death_place" class="person-places">
-                  <span v-if="selectedWife.birth_place">Lieu de naissance: {{ selectedWife.birth_place }}</span>
-                  <span v-if="selectedWife.death_place">Lieu de décès: {{ selectedWife.death_place }}</span>
+                  <span v-if="selectedWife.birth_place">Place of birth: {{ selectedWife.birth_place }}</span>
+                  <span v-if="selectedWife.death_place">Place of death: {{ selectedWife.death_place }}</span>
                 </div>
                 <div v-if="selectedWife.notes" class="person-notes">
                   Notes: {{ selectedWife.notes }}
@@ -588,13 +588,13 @@ async function submit() {
         <!-- Informations de mariage Section -->
         <div class="form-section">
           <div class="section-header">
-            <h3>💒 Informations de mariage</h3>
-            <p>Ajoutez les détails du mariage (optionnel)</p>
+            <h3>💒 Marriage information</h3>
+            <p>Add marriage details (optional)</p>
           </div>
-          
+
           <div class="marriage-fields">
             <div class="form-group">
-              <label for="marriage_date">📅 Date de mariage</label>
+              <label for="marriage_date">📅 Date of marriage</label>
               <input
                 id="marriage_date"
                 v-model="marriage_date"
@@ -605,7 +605,7 @@ async function submit() {
               <div v-if="marriageDateError" class="field-error">{{ marriageDateError }}</div>
             </div>
             <div class="form-group">
-              <label for="marriage_place">📍 Lieu de mariage</label>
+              <label for="marriage_place">📍 Place of marriage</label>
               <input
                 id="marriage_place"
                 v-model="marriage_place"
@@ -620,10 +620,10 @@ async function submit() {
         <!-- Événements Section -->
         <div class="form-section">
           <div class="section-header">
-            <h3>📅 Événements</h3>
-            <p>Ajoutez des événements liés à cette famille</p>
+            <h3>📅 Events</h3>
+            <p>Add events linked to the family</p>
           </div>
-          
+
           <div class="events-section">
             <button
               type="button"
@@ -631,27 +631,27 @@ async function submit() {
               data-cy="add-event-btn"
               @click="addEvent"
             >
-              ➕ Ajouter un événement
+              ➕ Add an event
             </button>
-            
+
             <div v-for="(event, index) in events" :key="index" class="event-form" :data-cy="`event-${index}`">
               <div class="event-header">
-                <h4>Événement {{ index + 1 }}</h4>
+                <h4>Event {{ index + 1 }}</h4>
                 <button
                   type="button"
                   class="remove-event-btn"
                   :data-cy="`remove-event-${index}`"
                   @click="removeEvent(index)"
                 >
-                  🗑️ Supprimer
+                  🗑️ Delete
                 </button>
               </div>
-              
+
               <div class="event-fields">
                 <div class="form-group">
-                  <label>Type d'événement</label>
+                  <label>Type of event</label>
                   <select v-model="event.type" :data-cy="`event-type-${index}`">
-                    <option value="">Sélectionner un type</option>
+                    <option value="">Select a type</option>
                     <option
                       v-for="eventType in eventTypes"
                       :key="eventType.value"
@@ -661,7 +661,7 @@ async function submit() {
                     </option>
                   </select>
                 </div>
-                
+
                 <div class="form-group">
                   <label>Date</label>
                   <input
@@ -670,9 +670,9 @@ async function submit() {
                     :data-cy="`event-date-${index}`"
                   />
                 </div>
-                
+
                 <div class="form-group">
-                  <label>Lieu</label>
+                  <label>Place</label>
                   <input
                     v-model="event.place"
                     type="text"
@@ -680,12 +680,12 @@ async function submit() {
                     :data-cy="`event-place-${index}`"
                   />
                 </div>
-                
+
                 <div class="form-group">
                   <label>Description</label>
                   <textarea
                     v-model="event.description"
-                    placeholder="Description de l'événement..."
+                    placeholder="Event description..."
                     :data-cy="`event-description-${index}`"
                   ></textarea>
                 </div>
@@ -697,10 +697,10 @@ async function submit() {
         <!-- Enfants Section -->
         <div class="form-section">
           <div class="section-header">
-            <h3>👶 Enfants</h3>
-            <p>Ajoutez des enfants à cette famille</p>
+            <h3>👶 Children</h3>
+            <p>Add children to the family</p>
           </div>
-          
+
           <div class="children-section">
             <button
               type="button"
@@ -708,28 +708,28 @@ async function submit() {
               data-cy="add-child-button"
               @click="addChild"
             >
-              ➕ Ajouter un enfant
+              ➕ Add a child
             </button>
-            
+
             <div v-for="(child, index) in children" :key="index" class="child-form" data-cy="children-list">
               <div class="child-header">
-                <h4>Enfant {{ index + 1 }}</h4>
+                <h4>Child {{ index + 1 }}</h4>
                 <button
                   type="button"
                   class="remove-child-btn"
                   data-cy="remove-child-btn"
                   @click="removeChild(index)"
                 >
-                  🗑️ Supprimer
+                  🗑️ Delete
                 </button>
               </div>
-              
+
               <div class="child-fields">
                 <div class="search-container">
                   <input
                     v-model="queryChild"
                     type="text"
-                    placeholder="Rechercher un enfant existant..."
+                    placeholder="Search an existing child..."
                     class="search-input"
                     data-cy="search-child"
                     @input="onInputSearchChild"
@@ -740,7 +740,7 @@ async function submit() {
                     data-cy="select-child"
                     @change="loadChildDetails(child.id)"
                   >
-                    <option value="">— Aucun —</option>
+                    <option value="">— None —</option>
                     <option
                       v-for="option in childOptions"
                       :key="option.id"
@@ -755,7 +755,7 @@ async function submit() {
                     data-cy="create-child-button"
                     @click="openCreatePersonModal('child')"
                   >
-                    ➕ Créer
+                    ➕ Create
                   </button>
                 </div>
               </div>
@@ -767,15 +767,15 @@ async function submit() {
         <div class="form-section">
           <div class="section-header">
             <h3>📝 Notes</h3>
-            <p>Ajoutez des notes sur cette famille</p>
+            <p>Add notes about this family</p>
           </div>
-          
+
           <div class="form-group">
-            <label for="notes">Notes sur la famille</label>
+            <label for="notes">Family Notes</label>
             <textarea
               id="notes"
               v-model="notes"
-              placeholder="Notes sur la famille, informations supplémentaires..."
+              placeholder="Family notes, additional information..."
               data-cy="family-notes"
             ></textarea>
           </div>
@@ -790,7 +790,7 @@ async function submit() {
             data-cy="submit-family"
           >
             <span v-if="submitting" class="loading-spinner"></span>
-            {{ submitting ? 'Création en cours...' : '✨ Créer la famille' }}
+            {{ submitting ? 'Creating...' : '✨ Create Family' }}
           </button>
         </div>
       </form>
@@ -799,15 +799,15 @@ async function submit() {
       <div v-if="error" class="error-message">
         <div class="error-icon">⚠️</div>
         <div class="error-content">
-          <h4>Erreur</h4>
+          <h4>Error</h4>
           <p>{{ error }}</p>
         </div>
       </div>
-      
+
       <div v-if="success" class="success-message">
         <div class="success-icon">✅</div>
         <div class="success-content">
-          <h4>Succès</h4>
+          <h4>Success</h4>
           <p>{{ success }}</p>
         </div>
       </div>
@@ -878,7 +878,7 @@ async function submit() {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .header-text {
     margin-bottom: 1rem;
   }
@@ -1306,28 +1306,28 @@ async function submit() {
   .create-family {
     padding: 0 1rem;
   }
-  
+
   .page-header h2 {
     font-size: 2rem;
   }
-  
+
   .parents-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .marriage-fields {
     grid-template-columns: 1fr;
   }
-  
+
   .event-fields {
     grid-template-columns: 1fr;
   }
-  
+
   .form-section {
     padding: 1.5rem;
   }
-  
+
   .form-actions {
     padding: 1.5rem;
   }
