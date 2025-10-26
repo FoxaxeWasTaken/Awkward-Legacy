@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import WelcomeView from '../views/WelcomeView.vue'
+import WelcomeView from '@/views/WelcomeView.vue'
 
 describe('WelcomeView.vue', () => {
   let mockRouter: ReturnType<typeof createRouter>
@@ -32,7 +32,7 @@ describe('WelcomeView.vue', () => {
     // Check card content
     expect(wrapper.text()).toContain('Upload Family File')
     expect(wrapper.text()).toContain('Search & Manage Families')
-    expect(wrapper.text()).toContain('Créer une famille')
+    expect(wrapper.text()).toContain('Create a family')
   })
 
   it('has navigation functions available', () => {
@@ -41,11 +41,16 @@ describe('WelcomeView.vue', () => {
         plugins: [mockRouter],
       },
     })
+    const vm = wrapper.vm as unknown as {
+      navigateToUpload: () => void
+      navigateToManage: () => void
+      navigateToCreateFamily: () => void
+    }
 
     // Check that navigation functions exist
-    expect(typeof wrapper.vm.navigateToUpload).toBe('function')
-    expect(typeof wrapper.vm.navigateToManage).toBe('function')
-    expect(typeof wrapper.vm.navigateToCreateFamily).toBe('function')
+    expect(typeof vm.navigateToUpload).toBe('function')
+    expect(typeof vm.navigateToManage).toBe('function')
+    expect(typeof vm.navigateToCreateFamily).toBe('function')
   })
 
   it('calls navigation functions without errors', async () => {
@@ -54,11 +59,16 @@ describe('WelcomeView.vue', () => {
         plugins: [mockRouter],
       },
     })
+    const vm = wrapper.vm as unknown as {
+      navigateToUpload: () => void
+      navigateToManage: () => void
+      navigateToCreateFamily: () => void
+    }
 
     // Check that functions can be called without errors
-    expect(() => wrapper.vm.navigateToUpload()).not.toThrow()
-    expect(() => wrapper.vm.navigateToManage()).not.toThrow()
-    expect(() => wrapper.vm.navigateToCreateFamily()).not.toThrow()
+    expect(() => vm.navigateToUpload()).not.toThrow()
+    expect(() => vm.navigateToManage()).not.toThrow()
+    expect(() => vm.navigateToCreateFamily()).not.toThrow()
   })
 
   it('displays correct content for create family card', () => {
@@ -69,12 +79,12 @@ describe('WelcomeView.vue', () => {
     })
 
     const createFamilyCard = wrapper.find('.create-family-card')
-    expect(createFamilyCard.text()).toContain('Créer une famille')
-    expect(createFamilyCard.text()).toContain('Créez une nouvelle famille en ajoutant les parents et les informations de mariage')
-    expect(createFamilyCard.text()).toContain('Ajout de parents')
-    expect(createFamilyCard.text()).toContain('Informations de mariage')
-    expect(createFamilyCard.text()).toContain('Gestion des enfants')
-    expect(createFamilyCard.text()).toContain('Événements familiaux')
+    expect(createFamilyCard.text()).toContain('Create a family')
+    expect(createFamilyCard.text()).toContain('Create a new family by adding parents, marriage information and more')
+    expect(createFamilyCard.text()).toContain('Adding parents')
+    expect(createFamilyCard.text()).toContain('Marriage information')
+    expect(createFamilyCard.text()).toContain('Children handling')
+    expect(createFamilyCard.text()).toContain('Family events')
   })
 
   it('applies correct CSS classes to create family card', () => {

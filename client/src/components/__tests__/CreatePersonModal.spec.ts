@@ -58,7 +58,7 @@ describe('CreatePersonModal', () => {
 
       expect(wrapper.find('.modal-overlay').exists()).toBe(true)
       expect(wrapper.find('.modal').exists()).toBe(true)
-      expect(wrapper.find('h3').text()).toBe('Créer une nouvelle personne')
+      expect(wrapper.find('h3').text()).toBe('Create a New Person')
     })
 
     it('should render all form fields', () => {
@@ -94,11 +94,11 @@ describe('CreatePersonModal', () => {
       const options = sexSelect.findAll('option')
 
       expect(options).toHaveLength(3)
-      expect(options[0].text()).toBe('Non défini')
+      expect(options[0].text()).toBe('Undefined')
       expect(options[0].attributes('value')).toBe('U')
-      expect(options[1].text()).toBe('Homme')
+      expect(options[1].text()).toBe('Male')
       expect(options[1].attributes('value')).toBe('M')
-      expect(options[2].text()).toBe('Femme')
+      expect(options[2].text()).toBe('Female')
       expect(options[2].attributes('value')).toBe('F')
     })
   })
@@ -141,8 +141,7 @@ describe('CreatePersonModal', () => {
         props: defaultProps
       })
 
-      const cancelButton = wrapper.findAll('button').find(btn => btn.text() === 'Annuler')
-      await cancelButton?.trigger('click')
+      await wrapper.find('[data-cy="cancel-person-creation"]').trigger('click')
 
       expect(wrapper.emitted('close')).toBeTruthy()
       expect(wrapper.emitted('close')).toHaveLength(1)
@@ -173,7 +172,7 @@ describe('CreatePersonModal', () => {
       await wrapper.find('form').trigger('submit.prevent')
 
       expect(wrapper.find('.field-error').exists()).toBe(true)
-      expect(wrapper.find('.field-error').text()).toBe('Le prénom et le nom sont obligatoires')
+      expect(wrapper.find('.field-error').text()).toBe('First name and last name are required')
     })
 
     it('should show error when submitting with only first name', async () => {
@@ -185,7 +184,7 @@ describe('CreatePersonModal', () => {
       await wrapper.find('form').trigger('submit.prevent')
 
       expect(wrapper.find('.field-error').exists()).toBe(true)
-      expect(wrapper.find('.field-error').text()).toBe('Le prénom et le nom sont obligatoires')
+      expect(wrapper.find('.field-error').text()).toBe('First name and last name are required')
     })
 
     it('should show error when submitting with only last name', async () => {
@@ -197,7 +196,7 @@ describe('CreatePersonModal', () => {
       await wrapper.find('form').trigger('submit.prevent')
 
       expect(wrapper.find('.field-error').exists()).toBe(true)
-      expect(wrapper.find('.field-error').text()).toBe('Le prénom et le nom sont obligatoires')
+      expect(wrapper.find('.field-error').text()).toBe('First name and last name are required')
     })
 
     it('should not show error when both required fields are filled', async () => {
