@@ -4,7 +4,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci
+RUN npm ci && \
+    npm install --no-save @rollup/rollup-linux-x64-musl
 
 COPY . .
 
@@ -29,7 +30,7 @@ RUN chown -R webuser:webuser /app/www && \
 
 ENV NGINX_ENVSUBST_TEMPLATE_DIR=/etc/nginx/templates
 ENV NGINX_ENVSUBST_TEMPLATE_SUFFIX=.template
-ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d
+ENV NGINX_ENVSUBST_TEMPLATE_DIR=/etc/nginx/conf.d
 ENV PORT=80
 
 EXPOSE 80
@@ -42,4 +43,3 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 USER webuser
 
 CMD ["nginx", "-g", "daemon off;"]
-
