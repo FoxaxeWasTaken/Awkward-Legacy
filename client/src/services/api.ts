@@ -14,6 +14,34 @@ import type {
 class ApiService {
   private readonly api: AxiosInstance
 
+  // Interceptor helpers extracted to reduce constructor complexity
+  private readonly getAuthToken = (): string | null =>
+    (typeof window !== 'undefined' ? localStorage.getItem('token') : null)
+
+  private readonly onRequest = (config: InternalAxiosRequestConfig) => {
+    const token = this.getAuthToken()
+    if (config.headers && token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
+    return config
+  }
+
+  private readonly onRequestError = (error: unknown) => {
+    console.error('API Request Error:', error)
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)))
+  }
+
+  private readonly onResponse = (response: AxiosResponse) => {
+    console.log(`API Response: ${response.status} ${response.config.url}`)
+    return response
+  }
+
+  private readonly onResponseError = (error: AxiosError | unknown) => {
+    console.error('API Response Error:', (error as AxiosError).response?.data || (error as Error).message)
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)))
+  }
+
   constructor() {
     this.api = axios.create({
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
@@ -23,33 +51,11 @@ class ApiService {
       },
     })
 
-    // Add request interceptor for logging
-    this.api.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-        if (config.headers && token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
-        return config
-      },
-      (error: unknown) => {
-        console.error('API Request Error:', error)
-        return Promise.reject(error instanceof Error ? error : new Error(String(error)))
-      },
-    )
+    // Add request interceptor for logging and auth header
+    this.api.interceptors.request.use(this.onRequest, this.onRequestError)
 
     // Add response interceptor for error handling
-    this.api.interceptors.response.use(
-      (response) => {
-        console.log(`API Response: ${response.status} ${response.config.url}`)
-        return response
-      },
-      (error: AxiosError | unknown) => {
-        console.error('API Response Error:', (error as AxiosError).response?.data || (error as Error).message)
-        return Promise.reject(error instanceof Error ? error : new Error(String(error)))
-      },
-    )
+    this.api.interceptors.response.use(this.onResponse, this.onResponseError)
   }
 
   // Family search methods
