@@ -143,6 +143,16 @@ class ApiService {
     return response.data
   }
 
+  async downloadAllData(): Promise<Blob> {
+    const response: AxiosResponse<Blob> = await this.api.get(
+      '/api/v1/files/export',
+      {
+        responseType: 'blob',
+      }
+    )
+    return response.data
+  }
+
   // Helper methods for family management
   private async fetchFamilyDetails(familyId: string): Promise<FamilyDetail> {
     const detailResponse: AxiosResponse<FamilyDetail> = await this.api.get(

@@ -17,7 +17,12 @@ const emit = defineEmits<{
   mouseleave: []
 }>()
 
-const fullName = computed(() => `${props.child.first_name} ${props.child.last_name}`)
+const fullName = computed(() => {
+  const firstName = props.child.first_name || ''
+  const lastName = props.child.last_name || ''
+  const name = `${firstName} ${lastName}`.trim()
+  return name || 'Unknown'
+})
 
 const dateRange = computed(() => getDateRange(props.child.birth_date, props.child.death_date))
 

@@ -221,9 +221,21 @@ onMounted(() => {
       <button @click="loadFamilies" class="retry-button">Try Again</button>
     </div>
 
+    <!-- No Data State -->
+    <div v-else-if="families.length === 0" class="no-data-state">
+      <div class="no-data-icon">📊</div>
+      <h3>No Families Found</h3>
+      <p>There are no families in the database yet.</p>
+      <div class="no-data-actions">
+        <button @click="router.push('/upload')" class="upload-button">
+          Upload Family File
+        </button>
+      </div>
+    </div>
+
     <!-- Data Grid -->
     <FamilyTable
-      v-else-if="families.length > 0"
+      v-else
       :families="paginatedFamilies"
       :filtered-count="filteredFamilies.length"
       :total-count="totalItems"
@@ -242,18 +254,6 @@ onMounted(() => {
       :total-pages="totalPages"
       @go-to-page="goToPage"
     />
-
-    <!-- No Data State -->
-    <div v-else class="no-data-state">
-      <div class="no-data-icon">📊</div>
-      <h3>No Families Found</h3>
-      <p>There are no families in the database yet.</p>
-      <div class="no-data-actions">
-        <button @click="router.push('/upload')" class="upload-button">
-          Upload Family File
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 

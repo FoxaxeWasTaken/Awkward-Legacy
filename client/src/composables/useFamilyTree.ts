@@ -24,13 +24,27 @@ export function useFamilyTree(familyId: Ref<string> | string) {
       familyData.value = data
 
       const parts = []
-      if (data.husband) {
-        parts.push(`${data.husband.first_name} ${data.husband.last_name}`)
+      if (data.husband && (data.husband.first_name || data.husband.last_name)) {
+        const husbandName = `${data.husband.first_name || ''} ${data.husband.last_name || ''}`.trim()
+        if (husbandName) {
+          parts.push(husbandName)
+        }
       }
-      if (data.wife) {
-        parts.push(`${data.wife.first_name} ${data.wife.last_name}`)
+      if (data.wife && (data.wife.first_name || data.wife.last_name)) {
+        const wifeName = `${data.wife.first_name || ''} ${data.wife.last_name || ''}`.trim()
+        if (wifeName) {
+          parts.push(wifeName)
+        }
       }
-      familyTitle.value = parts.length > 0 ? parts.join(' & ') : 'Family Tree'
+      
+      // Only add " & " if there are exactly 2 people
+      if (parts.length === 2) {
+        familyTitle.value = parts.join(' & ')
+      } else if (parts.length === 1) {
+        familyTitle.value = parts[0]
+      } else {
+        familyTitle.value = 'Family Tree'
+      }
       await loadCrossFamilyChildren(data)
     } catch (err: unknown) {
       console.error('Error loading family data:', err)

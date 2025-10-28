@@ -120,7 +120,13 @@ defineEmits<{
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.9rem;
   transition: background-color 0.2s;
+  min-width: 100px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-button:hover {
@@ -135,7 +141,13 @@ defineEmits<{
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.9rem;
   transition: background-color 0.2s;
+  min-width: 100px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .clear-button:hover {
