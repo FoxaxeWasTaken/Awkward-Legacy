@@ -141,10 +141,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { personService } from '@/services/personService'
+import type { Person } from '@/types/family'
 
 interface Props {
   show: boolean
-  parentType: 'husband' | 'wife'
+  parentType: 'husband' | 'wife' | 'child'
 }
 
 const _props = defineProps<Props>()
@@ -156,7 +157,7 @@ type ApiError = {
 
 const emit = defineEmits<{
   close: []
-  personCreated: [person: unknown]
+  personCreated: [person: Person]
 }>()
 
 const newPerson = ref({

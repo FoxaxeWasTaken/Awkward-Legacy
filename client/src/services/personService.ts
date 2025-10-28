@@ -1,25 +1,27 @@
 import api from './api'
+import type { AxiosResponse } from 'axios'
 import type { CreatePerson } from '@/types/person.ts'
+import type { Person } from '@/types/family'
 
 export const personService = {
-  createPerson(data: CreatePerson) {
-    return api.post('/api/v1/persons', data)
+  createPerson(data: CreatePerson): Promise<AxiosResponse<Person>> {
+    return api.post<Person>('/api/v1/persons', data)
   },
 
-  getAllPersons(params?: { page?: number; limit?: number }) {
-    return api.get('/api/v1/persons', { params })
+  getAllPersons(params?: { page?: number; limit?: number }): Promise<AxiosResponse<Person[]>> {
+    return api.get<Person[]>('/api/v1/persons', { params })
   },
 
-  searchPersonsByName(name: string, params?: { page?: number; limit?: number }) {
-    return api.get('/api/v1/persons/search', { params: { name, ...params } })
+  searchPersonsByName(name: string, params?: { page?: number; limit?: number }): Promise<AxiosResponse<Person[]>> {
+    return api.get<Person[]>('/api/v1/persons/search', { params: { name, ...params } })
   },
 
-  getPersonsByExactName(name: string) {
-    return api.get('/api/v1/persons/by-name', { params: { name } })
+  getPersonsByExactName(name: string): Promise<AxiosResponse<Person[]>> {
+    return api.get<Person[]>('/api/v1/persons/by-name', { params: { name } })
   },
 
-  getPersonById(id: string) {
-    return api.get(`/api/v1/persons/${id}`)
+  getPersonById(id: string): Promise<AxiosResponse<Person>> {
+    return api.get<Person>(`/api/v1/persons/${id}`)
   },
 
   updatePerson(id: string, data: CreatePerson) {

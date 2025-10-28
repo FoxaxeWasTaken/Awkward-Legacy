@@ -1,4 +1,6 @@
 import api from './api'
+import type { AxiosResponse } from 'axios'
+import type { FamilyRead } from '@/types/family'
 
 export interface CreateFamily {
   husband_id?: string
@@ -9,32 +11,32 @@ export interface CreateFamily {
 }
 
 export const familyService = {
-  createFamily(data: CreateFamily) {
-    return api.post('/api/v1/families', data)
+  createFamily(data: CreateFamily): Promise<AxiosResponse<FamilyRead>> {
+    return api.post<FamilyRead>('/api/v1/families', data)
   },
 
-  getAllFamilies(params?: { skip?: number; limit?: number }) {
-    return api.get('/api/v1/families', { params })
+  getAllFamilies(params?: { skip?: number; limit?: number }): Promise<AxiosResponse<FamilyRead[]>> {
+    return api.get<FamilyRead[]>('/api/v1/families', { params })
   },
 
-  getFamilyById(id: string) {
-    return api.get(`/api/v1/families/${id}`)
+  getFamilyById(id: string): Promise<AxiosResponse<FamilyRead>> {
+    return api.get<FamilyRead>(`/api/v1/families/${id}`)
   },
 
-  getFamiliesByHusband(husbandId: string) {
-    return api.get(`/api/v1/families/by-husband/${husbandId}`)
+  getFamiliesByHusband(husbandId: string): Promise<AxiosResponse<FamilyRead[]>> {
+    return api.get<FamilyRead[]>(`/api/v1/families/by-husband/${husbandId}`)
   },
 
-  getFamiliesByWife(wifeId: string) {
-    return api.get(`/api/v1/families/by-wife/${wifeId}`)
+  getFamiliesByWife(wifeId: string): Promise<AxiosResponse<FamilyRead[]>> {
+    return api.get<FamilyRead[]>(`/api/v1/families/by-wife/${wifeId}`)
   },
 
-  getFamiliesBySpouse(spouseId: string) {
-    return api.get(`/api/v1/families/by-spouse/${spouseId}`)
+  getFamiliesBySpouse(spouseId: string): Promise<AxiosResponse<FamilyRead[]>> {
+    return api.get<FamilyRead[]>(`/api/v1/families/by-spouse/${spouseId}`)
   },
 
-  updateFamily(id: string, data: Partial<CreateFamily>) {
-    return api.patch(`/api/v1/families/${id}`, data)
+  updateFamily(id: string, data: Partial<CreateFamily>): Promise<AxiosResponse<FamilyRead>> {
+    return api.patch<FamilyRead>(`/api/v1/families/${id}`, data)
   },
 
   deleteFamily(id: string) {

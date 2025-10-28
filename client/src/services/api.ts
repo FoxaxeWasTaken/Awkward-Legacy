@@ -1,6 +1,6 @@
 // typescript
-import axios from 'axios'
-import type { AxiosInstance, AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios'
+import axios, { type InternalAxiosRequestConfig } from 'axios'
+import type { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios'
 import type {
   FamilySearchResult,
   FamilyDetailResult,
@@ -25,7 +25,11 @@ class ApiService {
 
     // Add request interceptor for logging
     this.api.interceptors.request.use(
-      (config: AxiosRequestConfig) => {
+      (config: InternalAxiosRequestConfig) => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        if (config.headers && token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
         console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
         return config
       },

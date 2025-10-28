@@ -61,7 +61,7 @@ const showWifeDropdown = ref(false)
 const showChildDropdown = ref(false)
 
 // Debounce pour la recherche
-let searchTimeout: NodeJS.Timeout | null = null
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 async function searchPersons(query: string, type: 'husband' | 'wife' | 'child') {
   if (!query.trim()) {
@@ -250,7 +250,7 @@ async function loadPersonDetails(type: 'husband' | 'wife', personId: string) {
 }
 
 // Open person creation modal
-function openCreatePersonModal(type: 'husband' | 'wife') {
+function openCreatePersonModal(type: 'husband' | 'wife' | 'child') {
   currentParentType.value = type
   showCreatePersonModal.value = true
 }
