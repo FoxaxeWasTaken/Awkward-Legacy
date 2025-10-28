@@ -45,6 +45,8 @@ export interface FamilySearchResult {
   id: string
   husband_name?: string
   wife_name?: string
+  husband_sex?: 'M' | 'F' | 'U'
+  wife_sex?: 'M' | 'F' | 'U'
   marriage_date?: string
   marriage_place?: string
   children_count: number

@@ -112,6 +112,16 @@ class FamilyCRUD:
             wife_name = f"{family.wife.first_name} {family.wife.last_name}".strip()
         return husband_name, wife_name
 
+    def _get_spouse_sex(self, family: Family) -> tuple[Optional[str], Optional[str]]:
+        """Get husband and wife sex from family."""
+        husband_sex = None
+        wife_sex = None
+        if family.husband:
+            husband_sex = family.husband.sex
+        if family.wife:
+            wife_sex = family.wife.sex
+        return husband_sex, wife_sex
+
     def _create_family_summary(
         self, husband_name: Optional[str], wife_name: Optional[str], marriage_date
     ) -> str:
@@ -223,6 +233,7 @@ class FamilyCRUD:
         results = []
         for family in families:
             husband_name, wife_name = self._get_spouse_names(family)
+            husband_sex, wife_sex = self._get_spouse_sex(family)
             summary = self._create_family_summary(
                 husband_name, wife_name, family.marriage_date
             )
@@ -232,6 +243,8 @@ class FamilyCRUD:
                     id=family.id,
                     husband_name=husband_name,
                     wife_name=wife_name,
+                    husband_sex=husband_sex,
+                    wife_sex=wife_sex,
                     marriage_date=family.marriage_date,
                     marriage_place=family.marriage_place,
                     children_count=len(family.children),
