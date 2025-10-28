@@ -35,13 +35,13 @@ def normalize_db_json(db_json: dict) -> dict:
     extended_pages = _build_extended_pages_list(db_json)
 
     return {
-        "persons": persons, 
-        "families": families, 
+        "persons": persons,
+        "families": families,
         "events": [],
         "notes": notes,
         "extended_pages": extended_pages,
         "database_notes": None,  # Could be enhanced later
-        "raw_header": {"gwplus": True, "encoding": "utf-8"}
+        "raw_header": {"gwplus": True, "encoding": "utf-8"},
     }
 
 
@@ -64,7 +64,7 @@ def _build_events_by_person(db_json: dict) -> Dict[str, list]:
             person_id = str(person_id)
             if person_id not in events_by_person:
                 events_by_person[person_id] = []
-            
+
             # Convert event to GeneWeb format
             event_data = {
                 "type": event.get("type", ""),
@@ -72,14 +72,18 @@ def _build_events_by_person(db_json: dict) -> Dict[str, list]:
                 "place": event.get("place", ""),
                 "description": event.get("description", ""),
             }
-            
+
             # Create raw event string for GeneWeb format
             raw_parts = []
             if event_data["type"]:
                 raw_parts.append(f"#{event_data['type'].lower()}")
             if event_data["date"]:
                 # Convert date to string if it's a date object
-                date_str = str(event_data["date"]) if hasattr(event_data["date"], 'strftime') else event_data["date"]
+                date_str = (
+                    str(event_data["date"])
+                    if hasattr(event_data["date"], "strftime")
+                    else event_data["date"]
+                )
                 raw_parts.append(date_str)
             if event_data["place"]:
                 raw_parts.append(f"#p {event_data['place']}")
@@ -88,14 +92,14 @@ def _build_events_by_person(db_json: dict) -> Dict[str, list]:
 
             event_data["raw"] = " ".join(raw_parts)
             events_by_person[person_id].append(event_data)
-    
+
     return events_by_person
 
 
 def _build_persons_list(db_json: dict) -> list:
     """Build persons list from database JSON."""
     persons = []
-    
+
     for p in db_json.get("persons", []):
         person_id = str(p.get("id"))
         raw = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
@@ -127,14 +131,18 @@ def _build_persons_list(db_json: dict) -> list:
                 "place": event.get("place", ""),
                 "description": event.get("description", ""),
             }
-            
+
             # Create raw event string for GeneWeb format
             raw_parts = []
             if event_data["type"]:
                 raw_parts.append(f"#{event_data['type'].lower()}")
             if event_data["date"]:
                 # Convert date to string if it's a date object
-                date_str = str(event_data["date"]) if hasattr(event_data["date"], 'strftime') else event_data["date"]
+                date_str = (
+                    str(event_data["date"])
+                    if hasattr(event_data["date"], "strftime")
+                    else event_data["date"]
+                )
                 raw_parts.append(date_str)
             if event_data["place"]:
                 raw_parts.append(f"#p {event_data['place']}")
@@ -296,14 +304,16 @@ def _build_notes_list(db_json: dict, person_lookup: Dict[str, str]) -> list:
     for p in db_json.get("persons", []):
         person_id = str(p.get("id"))
         person_notes = p.get("notes")
-        
+
         if person_notes and person_notes.strip() and person_id in person_lookup:
-            notes.append({
-                "person": person_lookup[person_id],
-                "text": person_notes,
-                "raw_lines": person_notes.split("\n")
-            })
-    
+            notes.append(
+                {
+                    "person": person_lookup[person_id],
+                    "text": person_notes,
+                    "raw_lines": person_notes.split("\n"),
+                }
+            )
+
     return notes
 
 

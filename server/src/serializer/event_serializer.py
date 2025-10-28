@@ -26,7 +26,7 @@ def serialize_event(event: Dict[str, Any]) -> str:
         str: GeneWeb-formatted event line(s).
     """
     lines = []
-    
+
     # Raw event line
     if event.get("raw"):
         lines.append(event["raw"])
@@ -36,11 +36,11 @@ def serialize_event(event: Dict[str, Any]) -> str:
         date = event.get("date", "")
         place = event.get("place", "")
         description = event.get("description", "")
-        
+
         # Convert date to string if it's a date object
-        if hasattr(date, 'strftime'):
-            date = date.strftime('%Y-%m-%d')
-        
+        if hasattr(date, "strftime"):
+            date = date.strftime("%Y-%m-%d")
+
         if event_type:
             event_parts = [event_type]
             if date:
@@ -49,7 +49,7 @@ def serialize_event(event: Dict[str, Any]) -> str:
                 event_parts.append(f"#pl {place}")
             if description:
                 event_parts.append(f"#desc {description}")
-            
+
             event_line = " ".join(event_parts)
             lines.append(event_line)
 

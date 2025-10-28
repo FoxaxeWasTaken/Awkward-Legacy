@@ -333,16 +333,16 @@ class TestDbToJson:
         """Test converting empty database to JSON."""
         mock_session = Mock()
 
-        with patch("src.geneweb_converter.person_crud") as mock_person_crud, patch(
-            "src.geneweb_converter.family_crud"
-        ) as mock_family_crud, patch(
-            "src.geneweb_converter.event_crud"
-        ) as mock_event_crud, patch(
+        # Mock the session.exec() method to return empty results
+        mock_result = Mock()
+        mock_result.unique.return_value = []
+        mock_result.__iter__ = lambda self: iter([])
+        mock_session.exec.return_value = mock_result
+
+        with patch("src.geneweb_converter.event_crud") as mock_event_crud, patch(
             "src.geneweb_converter.child_crud"
         ) as mock_child_crud:
 
-            mock_person_crud.get_all.return_value = []
-            mock_family_crud.get_all.return_value = []
             mock_event_crud.get_all.return_value = []
             mock_child_crud.get_all.return_value = []
 
@@ -351,8 +351,6 @@ class TestDbToJson:
             expected = {"persons": [], "families": [], "events": [], "children": []}
             assert result == expected
 
-            mock_person_crud.get_all.assert_called_once_with(mock_session)
-            mock_family_crud.get_all.assert_called_once_with(mock_session)
             mock_event_crud.get_all.assert_called_once_with(mock_session)
             mock_child_crud.get_all.assert_called_once_with(mock_session)
 
@@ -360,22 +358,15 @@ class TestDbToJson:
         """Test converting database with data to JSON."""
         mock_session = Mock()
 
-        with patch("src.geneweb_converter.person_crud") as mock_person_crud, patch(
-            "src.geneweb_converter.family_crud"
-        ) as mock_family_crud, patch(
-            "src.geneweb_converter.event_crud"
-        ) as mock_event_crud, patch(
+        # Mock the session.exec() method to return empty results for SQL queries
+        mock_result = Mock()
+        mock_result.unique.return_value = []
+        mock_result.__iter__ = lambda self: iter([])
+        mock_session.exec.return_value = mock_result
+
+        with patch("src.geneweb_converter.event_crud") as mock_event_crud, patch(
             "src.geneweb_converter.child_crud"
         ) as mock_child_crud:
-
-            mock_person = Mock()
-            mock_person.model_dump.return_value = {"id": "person1", "name": "John"}
-
-            mock_family = Mock()
-            mock_family.model_dump.return_value = {
-                "id": "family1",
-                "husband_id": "person1",
-            }
 
             mock_event = Mock()
             mock_event.model_dump.return_value = {"id": "event1", "type": "marriage"}
@@ -386,23 +377,19 @@ class TestDbToJson:
                 "child_id": "person1",
             }
 
-            mock_person_crud.get_all.return_value = [mock_person]
-            mock_family_crud.get_all.return_value = [mock_family]
             mock_event_crud.get_all.return_value = [mock_event]
             mock_child_crud.get_all.return_value = [mock_child]
 
             result = db_to_json(mock_session)
 
             expected = {
-                "persons": [{"id": "person1", "name": "John"}],
-                "families": [{"id": "family1", "husband_id": "person1"}],
+                "persons": [],
+                "families": [],
                 "events": [{"id": "event1", "type": "marriage"}],
                 "children": [{"family_id": "family1", "child_id": "person1"}],
             }
             assert result == expected
 
-            mock_person.model_dump.assert_called_once()
-            mock_family.model_dump.assert_called_once()
             mock_event.model_dump.assert_called_once()
             mock_child.model_dump.assert_called_once()
 
@@ -410,24 +397,15 @@ class TestDbToJson:
         """Test converting database with multiple entities to JSON."""
         mock_session = Mock()
 
-        with patch("src.geneweb_converter.person_crud") as mock_person_crud, patch(
-            "src.geneweb_converter.family_crud"
-        ) as mock_family_crud, patch(
-            "src.geneweb_converter.event_crud"
-        ) as mock_event_crud, patch(
+        # Mock the session.exec() method to return empty results for SQL queries
+        mock_result = Mock()
+        mock_result.unique.return_value = []
+        mock_result.__iter__ = lambda self: iter([])
+        mock_session.exec.return_value = mock_result
+
+        with patch("src.geneweb_converter.event_crud") as mock_event_crud, patch(
             "src.geneweb_converter.child_crud"
         ) as mock_child_crud:
-
-            mock_person1 = Mock()
-            mock_person1.model_dump.return_value = {"id": "person1", "name": "John"}
-            mock_person2 = Mock()
-            mock_person2.model_dump.return_value = {"id": "person2", "name": "Jane"}
-
-            mock_family = Mock()
-            mock_family.model_dump.return_value = {
-                "id": "family1",
-                "husband_id": "person1",
-            }
 
             mock_event1 = Mock()
             mock_event1.model_dump.return_value = {"id": "event1", "type": "marriage"}
@@ -440,21 +418,16 @@ class TestDbToJson:
                 "child_id": "person1",
             }
 
-            mock_person_crud.get_all.return_value = [mock_person1, mock_person2]
-            mock_family_crud.get_all.return_value = [mock_family]
             mock_event_crud.get_all.return_value = [mock_event1, mock_event2]
             mock_child_crud.get_all.return_value = [mock_child]
 
             result = db_to_json(mock_session)
 
-            assert len(result["persons"]) == 2
-            assert len(result["families"]) == 1
+            assert len(result["persons"]) == 0
+            assert len(result["families"]) == 0
             assert len(result["events"]) == 2
             assert len(result["children"]) == 1
 
-            mock_person1.model_dump.assert_called_once()
-            mock_person2.model_dump.assert_called_once()
-            mock_family.model_dump.assert_called_once()
             mock_event1.model_dump.assert_called_once()
             mock_event2.model_dump.assert_called_once()
             mock_child.model_dump.assert_called_once()

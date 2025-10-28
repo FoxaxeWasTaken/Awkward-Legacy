@@ -47,7 +47,7 @@ def extract_entities(parsed: Dict[str, Any]) -> Dict[str, Any]:
 
     # Process person notes
     _extract_person_notes(parsed, persons)
-    
+
     # Create persons for any people mentioned in pevt blocks but not in families
     _create_missing_persons_from_events(parsed, persons, events)
 
@@ -71,7 +71,7 @@ def _extract_spouses(fam: Dict[str, Any], persons: list, family_id: str) -> tupl
         # Set gender for husband (first person in family line is typically male)
         husband["gender"] = "male"
         husband_data = ensure_person_fields(husband)
-        
+
         # Check if person already exists by name
         husband_name = f"{husband_data.get('first_name', '')} {husband_data.get('last_name', '')}".strip()
         existing_husband_id = _find_person_by_name(persons, husband_name)
@@ -85,7 +85,7 @@ def _extract_spouses(fam: Dict[str, Any], persons: list, family_id: str) -> tupl
         # Set gender for wife (second person in family line is typically female)
         wife["gender"] = "female"
         wife_data = ensure_person_fields(wife)
-        
+
         # Check if person already exists by name
         wife_name = f"{wife_data.get('first_name', '')} {wife_data.get('last_name', '')}".strip()
         existing_wife_id = _find_person_by_name(persons, wife_name)
@@ -152,10 +152,10 @@ def _extract_person_events(parsed: Dict[str, Any], persons: list, events: list) 
     for person_data in parsed.get("people", []):
         person_name = person_data.get("person", "").strip()
         person_events = person_data.get("events", [])
-        
+
         if not person_name or not person_events:
             continue
-            
+
         # Find matching person by name
         person_id = _find_person_by_name(persons, person_name)
         if person_id:
@@ -169,10 +169,10 @@ def _extract_person_notes(parsed: Dict[str, Any], persons: list) -> None:
     for note_data in parsed.get("notes", []):
         person_name = note_data.get("person", "").strip()
         note_text = note_data.get("text", "").strip()
-        
+
         if not person_name or not note_text:
             continue
-            
+
         # Find matching person by name
         person = _find_person_by_name(persons, person_name, return_person=True)
         if person:
@@ -187,34 +187,36 @@ def _find_person_by_name(persons: list, name: str, return_person: bool = False):
     """Find person by name, return ID or person object."""
     # Normalize name for comparison
     normalized_name = name.lower().strip()
-    
+
     for person in persons:
         person_name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip().lower()
         if person_name == normalized_name:
             return person if return_person else person.get("id")
-    
+
     # Try alternative matching with raw name field
     for person in persons:
         raw_name = person.get("name", "").strip().lower()
         if raw_name == normalized_name:
             return person if return_person else person.get("id")
-    
+
     return None
 
 
-def _create_missing_persons_from_events(parsed: Dict[str, Any], persons: list, events: list) -> None:
+def _create_missing_persons_from_events(
+    parsed: Dict[str, Any], persons: list, events: list
+) -> None:
     """Create persons for people mentioned in pevt blocks but not in families."""
     for person_data in parsed.get("people", []):
         person_name = person_data.get("person", "").strip()
         person_events = person_data.get("events", [])
-        
+
         if not person_name or not person_events:
             continue
-            
+
         # Check if person already exists
         if _find_person_by_name(persons, person_name):
             continue
-            
+
         # Create person from name
         name_parts = person_name.split()
         if len(name_parts) >= 2:
@@ -223,7 +225,7 @@ def _create_missing_persons_from_events(parsed: Dict[str, Any], persons: list, e
         else:
             first_name = person_name
             last_name = ""
-            
+
         # Create person data
         person_data_dict = {
             "id": str(uuid4()),
@@ -231,11 +233,11 @@ def _create_missing_persons_from_events(parsed: Dict[str, Any], persons: list, e
             "last_name": last_name,
             "sex": "U",  # Unknown gender by default
             "name": person_name,
-            "raw": person_name
+            "raw": person_name,
         }
-        
+
         persons.append(person_data_dict)
-        
+
         # Link their events
         person_id = person_data_dict["id"]
         for event in person_events:

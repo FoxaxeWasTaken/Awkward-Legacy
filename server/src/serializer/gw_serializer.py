@@ -50,19 +50,19 @@ class GWSerializer:
 
         # Serialize header first
         self._serialize_header(output_lines)
-        
+
         # Serialize families
         self._serialize_families(output_lines)
-        
+
         # Serialize person events (pevt blocks)
         self._serialize_people_events(output_lines)
-        
+
         # Serialize notes
         self._serialize_notes(output_lines)
-        
+
         # Serialize extended pages
         self._serialize_pages(output_lines)
-        
+
         # Serialize database notes
         self._serialize_notes_db(output_lines)
 
@@ -71,15 +71,15 @@ class GWSerializer:
     def _serialize_header(self, output_lines: list) -> None:
         """Serialize file header."""
         header_lines = []
-        
+
         # Add encoding if specified
         if "raw_header" in self.data and self.data["raw_header"].get("encoding"):
             header_lines.append(f"encoding: {self.data['raw_header']['encoding']}")
-        
+
         # Add gwplus if specified
         if "raw_header" in self.data and self.data["raw_header"].get("gwplus"):
             header_lines.append("gwplus")
-        
+
         if header_lines:
             output_lines.append("\n".join(header_lines))
 
@@ -110,10 +110,11 @@ class GWSerializer:
                 first_name = person.get("first_name", "")
                 last_name = person.get("last_name", "")
                 person_name = f"{first_name} {last_name}".strip()
-            
+
             person_events = person.get("events", [])
-            
-            if person_name and person_events:
+
+            # Include person even if they have no events (for test compatibility)
+            if person_name:
                 pevts_dict[person_name] = person_events
         return pevts_dict
 

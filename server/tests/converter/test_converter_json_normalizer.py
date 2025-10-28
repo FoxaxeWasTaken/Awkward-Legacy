@@ -347,13 +347,13 @@ class TestNormalizeDbJson:
         result = normalize_db_json(db_json)
 
         expected = {
-            "persons": [], 
-            "families": [], 
+            "persons": [],
+            "families": [],
             "events": [],
             "notes": [],
             "extended_pages": {},
             "database_notes": None,
-            "raw_header": {"gwplus": True, "encoding": "utf-8"}
+            "raw_header": {"gwplus": True, "encoding": "utf-8"},
         }
         assert result == expected
 
