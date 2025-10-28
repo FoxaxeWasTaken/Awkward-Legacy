@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Consanguinity Calculator - Optimized version using GW parser
+Consanguinity Calculator - Optimized version using GW parser with database integration
 """
 
 import sys
@@ -11,11 +11,12 @@ import json
 from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
 from dataclasses import dataclass
+from uuid import UUID
 
 
 @dataclass
 class Person:
-    """Represents a person in the genealogy tree"""
+    """Represents a person in the genealogy tree with database compatibility"""
     id: str
     first_name: str
     last_name: str
@@ -33,6 +34,20 @@ class Person:
 
     def designation(self) -> str:
         return f"{self.first_name} {self.last_name}"
+    
+    @classmethod
+    def from_db_person(cls, db_person) -> 'Person':
+        """Create Person instance from database Person model"""
+        return cls(
+            id=str(db_person.id),
+            first_name=db_person.first_name or "",
+            last_name=db_person.last_name or "",
+            sex=db_person.sex or "U",
+            occ=0,  # Database doesn't use occurrences
+            birth_date=db_person.birth_date.isoformat() if db_person.birth_date else None,
+            death_date=db_person.death_date.isoformat() if db_person.death_date else None,
+            families=[]  # Will be populated from family relationships
+        )
 
 
 @dataclass
@@ -49,7 +64,7 @@ class Family:
 
 
 class GenealogyDataBuilder:
-    """Builds genealogy data structure from GW parser output"""
+    """Builds genealogy data structure from GW parser output OR database"""
     
     def __init__(self):
         self.persons: Dict[str, Person] = {}
@@ -58,8 +73,121 @@ class GenealogyDataBuilder:
         self._family_counter = 0
         
     def build_from_gw_parser(self, parser_result: Dict) -> None:
+        """Build from GeneWeb parser output"""
         self._process_families(parser_result.get("families", []))
         self._link_families_and_persons()
+    
+    def build_from_database(self, db_session, starting_person_id: UUID = None) -> None:
+        """
+        Build genealogy data from database starting from a specific person.
+        
+        Args:
+            db_session: SQLModel database session
+            starting_person_id: Optional UUID to build tree from specific person
+        """
+        if starting_person_id:
+            self._build_from_person(db_session, starting_person_id)
+        else:
+            self._build_complete_database(db_session)
+    
+    def _build_from_person(self, db_session, person_id: UUID) -> None:
+        """Build genealogy tree starting from a specific person (recursive)"""
+        # Avoid infinite recursion
+        if str(person_id) in self.persons:
+            return
+            
+        # Get person from database
+        try:
+            # Try to import database models
+            from models.person import Person as DBPerson
+            db_person = db_session.get(DBPerson, person_id)
+        except ImportError:
+            # Fallback if database models aren't available
+            return
+            
+        if not db_person:
+            return
+            
+        # Convert to our Person class
+        person = Person.from_db_person(db_person)
+        self.persons[person.id] = person
+        
+        # Get person's families (as spouse) if FamilyCRUD is available
+        try:
+            from crud.family import family_crud
+            families_as_spouse = family_crud.get_by_spouse(db_session, person_id)
+            for db_family in families_as_spouse:
+                self._process_db_family(db_session, db_family)
+        except ImportError:
+            # FamilyCRUD not available, skip family processing
+            pass
+            
+        # Recursively process parents
+        if db_person.father_id:
+            self._build_from_person(db_session, db_person.father_id)
+            person.father_id = str(db_person.father_id)
+            
+        if db_person.mother_id:
+            self._build_from_person(db_session, db_person.mother_id)
+            person.mother_id = str(db_person.mother_id)
+    
+    def _build_complete_database(self, db_session) -> None:
+        """Build complete genealogy data from all database records"""
+        try:
+            from models.person import Person as DBPerson
+            from models.family import Family as DBFamily
+            from sqlmodel import select
+        except ImportError:
+            # Database models not available
+            return
+        
+        # Get all persons
+        db_persons = db_session.exec(select(DBPerson)).all()
+        for db_person in db_persons:
+            person = Person.from_db_person(db_person)
+            self.persons[person.id] = person
+            
+            # Set parent relationships
+            if db_person.father_id:
+                person.father_id = str(db_person.father_id)
+            if db_person.mother_id:
+                person.mother_id = str(db_person.mother_id)
+        
+        # Get all families and process them
+        db_families = db_session.exec(select(DBFamily)).all()
+        for db_family in db_families:
+            self._process_db_family(db_session, db_family)
+    
+    def _process_db_family(self, db_session, db_family) -> None:
+        """Process a database family and create Family object"""
+        family_id = f"F{self._family_counter}"
+        self._family_counter += 1
+        
+        family = Family(id=family_id)
+        
+        # Set spouses
+        if db_family.husband_id:
+            family.husband_id = str(db_family.husband_id)
+            if family.husband_id in self.persons:
+                self.persons[family.husband_id].families.append(family_id)
+        
+        if db_family.wife_id:
+            family.wife_id = str(db_family.wife_id)
+            if family.wife_id in self.persons:
+                self.persons[family.wife_id].families.append(family_id)
+        
+        # Process children
+        for child_relation in db_family.children:
+            child_id = str(child_relation.child_id)
+            family.children.append(child_id)
+            
+            if child_id in self.persons:
+                self.persons[child_id].families.append(family_id)
+                # Set parent relationships
+                self.persons[child_id].father_id = family.husband_id
+                self.persons[child_id].mother_id = family.wife_id
+        
+        self.families[family_id] = family
         
     def _process_families(self, families_data: List[Dict]) -> None:
         for family_data in families_data:
@@ -256,12 +384,19 @@ class TopologicalSortError(Exception):
 
 
 class ConsanguinityApp:
-    """Main application class"""
+    """Main application class with database support"""
     
     def __init__(self):
         self.filename = ""
+        self.db_session = None
+        self.starting_person_id = None
         self.verbosity = 2
         self.output_file = None
+        
+    def setup_database(self, db_session, starting_person_id: UUID = None):
+        """Configure database connection for consanguinity calculation"""
+        self.db_session = db_session
+        self.starting_person_id = starting_person_id
         
     def parse_arguments(self) -> None:
         parser = argparse.ArgumentParser(
@@ -290,7 +425,8 @@ class ConsanguinityApp:
         )
         parser.add_argument(
             "filename",
-            help="GeneWeb .gw database file"
+            nargs="?",
+            help="GeneWeb .gw database file (optional if using database)"
         )
         
         args = parser.parse_args()
@@ -306,7 +442,7 @@ class ConsanguinityApp:
         self.output_file = args.output
 
     def validate_arguments(self) -> None:
-        if not os.path.exists(self.filename):
+        if self.filename and not os.path.exists(self.filename):
             print(f"Error: File {self.filename} does not exist", file=sys.stderr)
             sys.exit(2)
 
@@ -343,6 +479,10 @@ class ConsanguinityApp:
                 visit(person_id)
 
     def compute_consanguinity(self) -> Dict[str, Any]:
+        """Compute consanguinity from GeneWeb file"""
+        if not self.filename:
+            raise ValueError("No filename provided and no database configured")
+            
         if self.verbosity > 0:
             print("Loading and parsing .gw file...")
         
@@ -358,11 +498,34 @@ class ConsanguinityApp:
         data_builder = GenealogyDataBuilder()
         data_builder.build_from_gw_parser(parser_result)
         
+        return self._compute_with_data_builder(data_builder)
+    
+    def compute_consanguinity_from_database(self) -> Dict[str, Any]:
+        """Compute consanguinity coefficients from database records"""
+        if not self.db_session:
+            raise ValueError("Database session not configured. Call setup_database() first.")
+            
+        if self.verbosity > 0:
+            print("Loading genealogy data from database...")
+        
+        data_builder = GenealogyDataBuilder()
+        
+        if self.starting_person_id:
+            data_builder.build_from_database(self.db_session, self.starting_person_id)
+            if self.verbosity > 0:
+                print(f"Built tree starting from person {self.starting_person_id}")
+        else:
+            data_builder.build_from_database(self.db_session)
+            
+        return self._compute_with_data_builder(data_builder)
+    
+    def _compute_with_data_builder(self, data_builder: GenealogyDataBuilder) -> Dict[str, Any]:
+        """Common computation logic for both file and database sources"""
         persons = data_builder.persons
         families = data_builder.families
         
         if self.verbosity > 0:
-            print(f"Database loaded: {len(persons)} persons, {len(families)} families")
+            print(f"Data loaded: {len(persons)} persons, {len(families)} families")
         
         calculator = ConsanguinityCalculator()
         calculator.build_parents_cache(persons)
@@ -447,28 +610,107 @@ class ConsanguinityApp:
             print(f"Detailed results saved to: {self.output_file}")
 
     def run(self) -> None:
+        """Main entry point for command-line usage"""
         self.parse_arguments()
-        self.validate_arguments()
-        self.setup_signal_handlers()
         
-        try:
-            result = self.compute_consanguinity()
+        if self.filename:
+            self.validate_arguments()
+            self.setup_signal_handlers()
             
-            if result.get("changes_made", False):
-                if self.verbosity > 0:
-                    print("Consanguinity calculation completed successfully")
-            else:
-                if self.verbosity > 0:
-                    print("No significant consanguinity detected")
-                    
-        except KeyboardInterrupt:
-            print("\nCalculation interrupted by user")
+            try:
+                result = self.compute_consanguinity()
+                self._handle_result(result)
+            except KeyboardInterrupt:
+                print("\nCalculation interrupted by user")
+                sys.exit(1)
+            except Exception as e:
+                print(f"Error during calculation: {e}", file=sys.stderr)
+                import traceback
+                traceback.print_exc()
+                sys.exit(2)
+        else:
+            print("Error: No filename provided", file=sys.stderr)
             sys.exit(1)
-        except Exception as e:
-            print(f"Error during calculation: {e}", file=sys.stderr)
-            import traceback
-            traceback.print_exc()
-            sys.exit(2)
+    
+    def _handle_result(self, result: Dict[str, Any]) -> None:
+        """Handle computation result"""
+        if result.get("changes_made", False):
+            if self.verbosity > 0:
+                print("Consanguinity calculation completed successfully")
+        else:
+            if self.verbosity > 0:
+                print("No significant consanguinity detected")
+
+
+# Global variable for family_crud (will be set only if available)
+family_crud = None
+
+# Utility functions for database integration
+def analyze_family_consanguinity(db_session, family_id: UUID):
+    """Analyze consanguinity within a specific family using FamilyCRUD"""
+    global family_crud
+    
+    if family_crud is None:
+        try:
+            from crud.family import family_crud as crud
+            family_crud = crud
+        except ImportError:
+            return None
+        
+    # Get family details using FamilyCRUD
+    family_detail = family_crud.get_family_detail(db_session, family_id)
+    if not family_detail:
+        return None
+    
+    builder = GenealogyDataBuilder()
+    
+    # Build genealogy data focusing on this family
+    if family_detail.husband_id:
+        builder.build_from_database(db_session, family_detail.husband_id)
+    if family_detail.wife_id:
+        builder.build_from_database(db_session, family_detail.wife_id)
+    
+    calculator = ConsanguinityCalculator()
+    calculator.build_parents_cache(builder.persons)
+    
+    # Calculate consanguinity between spouses
+    if family_detail.husband_id and family_detail.wife_id:
+        husband_id = str(family_detail.husband_id)
+        wife_id = str(family_detail.wife_id)
+        coefficient = calculator.calculate_consanguinity(husband_id, wife_id)
+        
+        return {
+            "family_id": family_id,
+            "husband": family_detail.husband["first_name"] + " " + family_detail.husband["last_name"],
+            "wife": family_detail.wife["first_name"] + " " + family_detail.wife["last_name"],
+            "consanguinity_coefficient": coefficient,
+            "children_count": len(family_detail.children)
+        }
+    
+    return None
+
+
+def batch_consanguinity_analysis(db_session, search_query: str = None, limit: int = 50):
+    """Perform consanguinity analysis on multiple families using FamilyCRUD search"""
+    global family_crud
+    
+    if family_crud is None:
+        try:
+            from crud.family import family_crud as crud
+            family_crud = crud
+        except ImportError:
+            return []
+    
+    # Use FamilyCRUD search to find families
+    families = family_crud.search_families(db_session, query=search_query, limit=limit)
+    
+    results = []
+    for family in families:
+        result = analyze_family_consanguinity(db_session, family.id)
+        if result and result["consanguinity_coefficient"] > 0.01:  # Only significant ones
+            results.append(result)
+    
+    return sorted(results, key=lambda x: x["consanguinity_coefficient"], reverse=True)
 
 
 def main():
