@@ -100,16 +100,12 @@ class TestDatabaseBuilders(unittest.TestCase):
         db_person.father_id = None
         db_person.mother_id = None
         
-        # Mock the session to return our person
         self.db_session.get.return_value = db_person
         
-        # Build from person - this should work with our corrected _build_from_person
         person_id = UUID('12345678-1234-5678-1234-567812345678')
         
-        # Use the public method instead of the private one
         self.builder.build_from_database(self.db_session, person_id)
         
-        # The builder should have at least the main person
         self.assertGreaterEqual(len(self.builder.persons), 1)
     
     def test_process_db_family(self):
