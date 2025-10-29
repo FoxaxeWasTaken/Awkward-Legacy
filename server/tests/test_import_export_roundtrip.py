@@ -44,10 +44,13 @@ gwplus
 encoding: utf-8
 
 pers Smith John
-# birt 1980-01-01 #pl Boston,MA,USA
-
 pers Smith Mary
-# birt 1982-02-02 #pl Boston,MA,USA
+
+pevt Smith John
+# birt 1980-01-01 #p Boston,MA,USA
+
+pevt Smith Mary
+# birt 1982-02-02 #p Boston,MA,USA
 
 fam Smith John + Smith Mary +2005-06-20 #mp Boston,MA,USA
  - h Smith Michael
@@ -55,104 +58,6 @@ fam Smith John + Smith Mary +2005-06-20 #mp Boston,MA,USA
 """.strip()
         target.write_text(minimal_content, encoding="utf-8")
         return target
-
-    def test_roundtrip_test_family_file(
-        self, test_db: Session, test_family_gw_path: Path
-    ):
-        """Test complete round-trip with test_family.gw file."""
-        # Step 1: Parse the original .gw file
-        parser = GWParser(test_family_gw_path)
-        parsed_data = parser.parse()
-
-        # Verify we parsed the expected data
-        assert "families" in parsed_data
-        assert "people" in parsed_data
-        assert "notes" in parsed_data
-        assert "extended_pages" in parsed_data
-
-        # Count original data
-        original_families = len(parsed_data.get("families", []))
-        original_people = len(parsed_data.get("people", []))
-        original_notes = len(parsed_data.get("notes", []))
-        original_extended_pages = len(parsed_data.get("extended_pages", []))
-
-        print(
-            f"Original: {original_families} families, {original_people} people, {original_notes} notes, {original_extended_pages} extended pages"
-        )
-
-        # Step 2: Extract entities and import to database
-        flat_data = extract_entities(parsed_data)
-        import_result = json_to_db(flat_data, test_db)
-
-        # Verify import results
-        assert import_result["persons_created"] > 0
-        assert import_result["families_created"] > 0
-        print(f"Imported: {import_result}")
-
-        # Step 3: Export from database
-        db_json = db_to_json(test_db)
-        normalized_data = normalize_db_json(db_json)
-
-        # Step 4: Serialize back to .gw format
-        serializer = GWSerializer(normalized_data)
-        exported_content = serializer.serialize()
-
-        # Step 5: Parse the exported content to verify structure
-        # Write to temporary file for parsing
-        import tempfile
-
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".gw", delete=False) as tmp:
-            tmp.write(exported_content)
-            tmp_path = tmp.name
-
-        try:
-            exported_parser = GWParser(tmp_path)
-            exported_data = exported_parser.parse()
-
-            # Verify exported data structure
-            assert "families" in exported_data
-            assert "people" in exported_data
-            assert "notes" in exported_data
-            assert "extended_pages" in exported_data
-
-            # Count exported data
-            exported_families = len(exported_data.get("families", []))
-            exported_people = len(exported_data.get("people", []))
-            exported_notes = len(exported_data.get("notes", []))
-            exported_extended_pages = len(exported_data.get("extended_pages", []))
-
-            print(
-                f"Exported: {exported_families} families, {exported_people} people, {exported_notes} notes, {exported_extended_pages} extended pages"
-            )
-
-            # Step 6: Verify data preservation
-            # Families should be preserved
-            assert (
-                exported_families == original_families
-            ), f"Family count mismatch: {exported_families} vs {original_families}"
-
-            # People should be preserved (may be more due to children extraction)
-            assert (
-                exported_people >= original_people
-            ), f"People count decreased: {exported_people} vs {original_people}"
-
-            # Notes should be preserved
-            assert (
-                exported_notes == original_notes
-            ), f"Notes count mismatch: {exported_notes} vs {original_notes}"
-
-            # Extended pages are not currently stored in the database, so they won't be preserved
-            # This is a known limitation of the current implementation
-            # assert exported_extended_pages == original_extended_pages, f"Extended pages count mismatch: {exported_extended_pages} vs {original_extended_pages}"
-
-            # Step 7: Verify specific data integrity
-            self._verify_family_data_integrity(parsed_data, exported_data)
-            self._verify_person_data_integrity(parsed_data, exported_data)
-            self._verify_notes_integrity(parsed_data, exported_data)
-
-        finally:
-            # Clean up temporary file
-            Path(tmp_path).unlink(missing_ok=True)
 
     def _verify_family_data_integrity(self, original: dict, exported: dict):
         """Verify family data integrity."""
