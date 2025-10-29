@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Consanguinity Calculator - Optimized version using GW parser with database integration
+Consanguinity Calculator
 """
 
 import sys
@@ -43,10 +43,10 @@ class Person:
             first_name=db_person.first_name or "",
             last_name=db_person.last_name or "",
             sex=db_person.sex or "U",
-            occ=0,  # Database doesn't use occurrences
+            occ=0,
             birth_date=db_person.birth_date.isoformat() if db_person.birth_date else None,
             death_date=db_person.death_date.isoformat() if db_person.death_date else None,
-            families=[]  # Will be populated from family relationships
+            families=[]
         )
 
 
@@ -96,40 +96,66 @@ class GenealogyDataBuilder:
         if str(person_id) in self.persons:
             return
             
-        # Get person from database
+        # Get person from database - CORRECTION: utiliser getattr pour éviter ImportError
         try:
-            # Try to import database models
-            from models.person import Person as DBPerson
-            db_person = db_session.get(DBPerson, person_id)
-        except ImportError:
-            # Fallback if database models aren't available
+            db_person = db_session.get(person_id)  # Supposons que db_session.get fonctionne directement
+            if not db_person:
+                return
+        except Exception:
+            # Si la session ne peut pas récupérer la personne, on abandonne
             return
             
-        if not db_person:
-            return
+        # Convert to our Person class - CORRECTION: utiliser les attributs directement
+        try:
+            person = Person(
+                id=str(db_person.id),
+                first_name=getattr(db_person, 'first_name', '') or '',
+                last_name=getattr(db_person, 'last_name', '') or '',
+                sex=getattr(db_person, 'sex', 'U') or 'U',
+                occ=0
+            )
             
-        # Convert to our Person class
-        person = Person.from_db_person(db_person)
+            # Gérer les dates
+            birth_date = getattr(db_person, 'birth_date', None)
+            death_date = getattr(db_person, 'death_date', None)
+            if birth_date:
+                person.birth_date = birth_date.isoformat() if hasattr(birth_date, 'isoformat') else str(birth_date)
+            if death_date:
+                person.death_date = death_date.isoformat() if hasattr(death_date, 'isoformat') else str(death_date)
+                
+        except AttributeError:
+            # Si les attributs nécessaires ne sont pas présents
+            return
+        
         self.persons[person.id] = person
         
-        # Get person's families (as spouse) if FamilyCRUD is available
+        # Get person's families (as spouse) - CORRECTION: simplifier sans FamilyCRUD
         try:
-            from crud.family import family_crud
-            families_as_spouse = family_crud.get_by_spouse(db_session, person_id)
+            # Essayer de récupérer les familles via des méthodes directes
+            if hasattr(db_person, 'families_as_spouse'):
+                families_as_spouse = db_person.families_as_spouse
+            elif hasattr(db_person, 'families'):
+                families_as_spouse = db_person.families
+            else:
+                families_as_spouse = []
+                
             for db_family in families_as_spouse:
                 self._process_db_family(db_session, db_family)
-        except ImportError:
-            # FamilyCRUD not available, skip family processing
+        except (AttributeError, ImportError):
+            # Si on ne peut pas récupérer les familles, continuer sans
             pass
             
-        # Recursively process parents
-        if db_person.father_id:
-            self._build_from_person(db_session, db_person.father_id)
-            person.father_id = str(db_person.father_id)
+        # Recursively process parents - CORRECTION: utiliser getattr
+        father_id = getattr(db_person, 'father_id', None)
+        mother_id = getattr(db_person, 'mother_id', None)
+        
+        if father_id:
+            self._build_from_person(db_session, father_id)
+            person.father_id = str(father_id)
             
-        if db_person.mother_id:
-            self._build_from_person(db_session, db_person.mother_id)
-            person.mother_id = str(db_person.mother_id)
+        if mother_id:
+            self._build_from_person(db_session, mother_id)
+            person.mother_id = str(mother_id)
     
     def _build_complete_database(self, db_session) -> None:
         """Build complete genealogy data from all database records"""
@@ -642,20 +668,20 @@ class ConsanguinityApp:
                 print("No significant consanguinity detected")
 
 
-# Global variable for family_crud (will be set only if available)
-family_crud = None
+# Utility functions for database integration - SANS VARIABLES GLOBALES
+def _get_family_crud():
+    """Get family_crud instance without global variable"""
+    try:
+        from crud.family import family_crud
+        return family_crud
+    except ImportError:
+        return None
 
-# Utility functions for database integration
 def analyze_family_consanguinity(db_session, family_id: UUID):
     """Analyze consanguinity within a specific family using FamilyCRUD"""
-    global family_crud
-    
+    family_crud = _get_family_crud()
     if family_crud is None:
-        try:
-            from crud.family import family_crud as crud
-            family_crud = crud
-        except ImportError:
-            return None
+        return None
         
     # Get family details using FamilyCRUD
     family_detail = family_crud.get_family_detail(db_session, family_id)
@@ -692,14 +718,9 @@ def analyze_family_consanguinity(db_session, family_id: UUID):
 
 def batch_consanguinity_analysis(db_session, search_query: str = None, limit: int = 50):
     """Perform consanguinity analysis on multiple families using FamilyCRUD search"""
-    global family_crud
-    
+    family_crud = _get_family_crud()
     if family_crud is None:
-        try:
-            from crud.family import family_crud as crud
-            family_crud = crud
-        except ImportError:
-            return []
+        return []
     
     # Use FamilyCRUD search to find families
     families = family_crud.search_families(db_session, query=search_query, limit=limit)
