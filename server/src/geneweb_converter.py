@@ -174,6 +174,8 @@ def _serialize_children(children: list) -> list:
                 "raw": f"{child.child.first_name} {child.child.last_name}".strip()
             }
             sex = child.child.sex
-            child_dict["gender"] = "male" if sex == "M" else "female" if sex == "F" else "male"
+            child_dict["gender"] = (
+                "male" if sex == "M" else "female" if sex == "F" else "male"
+            )
         children_data.append(child_dict)
     return children_data

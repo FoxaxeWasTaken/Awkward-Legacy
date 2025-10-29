@@ -111,23 +111,10 @@ export function useFamilyTree(familyId: Ref<string> | string) {
 }
 
 function _extractSpouseNames(data: { husband?: { first_name?: string; last_name?: string }; wife?: { first_name?: string; last_name?: string } }): string[] {
-  const parts = []
-  
-  if (data.husband && (data.husband.first_name || data.husband.last_name)) {
-    const husbandName = `${data.husband.first_name || ''} ${data.husband.last_name || ''}`.trim()
-    if (husbandName) {
-      parts.push(husbandName)
-    }
-  }
-  
-  if (data.wife && (data.wife.first_name || data.wife.last_name)) {
-    const wifeName = `${data.wife.first_name || ''} ${data.wife.last_name || ''}`.trim()
-    if (wifeName) {
-      parts.push(wifeName)
-    }
-  }
-  
-  return parts
+  const fullName = (p?: { first_name?: string; last_name?: string }) =>
+    ((p?.first_name || '') + ' ' + (p?.last_name || '')).trim()
+
+  return [fullName(data.husband), fullName(data.wife)].filter((n) => !!n)
 }
 
 function _buildFamilyTitle(parts: string[]): string {

@@ -160,66 +160,23 @@ def generate_filename(family_detail, family_id: UUID) -> str:
 def _filter_data_for_family(normalized_data: dict, family_id: str) -> dict:
     """Filter normalized data to include only the specified family and its related persons."""
     family_id_str = str(family_id)
-
-    # Find the target family
-    target_family = None
-    for family in normalized_data.get("families", []):
-        if str(family.get("id")) == family_id_str:
-            target_family = family
-            break
-
-    if not target_family:
-        raise HTTPException(status_code=404, detail="Family not found")
-
-    # Get all person names related to this family
-    related_person_names = set()
-
-    # Add husband and wife names
-    if target_family.get("husband") and target_family["husband"].get("raw"):
-        husband_name = target_family["husband"]["raw"].strip()
-        if husband_name:
-            related_person_names.add(husband_name)
-    if target_family.get("wife") and target_family["wife"].get("raw"):
-        wife_name = target_family["wife"]["raw"].strip()
-        if wife_name:
-            related_person_names.add(wife_name)
-
-    # Add children names
-    for child in target_family.get("children", []):
-        if child.get("person") and child["person"].get("raw"):
-            related_person_names.add(child["person"]["raw"])
-
-    # Filter persons to only include related ones
-    filtered_persons = []
-    for person in normalized_data.get("persons", []):
-        person_name = (
-            f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
-        )
-        if person_name in related_person_names:
-            filtered_persons.append(person)
-
-    # Filter families to only include the target family
-    filtered_families = [target_family]
-
-    # Filter notes to only include related persons
-    filtered_notes = []
-    for note in normalized_data.get("notes", []):
-        person_name = note.get("person", "")
-        # Check if this note belongs to a related person
-        for person in filtered_persons:
-            person_full_name = (
-                f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
-            )
-            if person_name == person_full_name:
-                filtered_notes.append(note)
-                break
+    target_family = _find_family_by_id(
+        normalized_data.get("families", []), family_id_str
+    )
+    related_names = _collect_related_names(target_family)
+    filtered_persons = _filter_persons_by_names(
+        normalized_data.get("persons", []), related_names
+    )
+    filtered_notes = _filter_notes_for_people(
+        normalized_data.get("notes", []), filtered_persons
+    )
 
     return {
         "persons": filtered_persons,
-        "families": filtered_families,
-        "events": [],  # Events are included with persons
+        "families": [target_family],
+        "events": [],
         "notes": filtered_notes,
-        "extended_pages": {},  # Not implemented yet
+        "extended_pages": {},
         "database_notes": None,
         "raw_header": normalized_data.get(
             "raw_header", {"gwplus": True, "encoding": "utf-8"}
@@ -227,71 +184,72 @@ def _filter_data_for_family(normalized_data: dict, family_id: str) -> dict:
     }
 
 
+def _find_family_by_id(families: list, family_id_str: str) -> dict:
+    for family in families:
+        if str(family.get("id")) == family_id_str:
+            return family
+    raise HTTPException(status_code=404, detail="Family not found")
+
+
+def _collect_related_names(target_family: dict) -> set:
+    names = set()
+    husband = (target_family.get("husband") or {}).get("raw", "").strip()
+    wife = (target_family.get("wife") or {}).get("raw", "").strip()
+    if husband:
+        names.add(husband)
+    if wife:
+        names.add(wife)
+    for child in target_family.get("children", []):
+        child_raw = (child.get("person") or {}).get("raw", "").strip()
+        if child_raw:
+            names.add(child_raw)
+    return names
+
+
+def _filter_persons_by_names(persons: list, names: set) -> list:
+    filtered = []
+    for person in persons:
+        full = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+        if full in names:
+            filtered.append(person)
+    return filtered
+
+
+def _filter_notes_for_people(notes: list, persons: list) -> list:
+    filtered = []
+    person_names = {
+        f"{p.get('first_name', '')} {p.get('last_name', '')}".strip() for p in persons
+    }
+    for note in notes or []:
+        if note.get("person") in person_names:
+            filtered.append(note)
+    return filtered
+
+
 def _filter_data_for_family_raw(db_json: dict, family_id: str) -> dict:
     """Filter raw database JSON to include only the specified family and its related persons."""
     family_id_str = str(family_id)
+    target_family = _find_family_by_id(db_json.get("families", []), family_id_str)
+    related_person_ids = _collect_related_person_ids(
+        db_json, target_family, family_id_str
+    )
 
-    # Find the target family
-    target_family = None
-    for family in db_json.get("families", []):
-        if str(family.get("id")) == family_id_str:
-            target_family = family
-            break
-
-    if not target_family:
-        raise HTTPException(status_code=404, detail="Family not found")
-
-    # Get all person IDs related to this family
-    related_person_ids = set()
-
-    # Add husband and wife IDs
-    if target_family.get("husband_id"):
-        related_person_ids.add(str(target_family["husband_id"]))
-    if target_family.get("wife_id"):
-        related_person_ids.add(str(target_family["wife_id"]))
-
-    # Add children IDs
-    for child in db_json.get("children", []):
-        if str(child.get("family_id")) == family_id_str:
-            if child.get("child_id"):
-                related_person_ids.add(str(child["child_id"]))
-
-    # Filter persons to only include related ones
-    filtered_persons = []
-    for person in db_json.get("persons", []):
-        if str(person.get("id")) in related_person_ids:
-            filtered_persons.append(person)
-
-    # Filter families to only include the target family
-    filtered_families = [target_family]
-
-    # Filter children to only include related ones
-    filtered_children = []
-    for child in db_json.get("children", []):
-        if str(child.get("family_id")) == family_id_str:
-            filtered_children.append(child)
-
-    # Filter events to only include related ones
-    filtered_events = []
-    for event in db_json.get("events", []):
-        if (
-            event.get("person_id") and str(event["person_id"]) in related_person_ids
-        ) or (event.get("family_id") and str(event["family_id"]) == family_id_str):
-            filtered_events.append(event)
-
-    # Build notes for related persons
-    filtered_notes = []
-    for person in filtered_persons:
-        if person.get("notes"):
-            person_name = (
-                f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
-            )
-            if person_name:
-                filtered_notes.append({"person": person_name, "text": person["notes"]})
+    filtered_persons = [
+        p for p in db_json.get("persons", []) if str(p.get("id")) in related_person_ids
+    ]
+    filtered_children = [
+        c
+        for c in db_json.get("children", [])
+        if str(c.get("family_id")) == family_id_str
+    ]
+    filtered_events = _filter_events_for_family(
+        db_json.get("events", []), related_person_ids, family_id_str
+    )
+    filtered_notes = _build_notes_for_persons(filtered_persons)
 
     return {
         "persons": filtered_persons,
-        "families": filtered_families,
+        "families": [target_family],
         "events": filtered_events,
         "children": filtered_children,
         "notes": filtered_notes,
@@ -299,6 +257,48 @@ def _filter_data_for_family_raw(db_json: dict, family_id: str) -> dict:
         "database_notes": None,
         "raw_header": {"gwplus": True, "encoding": "utf-8"},
     }
+
+
+def _collect_related_person_ids(
+    db_json: dict, target_family: dict, family_id_str: str
+) -> set:
+    ids = set()
+    if target_family.get("husband_id"):
+        ids.add(str(target_family["husband_id"]))
+    if target_family.get("wife_id"):
+        ids.add(str(target_family["wife_id"]))
+    for child in db_json.get("children", []):
+        if str(child.get("family_id")) == family_id_str and child.get("child_id"):
+            ids.add(str(child["child_id"]))
+    return ids
+
+
+def _filter_events_for_family(
+    events: list, related_person_ids: set, family_id_str: str
+) -> list:
+    filtered = []
+    for event in events or []:
+        is_person_event = (
+            event.get("person_id") and str(event["person_id"]) in related_person_ids
+        )
+        is_family_event = (
+            event.get("family_id") and str(event["family_id"]) == family_id_str
+        )
+        if is_person_event or is_family_event:
+            filtered.append(event)
+    return filtered
+
+
+def _build_notes_for_persons(persons: list) -> list:
+    notes = []
+    for person in persons:
+        text = person.get("notes")
+        if not text:
+            continue
+        name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+        if name:
+            notes.append({"person": name, "text": text})
+    return notes
 
 
 def _filter_data_for_family_fixed(

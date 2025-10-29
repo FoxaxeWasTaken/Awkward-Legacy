@@ -21,27 +21,23 @@ def split_family_header(header: str) -> Tuple[str, Optional[str]]:
 
 def _extract_wife_from_complex_format(words: list) -> Optional[str]:
     """Extract wife name from complex family format with marriage place."""
-    mp_found = False
-    wife_start_idx = 0
+    try:
+        mp_index = words.index("#mp")
+    except ValueError:
+        return _extract_wife_from_simple_format(" ".join(words))
 
-    for i, word in enumerate(words):
-        if word == "#mp":
-            mp_found = True
-            wife_start_idx = i + 1
+    start_idx = _find_first_name_pair_after(words, mp_index + 1)
+    if start_idx is None:
+        return _extract_wife_from_simple_format(" ".join(words))
+    return _extract_name_from_parts(words, start_idx)
 
-            while wife_start_idx < len(words) - 1:
-                current_word = words[wife_start_idx]
-                next_word = words[wife_start_idx + 1]
 
-                if _is_person_name_pair(current_word, next_word, words, wife_start_idx):
-                    break
-                wife_start_idx += 1
-            break
-
-    if mp_found and wife_start_idx < len(words):
-        return _extract_name_from_parts(words, wife_start_idx)
-
-    return _extract_wife_from_simple_format(" ".join(words))
+def _find_first_name_pair_after(words: list, idx: int) -> Optional[int]:
+    while idx < len(words) - 1:
+        if _is_person_name_pair(words[idx], words[idx + 1], words, idx):
+            return idx
+        idx += 1
+    return None
 
 
 def _extract_wife_from_simple_format(header: str) -> Tuple[str, Optional[str]]:
