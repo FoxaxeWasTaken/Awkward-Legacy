@@ -119,6 +119,11 @@ def _build_single_person(p: dict) -> dict:
         "dates": dates,
         "events": person_events,
         "sex": p.get("sex", "U"),
+        # carry base fields so event synthesis/serializers can use them
+        "birth_date": p.get("birth_date"),
+        "death_date": p.get("death_date"),
+        "birth_place": p.get("birth_place", ""),
+        "death_place": p.get("death_place", ""),
     }
 
 
@@ -148,34 +153,50 @@ def _build_person_dates(p: dict) -> list:
 
 def _build_person_events(p: dict) -> list:
     """Build events list for a person."""
-    person_events = []
-    for event in (p.get("events", []) or []):
+    explicit = _normalize_explicit_events(p)
+    if explicit:
+        return explicit
+    return _synthesize_core_events(p)
+
+
+def _normalize_explicit_events(p: dict) -> list:
+    events = []
+    for event in p.get("events") or []:
         event_data = _build_single_event(event)
         if event_data:
-            person_events.append(event_data)
-    if not person_events:
-        # Synthesize birth/death events from core fields when explicit events are missing
-        if p.get("birth_date") or p.get("birth_place"):
-            person_events.append(
-                {
-                    "type": "birt",
-                    "date": p.get("birth_date", ""),
-                    "place": p.get("birth_place", ""),
-                    "description": "",
-                    "raw": _serialize_event_raw("birt", p.get("birth_date", ""), p.get("birth_place", ""), ""),
-                }
-            )
-        if p.get("death_date") or p.get("death_place"):
-            person_events.append(
-                {
-                    "type": "deat",
-                    "date": p.get("death_date", ""),
-                    "place": p.get("death_place", ""),
-                    "description": "",
-                    "raw": _serialize_event_raw("deat", p.get("death_date", ""), p.get("death_place", ""), ""),
-                }
-            )
-    return person_events
+            events.append(event_data)
+    return events
+
+
+def _synthesize_core_events(p: dict) -> list:
+    synthesized = []
+    _maybe_add_synth_event(
+        synthesized,
+        "birt",
+        p.get("birth_date", ""),
+        p.get("birth_place", ""),
+    )
+    _maybe_add_synth_event(
+        synthesized,
+        "deat",
+        p.get("death_date", ""),
+        p.get("death_place", ""),
+    )
+    return synthesized
+
+
+def _maybe_add_synth_event(acc: list, ev_type: str, date, place: str) -> None:
+    if not date and not place:
+        return
+    acc.append(
+        {
+            "type": ev_type,
+            "date": date or "",
+            "place": place or "",
+            "description": "",
+            "raw": _serialize_event_raw(ev_type, date or "", place or "", ""),
+        }
+    )
 
 
 def _serialize_event_raw(event_type: str, date, place: str, description: str) -> str:
