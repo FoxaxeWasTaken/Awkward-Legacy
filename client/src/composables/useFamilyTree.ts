@@ -23,14 +23,8 @@ export function useFamilyTree(familyId: Ref<string> | string) {
 
       familyData.value = data
 
-      const parts = []
-      if (data.husband) {
-        parts.push(`${data.husband.first_name} ${data.husband.last_name}`)
-      }
-      if (data.wife) {
-        parts.push(`${data.wife.first_name} ${data.wife.last_name}`)
-      }
-      familyTitle.value = parts.length > 0 ? parts.join(' & ') : 'Family Tree'
+      const parts = _extractSpouseNames(data)
+      familyTitle.value = _buildFamilyTitle(parts)
       await loadCrossFamilyChildren(data)
     } catch (err: unknown) {
       console.error('Error loading family data:', err)
@@ -113,5 +107,22 @@ export function useFamilyTree(familyId: Ref<string> | string) {
     crossFamilyChildren,
     loadFamilyData,
     loadCrossFamilyChildren,
+  }
+}
+
+function _extractSpouseNames(data: { husband?: { first_name?: string; last_name?: string }; wife?: { first_name?: string; last_name?: string } }): string[] {
+  const fullName = (p?: { first_name?: string; last_name?: string }) =>
+    ((p?.first_name || '') + ' ' + (p?.last_name || '')).trim()
+
+  return [fullName(data.husband), fullName(data.wife)].filter((n) => !!n)
+}
+
+function _buildFamilyTitle(parts: string[]): string {
+  if (parts.length === 2) {
+    return parts.join(' & ')
+  } else if (parts.length === 1) {
+    return parts[0]
+  } else {
+    return 'Family Tree'
   }
 }

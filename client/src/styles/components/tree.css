@@ -113,7 +113,7 @@
 
 .tree-container {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
   background:
     linear-gradient(90deg, rgba(200, 200, 200, 0.1) 1px, transparent 1px),

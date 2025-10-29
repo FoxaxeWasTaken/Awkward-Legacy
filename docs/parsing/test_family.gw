@@ -1,0 +1,263 @@
+encoding: utf-8
+gwplus
+
+# Main family: Smith Family
+fam Smith John #occu Engineer 1980-05-15 + Smith Mary #occu Teacher 1982-03-20
+src marriage_certificate
+csrc family_photos
+fevt
+#marr 2005-06-20 #p Boston,MA,USA #s marriage_certificate
+note Married in a beautiful ceremony at St. Mary's Church
+note Reception held at the Boston Harbor Hotel
+end fevt
+beg
+- h Smith Michael #occu Doctor 2006-08-10 #bp Boston,MA,USA
+- f Smith Sarah #occu Artist 2008-12-25 #bp Boston,MA,USA
+- h Smith David #occu Lawyer 2010-04-14 #bp Boston,MA,USA
+end
+
+# Person events for John Smith
+pevt Smith John
+#birt 1980-05-15 #p New York,NY,USA #s birth_certificate
+#bapt 1980-06-01 #p St. Peter's Church,New York,NY,USA
+#grad 1998-06-15 #p MIT,Cambridge,MA,USA #s diploma
+#marr 2005-06-20 #p Boston,MA,USA #s marriage_certificate
+#occu 2005-07-01 #p TechCorp,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for Mary Smith
+pevt Smith Mary
+#birt 1982-03-20 #p Chicago,IL,USA #s birth_certificate
+#bapt 1982-04-05 #p Holy Trinity Church,Chicago,IL,USA
+#grad 2000-05-20 #p Harvard University,Cambridge,MA,USA #s diploma
+#marr 2005-06-20 #p Boston,MA,USA #s marriage_certificate
+#occu 2005-09-01 #p Lincoln Elementary School,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for Michael Smith (son)
+pevt Smith Michael
+#birt 2006-08-10 #p Boston,MA,USA #s birth_certificate
+#bapt 2006-09-15 #p St. Mary's Church,Boston,MA,USA
+#grad 2024-05-20 #p Harvard Medical School,Boston,MA,USA #s diploma
+#occu 2024-07-01 #p Massachusetts General Hospital,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for Sarah Smith (daughter)
+pevt Smith Sarah
+#birt 2008-12-25 #p Boston,MA,USA #s birth_certificate
+#bapt 2009-01-10 #p St. Mary's Church,Boston,MA,USA
+#grad 2026-05-20 #p Rhode Island School of Design,Providence,RI,USA #s diploma
+#occu 2026-09-01 #p Boston Art Gallery,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for David Smith (son)
+pevt Smith David
+#birt 2010-04-14 #p Boston,MA,USA #s birth_certificate
+#bapt 2010-05-20 #p St. Mary's Church,Boston,MA,USA
+#grad 2028-05-20 #p Boston University Law School,Boston,MA,USA #s diploma
+#occu 2028-09-01 #p Smith & Associates Law Firm,Boston,MA,USA
+#deat
+end pevt
+
+# Notes for John Smith
+notes Smith John
+beg
+John is a dedicated engineer who loves technology and innovation.
+He graduated from MIT with honors and has been working at TechCorp for over 20 years.
+John enjoys playing guitar in his spare time and is an avid reader of science fiction.
+He is known for his problem-solving skills and leadership abilities.
+end notes
+
+# Notes for Mary Smith
+notes Smith Mary
+beg
+Mary is a passionate teacher who has dedicated her life to education.
+She graduated from Harvard University and has been teaching at Lincoln Elementary for over 20 years.
+Mary loves reading, gardening, and spending time with her family.
+She is known for her patience and ability to connect with children.
+Mary volunteers at the local library on weekends.
+end notes
+
+# Notes for Michael Smith
+notes Smith Michael
+beg
+Michael is the eldest child and has always been ambitious and driven.
+He followed in his father's footsteps by attending Harvard, but chose medicine over engineering.
+Michael is known for his compassion and dedication to helping others.
+He enjoys playing basketball and hiking in his free time.
+Michael is fluent in Spanish and has volunteered in medical missions to Latin America.
+end notes
+
+# Notes for Sarah Smith
+notes Smith Sarah
+beg
+Sarah is the creative one in the family, always drawing and painting since she was young.
+She has a unique artistic vision and has won several art competitions in high school.
+Sarah is passionate about environmental issues and uses her art to raise awareness.
+She loves nature photography and often goes on hiking trips to capture beautiful landscapes.
+Sarah is also an excellent cook and often prepares meals for the family.
+end notes
+
+# Notes for David Smith
+notes Smith David
+beg
+David is the youngest child and has always been very articulate and logical.
+He excelled in debate club in high school and was the valedictorian of his class.
+David is passionate about justice and has always wanted to become a lawyer.
+He enjoys playing chess and reading legal thrillers.
+David is also a talented writer and has published several articles in law journals.
+end notes
+
+# Michael's family (second generation)
+fam Smith Michael +2030-05-15 #mp St. Mary's Church,Boston,MA,USA Johnson Emily #occu Nurse 2032-08-22
+src wedding_invitation
+fevt
+#marr 2030-05-15 #p St. Mary's Church,Boston,MA,USA #s wedding_invitation
+note Beautiful spring wedding with family and friends
+end fevt
+beg
+- h Smith James #occu Engineer 2031-12-10 #bp Boston,MA,USA
+- f Smith Emma #occu Teacher 2033-07-04 #bp Boston,MA,USA
+end
+
+# Person events for Emily Johnson (Michael's wife)
+pevt Johnson Emily
+#birt 2032-08-22 #p Providence,RI,USA #s birth_certificate
+#bapt 2032-09-15 #p St. Joseph's Church,Providence,RI,USA
+#grad 2050-05-20 #p Boston College,Boston,MA,USA #s diploma
+#marr 2030-05-15 #p St. Mary's Church,Boston,MA,USA #s wedding_invitation
+#occu 2050-09-01 #p Boston Children's Hospital,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for James Smith (grandson)
+pevt Smith James
+#birt 2031-12-10 #p Boston,MA,USA #s birth_certificate
+#bapt 2032-01-20 #p St. Mary's Church,Boston,MA,USA
+#grad 2049-05-20 #p MIT,Cambridge,MA,USA #s diploma
+#occu 2049-07-01 #p SpaceX,Los Angeles,CA,USA
+#deat
+end pevt
+
+# Person events for Emma Smith (granddaughter)
+pevt Smith Emma
+#birt 2033-07-04 #p Boston,MA,USA #s birth_certificate
+#bapt 2033-08-15 #p St. Mary's Church,Boston,MA,USA
+#grad 2051-05-20 #p Harvard University,Cambridge,MA,USA #s diploma
+#occu 2051-09-01 #p Lincoln Elementary School,Boston,MA,USA
+#deat
+end pevt
+
+# Sarah's family (second generation)
+fam Smith Sarah +2035-08-20 #mp Art Gallery,Providence,RI,USA Brown Robert #occu Architect 2033-11-12
+src wedding_photos
+fevt
+#marr 2035-08-20 #p Art Gallery,Providence,RI,USA #s wedding_photos
+note Creative outdoor wedding at the art gallery
+note Reception featured local artists and musicians
+end fevt
+beg
+- f Smith-Brown Lily #occu Musician 2036-06-15 #bp Providence,RI,USA
+- h Smith-Brown Oliver #occu Designer 2038-09-22 #bp Providence,RI,USA
+end
+
+# Person events for Robert Brown (Sarah's husband)
+pevt Brown Robert
+#birt 2033-11-12 #p San Francisco,CA,USA #s birth_certificate
+#bapt 2033-12-20 #p Grace Cathedral,San Francisco,CA,USA
+#grad 2051-05-20 #p Rhode Island School of Design,Providence,RI,USA #s diploma
+#marr 2035-08-20 #p Art Gallery,Providence,RI,USA #s wedding_photos
+#occu 2051-09-01 #p Brown & Associates Architecture,Providence,RI,USA
+#deat
+end pevt
+
+# Person events for Lily Smith-Brown (granddaughter)
+pevt Smith-Brown Lily
+#birt 2036-06-15 #p Providence,RI,USA #s birth_certificate
+#bapt 2036-07-20 #p St. Joseph's Church,Providence,RI,USA
+#grad 2054-05-20 #p Juilliard School,New York,NY,USA #s diploma
+#occu 2054-09-01 #p Boston Symphony Orchestra,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for Oliver Smith-Brown (grandson)
+pevt Smith-Brown Oliver
+#birt 2038-09-22 #p Providence,RI,USA #s birth_certificate
+#bapt 2038-10-25 #p St. Joseph's Church,Providence,RI,USA
+#grad 2056-05-20 #p Parsons School of Design,New York,NY,USA #s diploma
+#occu 2056-09-01 #p Apple Inc,Cupertino,CA,USA
+#deat
+end pevt
+
+# David's family (second generation)
+fam Smith David +2040-10-10 #mp Boston City Hall,Boston,MA,USA Wilson Jennifer #occu Doctor 2035-02-14
+src marriage_license
+fevt
+#marr 2040-10-10 #p Boston City Hall,Boston,MA,USA #s marriage_license
+note Civil ceremony followed by elegant dinner at the Four Seasons
+end fevt
+beg
+- h Smith Alexander #occu Scientist 2041-05-20 #bp Boston,MA,USA
+- f Smith Sophia #occu Lawyer 2043-11-08 #bp Boston,MA,USA
+end
+
+# Person events for Jennifer Wilson (David's wife)
+pevt Wilson Jennifer
+#birt 2035-02-14 #p Miami,FL,USA #s birth_certificate
+#bapt 2035-03-20 #p St. Mary's Cathedral,Miami,FL,USA
+#grad 2053-05-20 #p Johns Hopkins University,Baltimore,MD,USA #s diploma
+#marr 2040-10-10 #p Boston City Hall,Boston,MA,USA #s marriage_license
+#occu 2053-09-01 #p Massachusetts General Hospital,Boston,MA,USA
+#deat
+end pevt
+
+# Person events for Alexander Smith (grandson)
+pevt Smith Alexander
+#birt 2041-05-20 #p Boston,MA,USA #s birth_certificate
+#bapt 2041-06-25 #p St. Mary's Church,Boston,MA,USA
+#grad 2059-05-20 #p Caltech,Pasadena,CA,USA #s diploma
+#occu 2059-07-01 #p NASA Jet Propulsion Laboratory,Pasadena,CA,USA
+#deat
+end pevt
+
+# Person events for Sophia Smith (granddaughter)
+pevt Smith Sophia
+#birt 2043-11-08 #p Boston,MA,USA #s birth_certificate
+#bapt 2043-12-15 #p St. Mary's Church,Boston,MA,USA
+#grad 2061-05-20 #p Yale Law School,New Haven,CT,USA #s diploma
+#occu 2061-09-01 #p Smith & Associates Law Firm,Boston,MA,USA
+#deat
+end pevt
+
+# Extended pages
+page-ext Family History
+  TITLE=The Smith Family Legacy
+  * This page documents the remarkable journey of the Smith family
+  * From humble beginnings in New York and Chicago to becoming a prominent Boston family
+  * The family has produced doctors, lawyers, engineers, teachers, artists, and scientists
+  * Each generation has contributed to society in meaningful ways
+  * The family values education, hard work, and helping others
+end page-ext
+
+page-ext Family Traditions
+  TITLE=Smith Family Traditions
+  * Annual family reunion every summer at Cape Cod
+  * Christmas dinner at the family home in Boston
+  * Each child receives a family heirloom on their 18th birthday
+  * Family motto: "Excellence through Education and Service"
+  * All family members are encouraged to pursue higher education
+end page-ext
+
+# Database notes
+notes-db
+  TITLE=Smith Family Database
+  * This database contains comprehensive information about the Smith family
+  * Data collected from birth certificates, marriage licenses, and family records
+  * All dates and places have been verified through official documents
+  * The family tree spans three generations with detailed event information
+  * This database serves as a historical record for future generations
+end notes-db

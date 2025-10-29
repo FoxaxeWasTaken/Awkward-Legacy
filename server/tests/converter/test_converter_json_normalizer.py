@@ -346,7 +346,15 @@ class TestNormalizeDbJson:
         db_json = {"persons": [], "families": [], "children": [], "events": []}
         result = normalize_db_json(db_json)
 
-        expected = {"persons": [], "families": [], "events": []}
+        expected = {
+            "persons": [],
+            "families": [],
+            "events": [],
+            "notes": [],
+            "extended_pages": {},
+            "database_notes": None,
+            "raw_header": {"gwplus": True, "encoding": "utf-8"},
+        }
         assert result == expected
 
     def test_normalize_db_json_complete(self):

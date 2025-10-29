@@ -7,6 +7,7 @@ import { usePersonHighlighting } from '../composables/usePersonHighlighting'
 import { useTooltips } from '../composables/useTooltips'
 import { createFamilyGenerations } from '../utils/familyUtils'
 import { formatDate } from '../utils/dateUtils'
+import apiService from '../services/api'
 import TreeControls from './tree/TreeControls.vue'
 import PersonNode from './tree/PersonNode.vue'
 import ChildNode from './tree/ChildNode.vue'
@@ -36,7 +37,6 @@ const {
   zoomIn,
   zoomOut,
   resetZoom,
-  fitTreeToView,
 } = useTreeNavigation()
 const {
   selectPerson,
@@ -87,11 +87,36 @@ const loadFamilyDataAndFit = async () => {
   try {
     await loadFamilyData()
     await nextTick()
-    setTimeout(() => {
-      fitTreeToView(treeContainer.value, treeContent.value)
-    }, 100)
+    // Don't auto-fit to view - start with normal scale
+    // setTimeout(() => {
+    //   fitTreeToView(treeContainer.value, treeContent.value)
+    // }, 100)
   } catch (error) {
     console.error('Error loading family data:', error)
+  }
+}
+
+const isDownloading = ref(false)
+
+const downloadFamilyData = async () => {
+  try {
+    isDownloading.value = true
+    const blob = await apiService.downloadFamilyFile(props.familyId)
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `family-${props.familyId}-${new Date().toISOString().split('T')[0]}.gw`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error downloading family data:', error)
+    alert('Failed to download family data. Please try again.')
+  } finally {
+    isDownloading.value = false
   }
 }
 onMounted(() => {
@@ -109,19 +134,29 @@ onUnmounted(() => {
 <template>
   <div class="family-tree">
     <div class="tree-header">
-      <div class="header-left">
-        <button @click="$router.push('/manage')" class="back-button">
-          <span class="back-icon">←</span>
-          Back to Family Management
+      <button @click="$router.push('/manage')" class="back-button">
+        <span class="back-icon">←</span>
+        Back to Family Management
+      </button>
+      <h2>{{ familyTitle }}</h2>
+      <div class="header-controls">
+        <button 
+          @click="downloadFamilyData" 
+          :disabled="isDownloading"
+          class="download-family-btn"
+          title="Download this family as .gw file"
+        >
+          <span v-if="isDownloading">⏳</span>
+          <span v-else>📥</span>
+          {{ isDownloading ? 'Downloading...' : 'Download Family' }}
         </button>
-        <h2>{{ familyTitle }}</h2>
+        <TreeControls
+          :scale="scale"
+          @zoom-in="() => zoomIn(treeContainer)"
+          @zoom-out="() => zoomOut(treeContainer)"
+          @reset-zoom="resetZoom"
+        />
       </div>
-      <TreeControls
-        :scale="scale"
-        @zoom-in="() => zoomIn(treeContainer)"
-        @zoom-out="() => zoomOut(treeContainer)"
-        @reset-zoom="resetZoom"
-      />
     </div>
 
     <div v-if="isLoading" class="loading-state">
@@ -259,3 +294,7 @@ onUnmounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+@import '../styles/family-tree.css';
+</style>

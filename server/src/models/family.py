@@ -75,6 +75,8 @@ class FamilySearchResult(SQLModel):
     id: UUID
     husband_name: Optional[str] = None
     wife_name: Optional[str] = None
+    husband_sex: Optional[str] = None  # M, F, or U
+    wife_sex: Optional[str] = None  # M, F, or U
     marriage_date: Optional[date_type] = None
     marriage_place: Optional[str] = None
     children_count: int = 0

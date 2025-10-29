@@ -32,6 +32,7 @@ def serialize_pevts(pevts: Dict[str, List[Dict[str, Any]]]) -> str:
     for person_name, events in pevts.items():
         lines.append(f"pevt {person_name}")
         for event in events:
-            lines.append(serialize_event(event))
+            event_str = serialize_event(event)
+            lines.append(event_str)
         lines.append("end pevt")
     return "\n".join(lines)

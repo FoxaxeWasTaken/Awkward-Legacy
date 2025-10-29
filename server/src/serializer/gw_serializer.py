@@ -48,15 +48,40 @@ class GWSerializer:
         """
         output_lines = []
 
+        # Serialize header first
+        self._serialize_header(output_lines)
+
+        # Serialize families
         self._serialize_families(output_lines)
-        self._serialize_sources(output_lines)
+
+        # Serialize person events (pevt blocks)
         self._serialize_people_events(output_lines)
-        self._serialize_notes_db(output_lines)
+
+        # Serialize notes
         self._serialize_notes(output_lines)
+
+        # Serialize extended pages
         self._serialize_pages(output_lines)
-        self._serialize_database_notes(output_lines)
+
+        # Serialize database notes
+        self._serialize_notes_db(output_lines)
 
         return "\n\n".join(output_lines)
+
+    def _serialize_header(self, output_lines: list) -> None:
+        """Serialize file header."""
+        header_lines = []
+
+        # Add encoding if specified
+        if "raw_header" in self.data and self.data["raw_header"].get("encoding"):
+            header_lines.append(f"encoding: {self.data['raw_header']['encoding']}")
+
+        # Add gwplus if specified
+        if "raw_header" in self.data and self.data["raw_header"].get("gwplus"):
+            header_lines.append("gwplus")
+
+        if header_lines:
+            output_lines.append("\n".join(header_lines))
 
     def _serialize_families(self, output_lines: list) -> None:
         """Serialize families section."""
@@ -70,16 +95,27 @@ class GWSerializer:
 
     def _serialize_people_events(self, output_lines: list) -> None:
         """Serialize people events section."""
-        if "people" in self.data:
+        if "persons" in self.data:
             pevts_dict = self._build_pevts_dict()
-            output_lines.append(serialize_pevts(pevts_dict))
+            if pevts_dict:
+                output_lines.append(serialize_pevts(pevts_dict))
 
     def _build_pevts_dict(self) -> Dict[str, Any]:
         """Build person events dictionary."""
         pevts_dict = {}
-        for p in self.data["people"]:
-            if "person" in p and "events" in p:
-                pevts_dict[p["person"]] = p["events"] or []
+        for person in self.data.get("persons", []):
+            # Try to get name from different possible fields
+            person_name = person.get("name", "")
+            if not person_name:
+                first_name = person.get("first_name", "")
+                last_name = person.get("last_name", "")
+                person_name = f"{first_name} {last_name}".strip()
+
+            person_events = person.get("events", [])
+
+            # Include person even if they have no events (for test compatibility)
+            if person_name:
+                pevts_dict[person_name] = person_events
         return pevts_dict
 
     def _serialize_notes_db(self, output_lines: list) -> None:
@@ -94,8 +130,8 @@ class GWSerializer:
 
     def _serialize_pages(self, output_lines: list) -> None:
         """Serialize extended pages section."""
-        if "pages" in self.data:
-            output_lines.append(serialize_pages(self.data["pages"]))
+        if "extended_pages" in self.data and self.data["extended_pages"]:
+            output_lines.append(serialize_pages(self.data["extended_pages"]))
 
     def _serialize_database_notes(self, output_lines: list) -> None:
         """Serialize database notes section."""

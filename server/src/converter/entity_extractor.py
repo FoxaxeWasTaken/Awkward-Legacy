@@ -42,6 +42,15 @@ def extract_entities(parsed: Dict[str, Any]) -> Dict[str, Any]:
         # Extract family events
         _extract_family_events(fam, events, family_id)
 
+    # Process person events (pevt blocks) - AFTER all families are processed
+    _extract_person_events(parsed, persons, events)
+
+    # Process person notes
+    _extract_person_notes(parsed, persons)
+
+    # Create persons for any people mentioned in pevt blocks but not in families
+    _create_missing_persons_from_events(parsed, persons, events)
+
     return {
         "persons": persons,
         "families": families,
@@ -52,23 +61,24 @@ def extract_entities(parsed: Dict[str, Any]) -> Dict[str, Any]:
 
 def _extract_spouses(fam: Dict[str, Any], persons: list, family_id: str) -> tuple:
     """Extract husband and wife from family data."""
-    husband = fam.get("husband")
-    wife = fam.get("wife")
-
-    husband_id = None
-    wife_id = None
-
-    if husband:
-        husband_data = ensure_person_fields(husband)
-        persons.append(husband_data)
-        husband_id = husband_data.get("id")
-
-    if wife:
-        wife_data = ensure_person_fields(wife)
-        persons.append(wife_data)
-        wife_id = wife_data.get("id")
-
+    husband_id = _ensure_spouse_and_get_id(fam.get("husband"), "male", persons)
+    wife_id = _ensure_spouse_and_get_id(fam.get("wife"), "female", persons)
     return husband_id, wife_id
+
+
+def _ensure_spouse_and_get_id(
+    spouse: Dict[str, Any] | None, gender: str, persons: list
+):
+    if not spouse:
+        return None
+    spouse["gender"] = gender
+    spouse_data = ensure_person_fields(spouse)
+    full_name = _full_name(spouse_data)
+    existing_id = _find_person_by_name(persons, full_name)
+    if existing_id:
+        return existing_id
+    persons.append(spouse_data)
+    return spouse_data.get("id")
 
 
 def _build_family_data(
@@ -118,3 +128,92 @@ def _extract_family_events(fam: Dict[str, Any], events: list, family_id: str) ->
     for evt in fam.get("events", []):
         event_data = ensure_event_fields(evt)
         events.append({"family_id": family_id, **event_data})
+
+
+def _extract_person_events(parsed: Dict[str, Any], persons: list, events: list) -> None:
+    """Extract person events from pevt blocks and link them to persons."""
+    for person_data in parsed.get("people", []):
+        person_name = (person_data.get("person") or "").strip()
+        person_events = person_data.get("events") or []
+        if not person_name or not person_events:
+            continue
+        person_id = _find_person_by_name(persons, person_name)
+        if not person_id:
+            continue
+        for event in person_events:
+            event_data = ensure_event_fields(event)
+            events.append({"person_id": person_id, **event_data})
+
+
+def _extract_person_notes(parsed: Dict[str, Any], persons: list) -> None:
+    """Extract person notes and append them to matching persons."""
+    for note_data in parsed.get("notes", []):
+        person_name = (note_data.get("person") or "").strip()
+        note_text = (note_data.get("text") or "").strip()
+        if not person_name or not note_text:
+            continue
+        person = _find_person_by_name(persons, person_name, return_person=True)
+        if not person:
+            continue
+        existing_notes = person.get("notes", "")
+        person["notes"] = (
+            f"{existing_notes}\n\n{note_text}" if existing_notes else note_text
+        )
+
+
+def _find_person_by_name(persons: list, name: str, return_person: bool = False):
+    """Find person by name, return ID or person object."""
+    normalized_name = name.lower().strip()
+    for person in persons:
+        if _full_name(person).lower() == normalized_name or (
+            person.get("name", "").strip().lower() == normalized_name
+        ):
+            return person if return_person else person.get("id")
+    return None
+
+
+def _full_name(person: Dict[str, Any]) -> str:
+    return f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+
+
+def _create_missing_persons_from_events(
+    parsed: Dict[str, Any], persons: list, events: list
+) -> None:
+    """Create persons for people mentioned in pevt blocks but not in families."""
+    for person_data in parsed.get("people", []):
+        person_name = person_data.get("person", "").strip()
+        person_events = person_data.get("events", [])
+
+        if not person_name or not person_events:
+            continue
+
+        # Check if person already exists
+        if _find_person_by_name(persons, person_name):
+            continue
+
+        # Create person from name
+        name_parts = person_name.split()
+        if len(name_parts) >= 2:
+            first_name = name_parts[0]
+            last_name = " ".join(name_parts[1:])
+        else:
+            first_name = person_name
+            last_name = ""
+
+        # Create person data
+        person_data_dict = {
+            "id": str(uuid4()),
+            "first_name": first_name,
+            "last_name": last_name,
+            "sex": "U",  # Unknown gender by default
+            "name": person_name,
+            "raw": person_name,
+        }
+
+        persons.append(person_data_dict)
+
+        # Link their events
+        person_id = person_data_dict["id"]
+        for event in person_events:
+            event_data = ensure_event_fields(event)
+            events.append({"person_id": person_id, **event_data})

@@ -27,13 +27,57 @@ def serialize_event(event: Dict[str, Any]) -> str:
     """
     lines = []
 
-    # Raw event line
-    if event.get("raw"):
-        lines.append(event["raw"])
+    # Add main event line
+    event_line = _build_event_line(event)
+    if event_line:
+        lines.append(event_line)
 
-    # Notes attached to event
-    if "notes" in event:
-        for note in event["notes"]:
-            lines.append(f"note {note}")
+    # Add event notes
+    event_notes = _build_event_notes(event)
+    lines.extend(event_notes)
 
     return "\n".join(lines)
+
+
+def _build_event_line(event: Dict[str, Any]) -> str:
+    """Build the main event line."""
+    if event.get("raw"):
+        return event["raw"]
+
+    return _build_event_from_fields(event)
+
+
+def _build_event_from_fields(event: Dict[str, Any]) -> str:
+    """Build event line from individual fields."""
+    event_type = event.get("type", "")
+    if not event_type:
+        return ""
+
+    event_parts = [event_type]
+    date = _format_event_date(event.get("date", ""))
+    if date:
+        event_parts.append(date)
+    if event.get("place"):
+        event_parts.append(f"#pl {event['place']}")
+    if event.get("description"):
+        event_parts.append(f"#desc {event['description']}")
+
+    return " ".join(event_parts)
+
+
+def _format_event_date(date) -> str:
+    """Format event date to string."""
+    if not date:
+        return ""
+    if hasattr(date, "strftime"):
+        return date.strftime("%Y-%m-%d")
+    return str(date)
+
+
+def _build_event_notes(event: Dict[str, Any]) -> list:
+    """Build event notes list."""
+    notes = []
+    if "notes" in event:
+        for note in event["notes"]:
+            notes.append(f"note {note}")
+    return notes

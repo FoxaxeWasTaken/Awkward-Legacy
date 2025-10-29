@@ -6,11 +6,11 @@ from serializer.gw_serializer import GWSerializer
 def minimal_data():
     return {
         "families": [],
-        "people": [],
+        "persons": [],
         "notes": [],
         "notes_db": {},
         "sources": {},
-        "pages": {},
+        "extended_pages": {},
     }
 
 
@@ -31,13 +31,13 @@ def populated_data():
             }
         ],
         "sources": {"family_source": ["source1"], "children_source": ["source2"]},
-        "people": [
-            {"person": "Person One", "events": [{"raw": "#birt 1900"}]},
-            {"person": "Person Two", "events": []},
+        "persons": [
+            {"name": "Person One", "events": [{"raw": "#birt 1900"}]},
+            {"name": "Person Two", "events": []},
         ],
         "notes_db": {"text": "Database notes"},
         "notes": [{"person": "Person One", "text": "A note"}],
-        "pages": {"Page1": {"TITLE": "Title1", "TYPE": "type1"}},
+        "extended_pages": {"Page1": {"TITLE": "Title1", "TYPE": "type1"}},
     }
 
 
@@ -71,14 +71,14 @@ def test_to_file(tmp_path, populated_data):
 def test_missing_sections(minimal_data):
     del minimal_data["notes_db"]
     del minimal_data["notes"]
-    del minimal_data["pages"]
+    del minimal_data["extended_pages"]
     serializer = GWSerializer(minimal_data)
     result = serializer.serialize()
     assert isinstance(result, str)
 
 
 def test_people_without_events():
-    data = {"families": [], "people": [{"person": "No Events", "events": []}]}
+    data = {"families": [], "persons": [{"name": "No Events", "events": []}]}
     serializer = GWSerializer(data)
     result = serializer.serialize()
     assert "pevt No Events" in result and result.strip().endswith("end pevt")
@@ -92,7 +92,7 @@ def test_handles_missing_keys():
 
 
 def test_database_notes_only():
-    data = {"families": [], "people": [], "notes_db": {"text": "Only database notes"}}
+    data = {"families": [], "persons": [], "notes_db": {"text": "Only database notes"}}
     serializer = GWSerializer(data)
     result = serializer.serialize()
     assert "Only database notes" in result
@@ -105,9 +105,9 @@ def test_order_of_sections(populated_data):
         "fam Test",
         "src source1",
         "pevt Person One",
-        "notes-db",
         "notes",
         "page-ext Page1",
+        "notes-db",
     ]
     indices = [result.find(s) for s in sections if s in result]
     assert indices == sorted(indices), "Sections are not in the correct order"
