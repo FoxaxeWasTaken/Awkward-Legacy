@@ -326,17 +326,17 @@ def _build_notes_list(db_json: dict, person_lookup: Dict[str, str]) -> list:
     """Build notes list from persons with notes."""
     notes = []
     for p in db_json.get("persons", []):
-        person_notes = p.get("notes")
-
         person_id = str(p.get("id"))
-        if person_notes and person_notes.strip() and person_id in person_lookup:
-            notes.append(
-                {
-                    "person": person_lookup[person_id],
-                    "text": person_notes,
-                    "raw_lines": person_notes.split("\n"),
-                }
-            )
+        note_text = (p.get("notes") or "").strip()
+        if not note_text or person_id not in person_lookup:
+            continue
+        notes.append(
+            {
+                "person": person_lookup[person_id],
+                "text": note_text,
+                "raw_lines": note_text.split("\n"),
+            }
+        )
 
     return notes
 

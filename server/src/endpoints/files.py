@@ -315,13 +315,16 @@ def _filter_data_for_family_fixed(
     family_header = _build_family_header(husband_name, wife_name, target_family_raw)
     children_data = _build_children_data(raw_data, family_id_str)
     family_events = _build_family_events(raw_data, family_id_str)
+    parts = {
+        "header": family_header,
+        "husband_name": husband_name,
+        "wife_name": wife_name,
+        "events": family_events,
+        "children": children_data,
+    }
     fixed_family = _build_fixed_family(
         family_id_str,
-        family_header,
-        husband_name,
-        wife_name,
-        family_events,
-        children_data,
+        parts,
         target_family_raw,
     )
     filtered_notes = _build_filtered_notes(filtered_persons)
@@ -441,26 +444,29 @@ def _build_family_header(
 
 def _build_children_data(raw_data: dict, family_id_str: str) -> list:
     """Build children data for the family."""
-    children_data = []
+    result = []
     for child in raw_data.get("children", []):
-        if str(child.get("family_id")) == family_id_str:
-            child_person = _find_person_by_id(raw_data, child.get("child_id"))
-            if child_person:
-                child_name = f"{child_person.get('first_name', '')} {child_person.get('last_name', '')}".strip()
-                if child_name:
-                    gender = (
-                        "h"
-                        if child_person.get("sex") == "M"
-                        else "f" if child_person.get("sex") == "F" else "h"
-                    )
-                    children_data.append(
-                        {
-                            "raw": f"- {gender} {child_name}",
-                            "gender": "male" if gender == "h" else "female",
-                            "person": {"raw": child_name},
-                        }
-                    )
-    return children_data
+        if str(child.get("family_id")) != family_id_str:
+            continue
+        person = _find_person_by_id(raw_data, child.get("child_id"))
+        if not person:
+            continue
+        name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+        if not name:
+            continue
+        gender_letter = _sex_to_letter(person.get("sex"))
+        result.append(
+            {
+                "raw": f"- {gender_letter} {name}",
+                "gender": "male" if gender_letter == "h" else "female",
+                "person": {"raw": name},
+            }
+        )
+    return result
+
+
+def _sex_to_letter(sex: str | None) -> str:
+    return "h" if sex == "M" else "f" if sex == "F" else "h"
 
 
 def _find_person_by_id(raw_data: dict, person_id: str) -> dict:
@@ -488,23 +494,17 @@ def _build_family_events(raw_data: dict, family_id_str: str) -> list:
 
 
 def _build_fixed_family(
-    family_id_str: str,
-    family_header: str,
-    husband_name: str,
-    wife_name: str,
-    family_events: list,
-    children_data: list,
-    target_family_raw: dict,
+    family_id_str: str, parts: dict, target_family_raw: dict
 ) -> dict:
     """Build the fixed family structure."""
     return {
         "id": family_id_str,
-        "raw_header": family_header,
-        "husband": {"raw": husband_name} if husband_name else None,
-        "wife": {"raw": wife_name} if wife_name else None,
+        "raw_header": parts["header"],
+        "husband": {"raw": parts["husband_name"]} if parts["husband_name"] else None,
+        "wife": {"raw": parts["wife_name"]} if parts["wife_name"] else None,
         "sources": {},
-        "events": family_events,
-        "children": children_data,
+        "events": parts["events"],
+        "children": parts["children"],
         "marriage_date": target_family_raw.get("marriage_date"),
         "marriage_place": target_family_raw.get("marriage_place"),
         "notes": target_family_raw.get("notes"),

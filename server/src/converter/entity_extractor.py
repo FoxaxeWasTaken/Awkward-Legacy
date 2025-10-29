@@ -61,41 +61,24 @@ def extract_entities(parsed: Dict[str, Any]) -> Dict[str, Any]:
 
 def _extract_spouses(fam: Dict[str, Any], persons: list, family_id: str) -> tuple:
     """Extract husband and wife from family data."""
-    husband = fam.get("husband")
-    wife = fam.get("wife")
-
-    husband_id = None
-    wife_id = None
-
-    if husband:
-        # Set gender for husband (identified as husband in family data)
-        husband["gender"] = "male"
-        husband_data = ensure_person_fields(husband)
-
-        # Check if person already exists by name
-        husband_name = f"{husband_data.get('first_name', '')} {husband_data.get('last_name', '')}".strip()
-        existing_husband_id = _find_person_by_name(persons, husband_name)
-        if existing_husband_id:
-            husband_id = existing_husband_id
-        else:
-            persons.append(husband_data)
-            husband_id = husband_data.get("id")
-
-    if wife:
-        # Set gender for wife (person is identified as wife)
-        wife["gender"] = "female"
-        wife_data = ensure_person_fields(wife)
-
-        # Check if person already exists by name
-        wife_name = f"{wife_data.get('first_name', '')} {wife_data.get('last_name', '')}".strip()
-        existing_wife_id = _find_person_by_name(persons, wife_name)
-        if existing_wife_id:
-            wife_id = existing_wife_id
-        else:
-            persons.append(wife_data)
-            wife_id = wife_data.get("id")
-
+    husband_id = _ensure_spouse_and_get_id(fam.get("husband"), "male", persons)
+    wife_id = _ensure_spouse_and_get_id(fam.get("wife"), "female", persons)
     return husband_id, wife_id
+
+
+def _ensure_spouse_and_get_id(
+    spouse: Dict[str, Any] | None, gender: str, persons: list
+):
+    if not spouse:
+        return None
+    spouse["gender"] = gender
+    spouse_data = ensure_person_fields(spouse)
+    full_name = _full_name(spouse_data)
+    existing_id = _find_person_by_name(persons, full_name)
+    if existing_id:
+        return existing_id
+    persons.append(spouse_data)
+    return spouse_data.get("id")
 
 
 def _build_family_data(
@@ -150,56 +133,47 @@ def _extract_family_events(fam: Dict[str, Any], events: list, family_id: str) ->
 def _extract_person_events(parsed: Dict[str, Any], persons: list, events: list) -> None:
     """Extract person events from pevt blocks and link them to persons."""
     for person_data in parsed.get("people", []):
-        person_name = person_data.get("person", "").strip()
-        person_events = person_data.get("events", [])
-
+        person_name = (person_data.get("person") or "").strip()
+        person_events = person_data.get("events") or []
         if not person_name or not person_events:
             continue
-
-        # Find matching person by name
         person_id = _find_person_by_name(persons, person_name)
-        if person_id:
-            for event in person_events:
-                event_data = ensure_event_fields(event)
-                events.append({"person_id": person_id, **event_data})
+        if not person_id:
+            continue
+        for event in person_events:
+            event_data = ensure_event_fields(event)
+            events.append({"person_id": person_id, **event_data})
 
 
 def _extract_person_notes(parsed: Dict[str, Any], persons: list) -> None:
     """Extract person notes and append them to matching persons."""
     for note_data in parsed.get("notes", []):
-        person_name = note_data.get("person", "").strip()
-        note_text = note_data.get("text", "").strip()
-
+        person_name = (note_data.get("person") or "").strip()
+        note_text = (note_data.get("text") or "").strip()
         if not person_name or not note_text:
             continue
-
-        # Find matching person by name
         person = _find_person_by_name(persons, person_name, return_person=True)
-        if person:
-            existing_notes = person.get("notes", "")
-            if existing_notes:
-                person["notes"] = f"{existing_notes}\n\n{note_text}"
-            else:
-                person["notes"] = note_text
+        if not person:
+            continue
+        existing_notes = person.get("notes", "")
+        person["notes"] = (
+            f"{existing_notes}\n\n{note_text}" if existing_notes else note_text
+        )
 
 
 def _find_person_by_name(persons: list, name: str, return_person: bool = False):
     """Find person by name, return ID or person object."""
-    # Normalize name for comparison
     normalized_name = name.lower().strip()
-
     for person in persons:
-        person_name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip().lower()
-        if person_name == normalized_name:
+        if _full_name(person).lower() == normalized_name or (
+            person.get("name", "").strip().lower() == normalized_name
+        ):
             return person if return_person else person.get("id")
-
-    # Try alternative matching with raw name field
-    for person in persons:
-        raw_name = person.get("name", "").strip().lower()
-        if raw_name == normalized_name:
-            return person if return_person else person.get("id")
-
     return None
+
+
+def _full_name(person: Dict[str, Any]) -> str:
+    return f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
 
 
 def _create_missing_persons_from_events(
