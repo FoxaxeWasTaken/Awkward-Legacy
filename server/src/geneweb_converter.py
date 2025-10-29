@@ -86,28 +86,40 @@ def _create_children(
 
 def db_to_json(session: Session) -> Dict[str, Any]:
     """Convert all DB entities into structured GeneWeb-like JSON."""
-    # Load persons with their events using selectinload for one-to-many relationships
+    persons = _load_persons_with_events(session)
+    families = _load_families_with_relationships(session)
+    events = event_crud.get_all(session)
+    children = child_crud.get_all(session)
 
-    persons_statement = select(Person).options(selectinload(Person.events))
-    persons = list(session.exec(persons_statement))
+    persons_data = _serialize_persons(persons, events)
+    families_data = _serialize_families(families)
 
-    # Load families with their relationships
-    families_statement = select(Family).options(
+    return {
+        "persons": persons_data,
+        "families": families_data,
+        "events": [e.model_dump() for e in events],
+        "children": [c.model_dump() for c in children],
+    }
+
+
+def _load_persons_with_events(session: Session):
+    statement = select(Person).options(selectinload(Person.events))
+    return list(session.exec(statement))
+
+
+def _load_families_with_relationships(session: Session):
+    statement = select(Family).options(
         joinedload(Family.husband),
         joinedload(Family.wife),
         joinedload(Family.events),
         joinedload(Family.children).joinedload(Child.child),
     )
-    families = list(session.exec(families_statement).unique())
+    return list(session.exec(statement).unique())
 
-    # Load all events separately for the events list
-    events = event_crud.get_all(session)
-    children = child_crud.get_all(session)
 
-    # Convert persons with their events to dictionaries
+def _serialize_persons(persons: list, all_events: list) -> list:
     persons_data = []
     for person in persons:
-        # Get base person data
         person_dict = {
             "id": str(person.id),
             "first_name": person.first_name,
@@ -120,53 +132,48 @@ def db_to_json(session: Session) -> Dict[str, Any]:
             "occupation": person.occupation,
             "notes": person.notes,
         }
-
-        # Manually attach events for this person
-        person_events = []
-        for event in events:
-            if event.person_id == person.id:
-                person_events.append(
-                    {
-                        "id": str(event.id),
-                        "type": event.type,
-                        "date": event.date,
-                        "place": event.place,
-                        "description": event.description,
-                        "person_id": str(event.person_id) if event.person_id else None,
-                        "family_id": str(event.family_id) if event.family_id else None,
-                    }
-                )
-
-        person_dict["events"] = person_events
+        person_dict["events"] = _events_for_person(all_events, person.id)
         persons_data.append(person_dict)
+    return persons_data
 
-    # Convert families with their relationships to dictionaries
+
+def _events_for_person(all_events: list, person_id) -> list:
+    person_events = []
+    for event in all_events:
+        if event.person_id == person_id:
+            person_events.append(
+                {
+                    "id": str(event.id),
+                    "type": event.type,
+                    "date": event.date,
+                    "place": event.place,
+                    "description": event.description,
+                    "person_id": str(event.person_id) if event.person_id else None,
+                    "family_id": str(event.family_id) if event.family_id else None,
+                }
+            )
+    return person_events
+
+
+def _serialize_families(families: list) -> list:
     families_data = []
     for family in families:
         family_dict = family.model_dump()
-        # Convert events to dictionaries
         family_dict["events"] = [event.model_dump() for event in family.events]
-        # Convert children to the expected format
-        children_data = []
-        for child in family.children:
-            child_dict = child.model_dump()
-            # Add the child person data
-            if child.child:
-                child_dict["person"] = {
-                    "raw": f"{child.child.first_name} {child.child.last_name}".strip()
-                }
-                # Add gender based on child's sex
-                sex = child.child.sex
-                child_dict["gender"] = (
-                    "male" if sex == "M" else "female" if sex == "F" else "male"
-                )
-            children_data.append(child_dict)
-        family_dict["children"] = children_data
+        family_dict["children"] = _serialize_children(family.children)
         families_data.append(family_dict)
+    return families_data
 
-    return {
-        "persons": persons_data,
-        "families": families_data,
-        "events": [e.model_dump() for e in events],
-        "children": [c.model_dump() for c in children],
-    }
+
+def _serialize_children(children: list) -> list:
+    children_data = []
+    for child in children:
+        child_dict = child.model_dump()
+        if child.child:
+            child_dict["person"] = {
+                "raw": f"{child.child.first_name} {child.child.last_name}".strip()
+            }
+            sex = child.child.sex
+            child_dict["gender"] = "male" if sex == "M" else "female" if sex == "F" else "male"
+        children_data.append(child_dict)
+    return children_data
