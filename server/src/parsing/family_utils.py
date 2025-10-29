@@ -28,7 +28,9 @@ def _extract_wife_from_complex_format(words: list) -> Optional[str]:
 
     start_idx = _find_first_name_pair_after(words, mp_index + 1)
     if start_idx is None:
-        return _extract_wife_from_simple_format(" ".join(words))
+        # Fallback: simple split, but return only the wife segment (string)
+        _, wife = _extract_wife_from_simple_format(" ".join(words))
+        return wife
     return _extract_name_from_parts(words, start_idx)
 
 
