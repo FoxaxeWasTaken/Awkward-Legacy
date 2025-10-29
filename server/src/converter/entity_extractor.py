@@ -68,7 +68,7 @@ def _extract_spouses(fam: Dict[str, Any], persons: list, family_id: str) -> tupl
     wife_id = None
 
     if husband:
-        # Set gender for husband (first person in family line is typically male)
+        # Set gender for husband (identified as husband in family data)
         husband["gender"] = "male"
         husband_data = ensure_person_fields(husband)
 
@@ -82,7 +82,7 @@ def _extract_spouses(fam: Dict[str, Any], persons: list, family_id: str) -> tupl
             husband_id = husband_data.get("id")
 
     if wife:
-        # Set gender for wife (second person in family line is typically female)
+        # Set gender for wife (person is identified as wife)
         wife["gender"] = "female"
         wife_data = ensure_person_fields(wife)
 

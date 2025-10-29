@@ -23,28 +23,8 @@ export function useFamilyTree(familyId: Ref<string> | string) {
 
       familyData.value = data
 
-      const parts = []
-      if (data.husband && (data.husband.first_name || data.husband.last_name)) {
-        const husbandName = `${data.husband.first_name || ''} ${data.husband.last_name || ''}`.trim()
-        if (husbandName) {
-          parts.push(husbandName)
-        }
-      }
-      if (data.wife && (data.wife.first_name || data.wife.last_name)) {
-        const wifeName = `${data.wife.first_name || ''} ${data.wife.last_name || ''}`.trim()
-        if (wifeName) {
-          parts.push(wifeName)
-        }
-      }
-      
-      // Only add " & " if there are exactly 2 people
-      if (parts.length === 2) {
-        familyTitle.value = parts.join(' & ')
-      } else if (parts.length === 1) {
-        familyTitle.value = parts[0]
-      } else {
-        familyTitle.value = 'Family Tree'
-      }
+      const parts = _extractSpouseNames(data)
+      familyTitle.value = _buildFamilyTitle(parts)
       await loadCrossFamilyChildren(data)
     } catch (err: unknown) {
       console.error('Error loading family data:', err)
@@ -127,5 +107,35 @@ export function useFamilyTree(familyId: Ref<string> | string) {
     crossFamilyChildren,
     loadFamilyData,
     loadCrossFamilyChildren,
+  }
+}
+
+function _extractSpouseNames(data: { husband?: { first_name?: string; last_name?: string }; wife?: { first_name?: string; last_name?: string } }): string[] {
+  const parts = []
+  
+  if (data.husband && (data.husband.first_name || data.husband.last_name)) {
+    const husbandName = `${data.husband.first_name || ''} ${data.husband.last_name || ''}`.trim()
+    if (husbandName) {
+      parts.push(husbandName)
+    }
+  }
+  
+  if (data.wife && (data.wife.first_name || data.wife.last_name)) {
+    const wifeName = `${data.wife.first_name || ''} ${data.wife.last_name || ''}`.trim()
+    if (wifeName) {
+      parts.push(wifeName)
+    }
+  }
+  
+  return parts
+}
+
+function _buildFamilyTitle(parts: string[]): string {
+  if (parts.length === 2) {
+    return parts.join(' & ')
+  } else if (parts.length === 1) {
+    return parts[0]
+  } else {
+    return 'Family Tree'
   }
 }

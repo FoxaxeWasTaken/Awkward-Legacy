@@ -55,15 +55,21 @@ def _extract_wife_from_simple_format(header: str) -> Tuple[str, Optional[str]]:
 
 def _is_person_name_pair(current: str, next_word: str, words: list, idx: int) -> bool:
     """Check if two words form a person name pair."""
-    current_valid = (',' not in current and
-                    not (current.isupper() and len(current) <= 3) and
-                    not current.startswith('#'))
-    next_valid = (',' not in next_word and
-                 not (next_word.isupper() and len(next_word) <= 3) and
-                 not next_word.startswith('#'))
-    has_tag_after = (idx + 2 < len(words) and words[idx + 2].startswith('#'))
+    return (_is_valid_name_word(current) and
+            _is_valid_name_word(next_word) and
+            _has_tag_after(words, idx))
 
-    return current_valid and next_valid and has_tag_after
+
+def _is_valid_name_word(word: str) -> bool:
+    """Check if a word is a valid name component."""
+    return (',' not in word and
+            not (word.isupper() and len(word) <= 3) and
+            not word.startswith('#'))
+
+
+def _has_tag_after(words: list, idx: int) -> bool:
+    """Check if there's a tag after the current position."""
+    return idx + 2 < len(words) and words[idx + 2].startswith('#')
 
 
 def _extract_name_from_parts(words: list, start_idx: int) -> Optional[str]:

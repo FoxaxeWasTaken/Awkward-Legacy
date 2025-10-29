@@ -99,70 +99,94 @@ def _build_events_by_person(db_json: dict) -> Dict[str, list]:
 def _build_persons_list(db_json: dict) -> list:
     """Build persons list from database JSON."""
     persons = []
-
     for p in db_json.get("persons", []):
-        person_id = str(p.get("id"))
-        raw = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
-
-        tags = {}
-        if occ := p.get("occupation"):
-            tags["occu"] = [occ]
-        if notes := p.get("notes"):
-            tags["note"] = [notes]
-
-        dates = []
-        if p.get("birth_date"):
-            dates.append(str(p.get("birth_date")))
-        if p.get("death_date"):
-            dates.append(str(p.get("death_date")))
-
-        # Add birth and death places to tags
-        if birth_place := p.get("birth_place"):
-            tags["bp"] = [birth_place]
-        if death_place := p.get("death_place"):
-            tags["dp"] = [death_place]
-
-        # Get person events from the loaded events relationship
-        person_events = []
-        for event in p.get("events", []):
-            event_data = {
-                "type": event.get("type", ""),
-                "date": event.get("date", ""),
-                "place": event.get("place", ""),
-                "description": event.get("description", ""),
-            }
-
-            # Create raw event string for GeneWeb format
-            raw_parts = []
-            if event_data["type"]:
-                raw_parts.append(f"#{event_data['type'].lower()}")
-            if event_data["date"]:
-                # Convert date to string if it's a date object
-                date_str = (
-                    str(event_data["date"])
-                    if hasattr(event_data["date"], "strftime")
-                    else event_data["date"]
-                )
-                raw_parts.append(date_str)
-            if event_data["place"]:
-                raw_parts.append(f"#p {event_data['place']}")
-            if event_data["description"]:
-                raw_parts.append(f"note {event_data['description']}")
-
-            event_data["raw"] = " ".join(raw_parts)
-            person_events.append(event_data)
-
-        persons.append(
-            {
-                "name": raw,
-                "raw": raw,
-                "tags": tags,
-                "dates": dates,
-                "events": person_events,
-                "sex": p.get("sex", "U"),  # Include sex for gender information
-            }
-        )
+        person_data = _build_single_person(p)
+        persons.append(person_data)
     return persons
+
+
+def _build_single_person(p: dict) -> dict:
+    """Build a single person data structure."""
+    raw = f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
+    tags = _build_person_tags(p)
+    dates = _build_person_dates(p)
+    person_events = _build_person_events(p)
+    
+    return {
+        "name": raw,
+        "raw": raw,
+        "tags": tags,
+        "dates": dates,
+        "events": person_events,
+        "sex": p.get("sex", "U"),
+    }
+
+
+def _build_person_tags(p: dict) -> dict:
+    """Build tags for a person."""
+    tags = {}
+    if occ := p.get("occupation"):
+        tags["occu"] = [occ]
+    if notes := p.get("notes"):
+        tags["note"] = [notes]
+    if birth_place := p.get("birth_place"):
+        tags["bp"] = [birth_place]
+    if death_place := p.get("death_place"):
+        tags["dp"] = [death_place]
+    return tags
+
+
+def _build_person_dates(p: dict) -> list:
+    """Build dates list for a person."""
+    dates = []
+    if p.get("birth_date"):
+        dates.append(str(p.get("birth_date")))
+    if p.get("death_date"):
+        dates.append(str(p.get("death_date")))
+    return dates
+
+
+def _build_person_events(p: dict) -> list:
+    """Build events list for a person."""
+    person_events = []
+    for event in p.get("events", []):
+        event_data = _build_single_event(event)
+        person_events.append(event_data)
+    return person_events
+
+
+def _build_single_event(event: dict) -> dict:
+    """Build a single event data structure."""
+    event_data = {
+        "type": event.get("type", ""),
+        "date": event.get("date", ""),
+        "place": event.get("place", ""),
+        "description": event.get("description", ""),
+    }
+    
+    raw_parts = _build_event_raw_parts(event_data)
+    event_data["raw"] = " ".join(raw_parts)
+    return event_data
+
+
+def _build_event_raw_parts(event_data: dict) -> list:
+    """Build raw parts for an event."""
+    raw_parts = []
+    if event_data["type"]:
+        raw_parts.append(f"#{event_data['type'].lower()}")
+    if event_data["date"]:
+        date_str = _convert_date_to_string(event_data["date"])
+        raw_parts.append(date_str)
+    if event_data["place"]:
+        raw_parts.append(f"#p {event_data['place']}")
+    if event_data["description"]:
+        raw_parts.append(f"note {event_data['description']}")
+    return raw_parts
+
+
+def _convert_date_to_string(date) -> str:
+    """Convert date to string if it's a date object."""
+    return str(date) if hasattr(date, "strftime") else date
 
 
 def _build_children_by_family(
@@ -302,9 +326,9 @@ def _build_notes_list(db_json: dict, person_lookup: Dict[str, str]) -> list:
     """Build notes list from persons with notes."""
     notes = []
     for p in db_json.get("persons", []):
-        person_id = str(p.get("id"))
         person_notes = p.get("notes")
 
+        person_id = str(p.get("id"))
         if person_notes and person_notes.strip() and person_id in person_lookup:
             notes.append(
                 {
