@@ -25,5 +25,3 @@ def test_filter_events_for_family_selects_person_and_family_events():
     filtered = _filter_events_for_family(events, {"p1"}, "fam1")
     types = {e["type"] for e in filtered}
     assert types == {"birt", "marr"}
-
-

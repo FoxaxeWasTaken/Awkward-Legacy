@@ -64,5 +64,3 @@ def test_serialize_event_raw_formats_parts():
     assert raw.startswith("#birt 2000-02-02")
     assert "#p Berlin" in raw
     assert "note Note" in raw
-
-

@@ -9,11 +9,15 @@ from src.converter.entity_extractor import (
 def test_ensure_spouse_and_get_id_creates_and_dedups():
     persons = []
     # First insertion creates
-    hid = _ensure_spouse_and_get_id({"first_name": "John", "last_name": "Doe"}, "male", persons)
+    hid = _ensure_spouse_and_get_id(
+        {"first_name": "John", "last_name": "Doe"}, "male", persons
+    )
     assert hid is not None
     assert len(persons) == 1
     # Duplicate by name returns same id
-    hid2 = _ensure_spouse_and_get_id({"first_name": "John", "last_name": "Doe"}, "male", persons)
+    hid2 = _ensure_spouse_and_get_id(
+        {"first_name": "John", "last_name": "Doe"}, "male", persons
+    )
     assert hid2 == hid
     assert len(persons) == 1
 
@@ -46,5 +50,3 @@ def test_extract_person_events_and_notes_linking():
 
     _extract_person_notes(parsed, persons)
     assert persons[0]["notes"].startswith("Note1")
-
-
