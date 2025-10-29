@@ -149,10 +149,44 @@ def _build_person_dates(p: dict) -> list:
 def _build_person_events(p: dict) -> list:
     """Build events list for a person."""
     person_events = []
-    for event in p.get("events", []):
+    for event in (p.get("events", []) or []):
         event_data = _build_single_event(event)
-        person_events.append(event_data)
+        if event_data:
+            person_events.append(event_data)
+    if not person_events:
+        # Synthesize birth/death events from core fields when explicit events are missing
+        if p.get("birth_date") or p.get("birth_place"):
+            person_events.append(
+                {
+                    "type": "birt",
+                    "date": p.get("birth_date", ""),
+                    "place": p.get("birth_place", ""),
+                    "description": "",
+                    "raw": _serialize_event_raw("birt", p.get("birth_date", ""), p.get("birth_place", ""), ""),
+                }
+            )
+        if p.get("death_date") or p.get("death_place"):
+            person_events.append(
+                {
+                    "type": "deat",
+                    "date": p.get("death_date", ""),
+                    "place": p.get("death_place", ""),
+                    "description": "",
+                    "raw": _serialize_event_raw("deat", p.get("death_date", ""), p.get("death_place", ""), ""),
+                }
+            )
     return person_events
+
+
+def _serialize_event_raw(event_type: str, date, place: str, description: str) -> str:
+    parts = [f"#{event_type}"]
+    if date:
+        parts.append(str(date))
+    if place:
+        parts.append(f"#p {place}")
+    if description:
+        parts.append(f"note {description}")
+    return " ".join(parts)
 
 
 def _build_single_event(event: dict) -> dict:

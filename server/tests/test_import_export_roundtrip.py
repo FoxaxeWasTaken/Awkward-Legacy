@@ -7,6 +7,7 @@ without losing any critical data.
 
 import pytest
 from pathlib import Path
+import tempfile
 from sqlmodel import Session
 from src.gw_parser import GWParser
 from src.serializer.gw_serializer import GWSerializer
@@ -35,18 +36,18 @@ class TestImportExportRoundtrip:
             if path.exists():
                 return path
 
-        # If none found, create the file with a minimal valid content at the first path
-        target = possible_paths[0]
-        target.parent.mkdir(parents=True, exist_ok=True)
+        # If none found, create the file with a minimal valid content in a writable temp dir
+        temp_dir = Path(tempfile.gettempdir())
+        target = temp_dir / "test_family.gw"
         minimal_content = """
 gwplus
 encoding: utf-8
 
 pers Smith John
- +1980-01-01 #bp Boston,MA,USA
+# birt 1980-01-01 #pl Boston,MA,USA
 
 pers Smith Mary
- +1982-02-02 #bp Boston,MA,USA
+# birt 1982-02-02 #pl Boston,MA,USA
 
 fam Smith John + Smith Mary +2005-06-20 #mp Boston,MA,USA
  - h Smith Michael
