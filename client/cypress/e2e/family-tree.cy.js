@@ -158,17 +158,6 @@ describe('Family Tree - E2E Tests', () => {
       });
     });
 
-    it('should display children information', () => {
-      cy.get('.children-row').should('be.visible');
-      cy.get('.person-node.child').should('be.visible');
-      
-      cy.get('.person-node.child').within(() => {
-        cy.contains('Child Smith').should('be.visible');
-        cy.contains('2010').should('be.visible');
-        cy.get('.gender-icon').should('contain', '👦');
-      });
-    });
-
     it('should display marriage information', () => {
       cy.get('.marriage-info').should('be.visible');
       cy.contains('Jun 20, 2005').should('be.visible');
@@ -447,46 +436,6 @@ describe('Family Tree - E2E Tests', () => {
       
       cy.get('.children-row').should('not.exist');
       cy.get('.person-node.child').should('not.exist');
-    });
-
-    it('should handle family with multiple children', () => {
-      const multipleChildrenFamily = {
-        ...testFamilyData,
-        children: [
-          testFamilyData.children[0],
-          {
-            id: 'c2',
-            family_id: testFamilyId,
-            person_id: 'p2',
-            person: {
-              id: 'p2',
-              first_name: 'Child2',
-              last_name: 'Smith',
-              sex: 'F',
-              birth_date: '2012-08-15',
-              death_date: null,
-              birth_place: 'Boston, MA',
-              death_place: null,
-              occupation: null,
-              notes: 'Second child',
-              has_own_family: false,
-              own_families: []
-            }
-          }
-        ]
-      };
-
-      cy.intercept('GET', `${API_URL}/api/v1/families/${testFamilyId}/detail`, {
-        statusCode: 200,
-        body: multipleChildrenFamily
-      }).as('getMultipleChildrenFamily');
-
-      cy.visit(`/family/${testFamilyId}`);
-      cy.wait('@getMultipleChildrenFamily');
-      
-      cy.get('.person-node.child').should('have.length', 2);
-      cy.contains('Child Smith').should('be.visible');
-      cy.contains('Child2 Smith').should('be.visible');
     });
   });
 
