@@ -47,7 +47,7 @@ const downloadAllData = async () => {
         <RouterView />
         
         <!-- Global Download Button - only show on home page -->
-        <div v-if="$route.path === '/'" class="global-download-section">
+        <div v-if="$route && $route.path === '/'" class="global-download-section">
           <button 
             @click="downloadAllData" 
             :disabled="isDownloading"

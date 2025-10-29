@@ -307,15 +307,22 @@ def _filter_data_for_family_fixed(
     """Filter data for family, fixing empty names issue."""
     family_id_str = str(family_id)
     target_family_raw = _find_target_family(raw_data, family_id_str)
-    related_person_ids = _get_related_person_ids(raw_data, family_id_str, target_family_raw)
+    related_person_ids = _get_related_person_ids(
+        raw_data, family_id_str, target_family_raw
+    )
     filtered_persons = _build_filtered_persons(raw_data, related_person_ids)
     husband_name, wife_name = _extract_spouse_names(raw_data, target_family_raw)
     family_header = _build_family_header(husband_name, wife_name, target_family_raw)
     children_data = _build_children_data(raw_data, family_id_str)
     family_events = _build_family_events(raw_data, family_id_str)
     fixed_family = _build_fixed_family(
-        family_id_str, family_header, husband_name, wife_name, 
-        family_events, children_data, target_family_raw
+        family_id_str,
+        family_header,
+        husband_name,
+        wife_name,
+        family_events,
+        children_data,
+        target_family_raw,
     )
     filtered_notes = _build_filtered_notes(filtered_persons)
 
@@ -338,21 +345,23 @@ def _find_target_family(raw_data: dict, family_id_str: str) -> dict:
     raise HTTPException(status_code=404, detail="Family not found")
 
 
-def _get_related_person_ids(raw_data: dict, family_id_str: str, target_family_raw: dict) -> set:
+def _get_related_person_ids(
+    raw_data: dict, family_id_str: str, target_family_raw: dict
+) -> set:
     """Get all person IDs related to this family."""
     related_person_ids = set()
-    
+
     # Add husband and wife IDs
     if target_family_raw.get("husband_id"):
         related_person_ids.add(str(target_family_raw["husband_id"]))
     if target_family_raw.get("wife_id"):
         related_person_ids.add(str(target_family_raw["wife_id"]))
-    
+
     # Add children IDs
     for child in raw_data.get("children", []):
         if str(child.get("family_id")) == family_id_str and child.get("child_id"):
             related_person_ids.add(str(child["child_id"]))
-    
+
     return related_person_ids
 
 
@@ -372,15 +381,21 @@ def _get_person_events(raw_data: dict, person_id: str) -> list:
     person_events = []
     for event in raw_data.get("events", []):
         if str(event.get("person_id")) == str(person_id):
-            person_events.append({
-                "id": str(event.get("id")),
-                "type": event.get("type"),
-                "date": event.get("date"),
-                "place": event.get("place"),
-                "description": event.get("description"),
-                "person_id": str(event.get("person_id")) if event.get("person_id") else None,
-                "family_id": str(event.get("family_id")) if event.get("family_id") else None,
-            })
+            person_events.append(
+                {
+                    "id": str(event.get("id")),
+                    "type": event.get("type"),
+                    "date": event.get("date"),
+                    "place": event.get("place"),
+                    "description": event.get("description"),
+                    "person_id": (
+                        str(event.get("person_id")) if event.get("person_id") else None
+                    ),
+                    "family_id": (
+                        str(event.get("family_id")) if event.get("family_id") else None
+                    ),
+                }
+            )
     return person_events
 
 
@@ -388,17 +403,23 @@ def _extract_spouse_names(raw_data: dict, target_family_raw: dict) -> tuple:
     """Extract husband and wife names from raw data."""
     husband_name = ""
     wife_name = ""
-    
+
     for person in raw_data.get("persons", []):
         if str(person.get("id")) == str(target_family_raw.get("husband_id")):
-            husband_name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+            husband_name = (
+                f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+            )
         elif str(person.get("id")) == str(target_family_raw.get("wife_id")):
-            wife_name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
-    
+            wife_name = (
+                f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+            )
+
     return husband_name, wife_name
 
 
-def _build_family_header(husband_name: str, wife_name: str, target_family_raw: dict) -> str:
+def _build_family_header(
+    husband_name: str, wife_name: str, target_family_raw: dict
+) -> str:
     """Build family header string."""
     if husband_name and wife_name:
         family_header = f"{husband_name} + {wife_name}"
@@ -408,13 +429,13 @@ def _build_family_header(husband_name: str, wife_name: str, target_family_raw: d
         family_header = f"Unknown + {wife_name}"
     else:
         family_header = "Unknown + Unknown"
-    
+
     # Add marriage info
     if target_family_raw.get("marriage_date"):
         family_header += f" {target_family_raw['marriage_date']}"
     if target_family_raw.get("marriage_place"):
         family_header += f" #mp {target_family_raw['marriage_place']}"
-    
+
     return family_header
 
 
@@ -427,12 +448,18 @@ def _build_children_data(raw_data: dict, family_id_str: str) -> list:
             if child_person:
                 child_name = f"{child_person.get('first_name', '')} {child_person.get('last_name', '')}".strip()
                 if child_name:
-                    gender = "h" if child_person.get("sex") == "M" else "f" if child_person.get("sex") == "F" else "h"
-                    children_data.append({
-                        "raw": f"- {gender} {child_name}",
-                        "gender": "male" if gender == "h" else "female",
-                        "person": {"raw": child_name},
-                    })
+                    gender = (
+                        "h"
+                        if child_person.get("sex") == "M"
+                        else "f" if child_person.get("sex") == "F" else "h"
+                    )
+                    children_data.append(
+                        {
+                            "raw": f"- {gender} {child_name}",
+                            "gender": "male" if gender == "h" else "female",
+                            "person": {"raw": child_name},
+                        }
+                    )
     return children_data
 
 
@@ -449,18 +476,26 @@ def _build_family_events(raw_data: dict, family_id_str: str) -> list:
     family_events = []
     for event in raw_data.get("events", []):
         if str(event.get("family_id")) == family_id_str:
-            family_events.append({
-                "type": event.get("type", ""),
-                "date": event.get("date", ""),
-                "place": event.get("place", ""),
-                "description": event.get("description", ""),
-            })
+            family_events.append(
+                {
+                    "type": event.get("type", ""),
+                    "date": event.get("date", ""),
+                    "place": event.get("place", ""),
+                    "description": event.get("description", ""),
+                }
+            )
     return family_events
 
 
-def _build_fixed_family(family_id_str: str, family_header: str, husband_name: str, 
-                       wife_name: str, family_events: list, children_data: list, 
-                       target_family_raw: dict) -> dict:
+def _build_fixed_family(
+    family_id_str: str,
+    family_header: str,
+    husband_name: str,
+    wife_name: str,
+    family_events: list,
+    children_data: list,
+    target_family_raw: dict,
+) -> dict:
     """Build the fixed family structure."""
     return {
         "id": family_id_str,
@@ -481,7 +516,9 @@ def _build_filtered_notes(filtered_persons: list) -> list:
     filtered_notes = []
     for person in filtered_persons:
         if person.get("notes"):
-            person_name = f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+            person_name = (
+                f"{person.get('first_name', '')} {person.get('last_name', '')}".strip()
+            )
             if person_name:
                 filtered_notes.append({"person": person_name, "text": person["notes"]})
     return filtered_notes

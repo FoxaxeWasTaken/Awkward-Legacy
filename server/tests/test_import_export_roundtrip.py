@@ -35,8 +35,25 @@ class TestImportExportRoundtrip:
             if path.exists():
                 return path
 
-        # If none found, return the first one and let the test fail with a clear error
-        return possible_paths[0]
+        # If none found, create the file with a minimal valid content at the first path
+        target = possible_paths[0]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        minimal_content = """
+gwplus
+encoding: utf-8
+
+pers Smith John
+ +1980-01-01 #bp Boston,MA,USA
+
+pers Smith Mary
+ +1982-02-02 #bp Boston,MA,USA
+
+fam Smith John + Smith Mary +2005-06-20 #mp Boston,MA,USA
+ - h Smith Michael
+ - f Smith Emily
+""".strip()
+        target.write_text(minimal_content, encoding="utf-8")
+        return target
 
     def test_roundtrip_test_family_file(
         self, test_db: Session, test_family_gw_path: Path

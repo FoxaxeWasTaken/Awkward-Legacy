@@ -111,7 +111,7 @@ def _build_single_person(p: dict) -> dict:
     tags = _build_person_tags(p)
     dates = _build_person_dates(p)
     person_events = _build_person_events(p)
-    
+
     return {
         "name": raw,
         "raw": raw,
@@ -163,7 +163,7 @@ def _build_single_event(event: dict) -> dict:
         "place": event.get("place", ""),
         "description": event.get("description", ""),
     }
-    
+
     raw_parts = _build_event_raw_parts(event_data)
     event_data["raw"] = " ".join(raw_parts)
     return event_data
