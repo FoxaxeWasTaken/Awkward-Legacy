@@ -10,6 +10,13 @@ const navigateToUpload = () => {
 const navigateToManage = () => {
   router.push('/manage')
 }
+
+const navigateToCreateFamily = () => {
+  router.push('/families/create')
+}
+
+// Expose for unit tests
+defineExpose({ navigateToUpload, navigateToManage, navigateToCreateFamily })
 </script>
 
 <template>
@@ -51,6 +58,23 @@ const navigateToManage = () => {
             </div>
           </div>
           <button class="card-button">Explore Families</button>
+        </div>
+
+        <div class="action-card create-family-card" @click="navigateToCreateFamily">
+          <div class="card-content">
+            <div class="card-icon">👨‍👩‍👧‍👦</div>
+            <h3 class="card-title">Create a family</h3>
+            <p class="card-description">
+              Create a new family by adding parents, marriage information and more
+            </p>
+            <div class="card-features">
+              <span class="feature">• Adding parents</span>
+              <span class="feature">• Marriage information</span>
+              <span class="feature">• Children handling</span>
+              <span class="feature">• Family events</span>
+            </div>
+          </div>
+          <button class="card-button">Create family</button>
         </div>
       </div>
     </div>
@@ -291,12 +315,20 @@ const navigateToManage = () => {
 
 .action-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(3, minmax(250px, 1fr));
   gap: 2rem;
   margin-bottom: 4rem;
-  max-width: 800px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* smaller screens: fall back to 2 columns */
+@media (max-width: 1000px) {
+  .action-cards {
+    grid-template-columns: repeat(2, minmax(250px, 1fr));
+    max-width: 900px;
+  }
 }
 
 .action-card {
@@ -323,6 +355,10 @@ const navigateToManage = () => {
 
 .manage-card:hover {
   border-color: #2ecc71;
+}
+
+.create-family-card:hover {
+  border-color: #9b59b6;
 }
 
 .card-icon {

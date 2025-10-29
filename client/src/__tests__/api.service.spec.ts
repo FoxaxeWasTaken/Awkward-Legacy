@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+// typescript
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 import axios from 'axios'
 import { apiService } from '../services/api'
 import type { FamilySearchParams, FamilySearchResult, FamilyDetailResult } from '../types/family'
@@ -12,12 +13,8 @@ vi.mock('axios', () => ({
       put: vi.fn(),
       delete: vi.fn(),
       interceptors: {
-        request: {
-          use: vi.fn(),
-        },
-        response: {
-          use: vi.fn(),
-        },
+        request: { use: vi.fn() },
+        response: { use: vi.fn() },
       },
     })),
   },
@@ -75,16 +72,23 @@ describe('API Service', () => {
     events: [],
   }
 
-  let mockAxiosInstance: {
-    get: ReturnType<typeof vi.fn>
-    post: ReturnType<typeof vi.fn>
-    put: ReturnType<typeof vi.fn>
-    delete: ReturnType<typeof vi.fn>
+  type MockFn = (...args: unknown[]) => unknown
+  type MockAxiosInstance = {
+    get: MockFn
+    post: MockFn
+    put: MockFn
+    delete: MockFn
     interceptors: {
-      request: { use: ReturnType<typeof vi.fn> }
-      response: { use: ReturnType<typeof vi.fn> }
+      request: { use: MockFn }
+      response: { use: MockFn }
     }
   }
+
+  let mockAxiosInstanceWithMethods: MockAxiosInstance | undefined
+
+  beforeAll(async () => {
+    await import('../services/api')
+  })
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -93,7 +97,7 @@ describe('API Service', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
     // Get the mock instance
-    mockAxiosInstance = vi.mocked(axios.create).mock.results[0]?.value
+    mockAxiosInstanceWithMethods = vi.mocked(axios.create).mock.results[0]?.value as unknown as MockAxiosInstance
   })
 
   afterEach(() => {
@@ -119,9 +123,123 @@ describe('API Service', () => {
     })
   })
 
+  describe('Request Interceptors', () => {
+    it('should log request details in request interceptor', () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const requestInterceptors = mockAxiosInstanceWithMethods?.interceptors?.request?.use
+      const [requestSuccess] = requestInterceptors?.mock?.calls?.[0] || []
+
+      if (!requestSuccess) {
+        consoleSpy.mockRestore()
+        return
+      }
+
+      const config = {
+        baseURL: 'http://localhost:8000',
+        url: '/test',
+        method: 'GET',
+      }
+
+      const result = requestSuccess(config)
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'API Request: GET /test'
+      )
+      expect(result).toBe(config)
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle request error in interceptor', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const requestInterceptors = mockAxiosInstanceWithMethods?.interceptors?.request?.use
+      const [, requestError] = requestInterceptors?.mock?.calls?.[0] || []
+
+      if (!requestError) {
+        consoleSpy.mockRestore()
+        return
+      }
+
+      const error = new Error('Request failed')
+
+      await expect(requestError(error)).rejects.toThrow('Request failed')
+      expect(consoleSpy).toHaveBeenCalledWith('API Request Error:', error)
+
+      consoleSpy.mockRestore()
+    })
+  })
+
+  describe('Response Interceptors', () => {
+    it('should log response details in response interceptor', () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const responseInterceptors = mockAxiosInstanceWithMethods?.interceptors?.response?.use
+      const [responseSuccess] = responseInterceptors?.mock?.calls?.[0] || []
+
+      if (!responseSuccess) {
+        consoleSpy.mockRestore()
+        return
+      }
+
+      const response = {
+        status: 200,
+        config: { url: '/test' },
+      }
+
+      const result = responseSuccess(response)
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'API Response: 200 /test'
+      )
+      expect(result).toBe(response)
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle response error in interceptor', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const responseInterceptors = mockAxiosInstanceWithMethods?.interceptors?.response?.use
+      const [, responseError] = responseInterceptors?.mock?.calls?.[0] || []
+
+      if (!responseError) {
+        consoleSpy.mockRestore()
+        return
+      }
+
+      const error = {
+        response: { status: 404, data: { detail: 'Not found' } },
+        message: 'Not found',
+      }
+
+      await expect(responseError(error)).rejects.toThrow()
+      expect(consoleSpy).toHaveBeenCalledWith('API Response Error:', error.response?.data || error.message)
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle response error without response object', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const responseInterceptors = mockAxiosInstanceWithMethods?.interceptors?.response?.use
+      const [, responseError] = responseInterceptors?.mock?.calls?.[0] || []
+
+      if (!responseError) {
+        consoleSpy.mockRestore()
+        return
+      }
+
+      const error = {
+        message: 'Network error',
+      }
+
+      await expect(responseError(error)).rejects.toThrow()
+      expect(consoleSpy).toHaveBeenCalledWith('API Response Error:', error.message)
+
+      consoleSpy.mockRestore()
+    })
+  })
+
   describe('searchFamilies', () => {
     it('should search families with correct parameters', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const searchParams: FamilySearchParams = {
         q: 'John Jane',
@@ -129,37 +247,37 @@ describe('API Service', () => {
         limit: 10,
       }
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockFamilySearchResult })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ data: mockFamilySearchResult })
 
       const result = await apiService.searchFamilies(searchParams)
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/families/search', {
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith('/api/v1/families/search', {
         params: searchParams,
       })
       expect(result).toEqual(mockFamilySearchResult)
     })
 
     it('should handle search families error', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const searchParams: FamilySearchParams = { q: 'John' }
       const error = new Error('Search failed')
 
-      mockAxiosInstance.get.mockRejectedValue(error)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(error)
 
       await expect(apiService.searchFamilies(searchParams)).rejects.toThrow('Search failed')
     })
 
     it('should handle empty search parameters', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const searchParams: FamilySearchParams = {}
 
-      mockAxiosInstance.get.mockResolvedValue({ data: [] })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ data: [] })
 
       const result = await apiService.searchFamilies(searchParams)
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/families/search', {
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith('/api/v1/families/search', {
         params: {},
       })
       expect(result).toEqual([])
@@ -168,111 +286,111 @@ describe('API Service', () => {
 
   describe('getFamilyDetail', () => {
     it('should get family detail with correct ID', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const familyId = '123e4567-e89b-12d3-a456-426614174000'
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockFamilyDetailResult })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ data: mockFamilyDetailResult })
 
       const result = await apiService.getFamilyDetail(familyId)
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}/detail`)
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}/detail`)
       expect(result).toEqual(mockFamilyDetailResult)
     })
 
     it('should handle get family detail error', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const familyId = 'invalid-id'
       const error = new Error('Family not found')
 
-      mockAxiosInstance.get.mockRejectedValue(error)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(error)
 
       await expect(apiService.getFamilyDetail(familyId)).rejects.toThrow('Family not found')
     })
 
     it('should handle different family ID formats', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const familyId = 'family-123'
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockFamilyDetailResult })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ data: mockFamilyDetailResult })
 
       await apiService.getFamilyDetail(familyId)
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}/detail`)
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}/detail`)
     })
   })
 
   describe('getFamily', () => {
     it('should get family with correct ID', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const familyId = '123e4567-e89b-12d3-a456-426614174000'
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockFamilyDetailResult })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ data: mockFamilyDetailResult })
 
       const result = await apiService.getFamily(familyId)
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}`)
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}`)
       expect(result).toEqual(mockFamilyDetailResult)
     })
 
     it('should handle get family error', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const familyId = 'invalid-id'
       const error = new Error('Family not found')
 
-      mockAxiosInstance.get.mockRejectedValue(error)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(error)
 
       await expect(apiService.getFamily(familyId)).rejects.toThrow('Family not found')
     })
 
     it('should return same data as getFamilyDetail but from different endpoint', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const familyId = '123e4567-e89b-12d3-a456-426614174000'
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockFamilyDetailResult })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ data: mockFamilyDetailResult })
 
       const result = await apiService.getFamily(familyId)
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}`)
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith(`/api/v1/families/${familyId}`)
       expect(result).toEqual(mockFamilyDetailResult)
     })
   })
 
   describe('healthCheck', () => {
     it('should return true when health check succeeds', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
-      mockAxiosInstance.get.mockResolvedValue({ status: 200 })
+      mockAxiosInstanceWithMethods.get.mockResolvedValue({ status: 200 })
 
       const result = await apiService.healthCheck()
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/health')
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith('/health')
       expect(result).toBe(true)
     })
 
     it('should return false when health check fails', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const error = new Error('Health check failed')
-      mockAxiosInstance.get.mockRejectedValue(error)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(error)
 
       const result = await apiService.healthCheck()
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/health')
+      expect(mockAxiosInstanceWithMethods.get).toHaveBeenCalledWith('/health')
       expect(result).toBe(false)
       expect(console.error).toHaveBeenCalledWith('Health check failed:', error)
     })
 
     it('should handle network timeout', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const timeoutError = new Error('timeout of 10000ms exceeded')
-      mockAxiosInstance.get.mockRejectedValue(timeoutError)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(timeoutError)
 
       const result = await apiService.healthCheck()
 
@@ -281,12 +399,12 @@ describe('API Service', () => {
     })
 
     it('should handle 500 server error', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const serverError = {
         response: { status: 500, data: { error: 'Internal server error' } },
       }
-      mockAxiosInstance.get.mockRejectedValue(serverError)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(serverError)
 
       const result = await apiService.healthCheck()
 
@@ -297,25 +415,25 @@ describe('API Service', () => {
 
   describe('Error Handling', () => {
     it('should handle axios timeout errors', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const timeoutError = new Error('timeout of 10000ms exceeded')
-      mockAxiosInstance.get.mockRejectedValue(timeoutError)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(timeoutError)
 
       await expect(apiService.searchFamilies({})).rejects.toThrow('timeout of 10000ms exceeded')
     })
 
     it('should handle network errors', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const networkError = new Error('Network Error')
-      mockAxiosInstance.get.mockRejectedValue(networkError)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(networkError)
 
       await expect(apiService.getFamilyDetail('test-id')).rejects.toThrow('Network Error')
     })
 
     it('should handle 404 errors', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const notFoundError = {
         response: {
@@ -323,13 +441,13 @@ describe('API Service', () => {
           data: { detail: 'Family not found' },
         },
       }
-      mockAxiosInstance.get.mockRejectedValue(notFoundError)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(notFoundError)
 
       await expect(apiService.getFamily('non-existent')).rejects.toEqual(notFoundError)
     })
 
     it('should handle 500 errors', async () => {
-      if (!mockAxiosInstance) return
+      if (!mockAxiosInstanceWithMethods) return
 
       const serverError = {
         response: {
@@ -337,7 +455,7 @@ describe('API Service', () => {
           data: { detail: 'Internal server error' },
         },
       }
-      mockAxiosInstance.get.mockRejectedValue(serverError)
+      mockAxiosInstanceWithMethods.get.mockRejectedValue(serverError)
 
       await expect(apiService.searchFamilies({})).rejects.toEqual(serverError)
     })

@@ -317,10 +317,28 @@ class TestFamilyEdgeCases:
         response1 = client.post("/api/v1/families", json=sample_family_data)
         assert response1.status_code == 201
 
+        # Second creation with the exact same spouses should be rejected
         response2 = client.post("/api/v1/families", json=sample_family_data)
-        assert response2.status_code == 201
+        assert response2.status_code == 409
 
-        assert response1.json()["id"] != response2.json()["id"]
+    def test_create_family_same_spouses_swapped_order_conflict(
+        self, client, sample_family_data
+    ):
+        """Test creating a family with spouses swapped order should also conflict (order-indifferent)."""
+        # Create initial family
+        response1 = client.post("/api/v1/families", json=sample_family_data)
+        assert response1.status_code == 201
+
+        # Try to create with swapped roles
+        swapped = {
+            "husband_id": sample_family_data["wife_id"],
+            "wife_id": sample_family_data["husband_id"],
+            "marriage_date": sample_family_data.get("marriage_date"),
+            "marriage_place": sample_family_data.get("marriage_place"),
+            "notes": sample_family_data.get("notes"),
+        }
+        response2 = client.post("/api/v1/families", json=swapped)
+        assert response2.status_code == 409
 
     def test_create_family_with_very_long_place_name(self, client, sample_persons):
         """Test creating family with very long place name."""

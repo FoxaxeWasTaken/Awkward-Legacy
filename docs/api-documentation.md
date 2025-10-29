@@ -413,7 +413,7 @@ Create a new child relationship between a family and a person.
 ```json
 {
   "family_id": "123e4567-e89b-12d3-a456-426614174002",
-  "child_id": "123e4567-e89b-12d3-a456-426614174003"
+  "person_id": "123e4567-e89b-12d3-a456-426614174003"
 }
 ```
 

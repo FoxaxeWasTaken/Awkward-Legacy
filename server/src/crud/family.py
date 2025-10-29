@@ -19,6 +19,20 @@ from ..models.family import (
 class FamilyCRUD:
     """CRUD operations for Family model."""
 
+    def exists_same_couple(self, db: Session, husband_id: UUID, wife_id: UUID) -> bool:
+        """Return True if a family already exists with the same two spouses, order-indifferent.
+
+        Only applies when both spouses are provided. If either is None, returns False.
+        """
+        if not husband_id or not wife_id:
+            return False
+
+        statement = select(Family).where(
+            ((Family.husband_id == husband_id) & (Family.wife_id == wife_id))
+            | ((Family.husband_id == wife_id) & (Family.wife_id == husband_id))
+        )
+        return db.exec(statement).first() is not None
+
     def create(self, db: Session, family: FamilyCreate) -> Family:
         """Create a new family."""
         db_family = Family.model_validate(family)

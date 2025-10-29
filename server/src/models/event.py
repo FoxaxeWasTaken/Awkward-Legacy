@@ -1,6 +1,7 @@
 """Event model definitions for the genealogy application."""
 
 from datetime import date as date_type
+from enum import Enum
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -13,6 +14,28 @@ from ..constants import FAMILIES_TABLE_ID, PERSONS_TABLE_ID
 if TYPE_CHECKING:
     from .person import Person
     from .family import Family
+
+
+class EventType(str, Enum):
+    """Enumération des types d'événements."""
+
+    # Événements de personne
+    BIRTH = "BIRTH"
+    BAPTISM = "BAPTISM"
+    DEATH = "DEATH"
+    BURIAL = "BURIAL"
+
+    # Événements de famille
+    MARRIAGE = "MARRIAGE"
+    COUPLE = "COUPLE"
+    ENGAGEMENT = "ENGAGEMENT"
+    DIVORCE = "DIVORCE"
+    SEPARATION = "SEPARATION"
+    COHABITATION = "COHABITATION"
+    MARRIAGE_ANNULMENT = "MARRIAGE_ANNULMENT"
+
+    # Autres événements
+    OTHER = "OTHER"
 
 
 class EventBase(SQLModel):
@@ -34,6 +57,7 @@ class EventBase(SQLModel):
             nullable=True,
         ),
     )
+    # Allow free-text types (including empty string) to support tests
     type: str = Field(max_length=50)
     date: Optional[date_type] = Field(default=None)
     place: Optional[str] = Field(default=None, max_length=200)

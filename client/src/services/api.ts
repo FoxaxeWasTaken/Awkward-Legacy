@@ -1,8 +1,9 @@
-import axios from 'axios'
-import type { AxiosInstance, AxiosResponse } from 'axios'
-import type { 
-  FamilySearchResult, 
-  FamilyDetailResult, 
+// typescript
+import axios, { type InternalAxiosRequestConfig } from 'axios'
+import type { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios'
+import type {
+  FamilySearchResult,
+  FamilyDetailResult,
   FamilySearchParams,
   UploadResult,
   FamilyRead,
@@ -13,6 +14,34 @@ import type {
 class ApiService {
   private readonly api: AxiosInstance
 
+  // Interceptor helpers extracted to reduce constructor complexity
+  private readonly getAuthToken = (): string | null =>
+    (typeof window !== 'undefined' ? localStorage.getItem('token') : null)
+
+  private readonly onRequest = (config: InternalAxiosRequestConfig) => {
+    const token = this.getAuthToken()
+    if (config.headers && token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
+    return config
+  }
+
+  private readonly onRequestError = (error: unknown) => {
+    console.error('API Request Error:', error)
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)))
+  }
+
+  private readonly onResponse = (response: AxiosResponse) => {
+    console.log(`API Response: ${response.status} ${response.config.url}`)
+    return response
+  }
+
+  private readonly onResponseError = (error: AxiosError | unknown) => {
+    console.error('API Response Error:', (error as AxiosError).response?.data || (error as Error).message)
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)))
+  }
+
   constructor() {
     this.api = axios.create({
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
@@ -22,29 +51,11 @@ class ApiService {
       },
     })
 
-    // Add request interceptor for logging
-    this.api.interceptors.request.use(
-      (config) => {
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
-        return config
-      },
-      (error) => {
-        console.error('API Request Error:', error)
-        return Promise.reject(error instanceof Error ? error : new Error(String(error)))
-      },
-    )
+    // Add request interceptor for logging and auth header
+    this.api.interceptors.request.use(this.onRequest, this.onRequestError)
 
     // Add response interceptor for error handling
-    this.api.interceptors.response.use(
-      (response) => {
-        console.log(`API Response: ${response.status} ${response.config.url}`)
-        return response
-      },
-      (error) => {
-        console.error('API Response Error:', error.response?.data || error.message)
-        return Promise.reject(error instanceof Error ? error : new Error(String(error)))
-      },
-    )
+    this.api.interceptors.response.use(this.onResponse, this.onResponseError)
   }
 
   // Family search methods
@@ -70,6 +81,27 @@ class ApiService {
       `/api/v1/families/${familyId}`,
     )
     return response.data
+  }
+
+  // Generic HTTP methods for backward compatibility
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.get<T>(url, config)
+  }
+
+  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.post<T>(url, data, config)
+  }
+
+  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.put<T>(url, data, config)
+  }
+
+  patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.patch<T>(url, data, config)
+  }
+
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.api.delete<T>(url, config)
   }
 
   // Health check
@@ -131,7 +163,7 @@ class ApiService {
       const familyDetail = await this.fetchFamilyDetails(family.id)
       const husbandName = this.buildPersonName(familyDetail.husband || null)
       const wifeName = this.buildPersonName(familyDetail.wife || null)
-      
+
       return {
         id: family.id,
         husband_name: husbandName,
@@ -146,7 +178,7 @@ class ApiService {
       // Fallback to unknown names when detail fetch fails
       const husbandDisplayName = 'Unknown Husband'
       const wifeDisplayName = 'Unknown Wife'
-      
+
       return {
         id: family.id,
         husband_name: husbandDisplayName,
@@ -176,7 +208,7 @@ class ApiService {
           },
         }
       )
-      
+
       return response.data
     } catch (error) {
       console.error('Error fetching families for management:', error)

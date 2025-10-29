@@ -129,6 +129,16 @@ def _validate_patch_family_relationships_and_dates(
     validate_family_dates(family_data)
 
 
+def _prevent_duplicate_couple(session: Session, family: FamilyCreate) -> None:
+    """Raise 409 if the same couple already exists (order-indifferent)."""
+    if not (family.husband_id and family.wife_id):
+        return
+    if family_crud.exists_same_couple(session, family.husband_id, family.wife_id):
+        raise HTTPException(
+            status_code=409, detail="Family with same spouses already exists"
+        )
+
+
 @router.post("/", response_model=FamilyRead, status_code=201)
 def create_family(
     family: FamilyCreate,
@@ -136,6 +146,7 @@ def create_family(
 ):
     """Create a new family."""
     _validate_family_relationships_and_dates(session, family)
+    _prevent_duplicate_couple(session, family)
     return family_crud.create(session, family)
 
 

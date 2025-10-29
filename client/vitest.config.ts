@@ -11,11 +11,16 @@ export default mergeConfig(
       root: fileURLToPath(new URL('./', import.meta.url)),
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'lcov'],
+        reporter: ['text', 'json', 'html', 'lcov'],
         reportsDirectory: './coverage',
-        include: ['src/**/*.{ts,tsx,vue}'],
-        exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
-      },
+        include: ['src/**/*.{ts,vue}'],
+        exclude: [
+          'src/__tests__/**',
+          'src/**/*.spec.ts',
+          '**/*.config.ts',
+          '**/node_modules/**'
+        ]
+      }
     },
   }),
 )
